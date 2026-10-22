@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Modals of Obligation</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+<main id="app"></main>
+<script>
+window.LESSON = {
+  id: "24",
+  title: "Modals — khả năng, sự cho phép, bắt buộc",
+  sub: "Giai đoạn 2 · 30 phút · can / could / be able to · must / have to / should",
+  sections: [
+    { type: "mcq", key: "W", time: "3 phút · Ôn bài 23", title: "Warm-up",
+      items: [
+        { q: "Can you tell me where ___?", opts: ["the toilet is", "is the toilet"], a: 0, why: "Câu gián tiếp → S + V.", tag: "indirect question" },
+        { q: "You've finished, ___?", opts: ["haven't you", "didn't you"], a: 0, why: "have → haven't.", tag: "question tag" },
+        { q: "I don't know ___ she is married.", opts: ["if", "that"], a: 0, why: "Yes/No → if.", tag: "indirect question" },
+      ] },
+
+    { type: "explain", time: "7 phút · Hiểu logic", title: "Modal nào cho ý nào?", html: `
+      <h3>① Khả năng (ability)</h3>
+      <table>
+        <tr><th>Thời</th><th>Dùng</th><th>Ví dụ</th></tr>
+        <tr><td>Hiện tại</td><td>can</td><td>She <em class="g">can</em> speak Korean.</td></tr>
+        <tr><td>Quá khứ (chung chung)</td><td>could</td><td>I <em class="g">could</em> swim when I was five.</td></tr>
+        <tr><td>Quá khứ (<b>làm được trong 1 lần cụ thể</b>)</td><td>was able to / managed to</td><td>The fire spread, but everyone <em class="g">was able to</em> escape.</td></tr>
+        <tr><td>Tương lai / sau modal khác</td><td>will be able to</td><td>I'll <em class="g">be able to</em> drive next year. (<s>will can</s>)</td></tr>
+      </table>
+      <h3>② Bắt buộc & lời khuyên</h3>
+      <table>
+        <tr><th>Từ</th><th>Nghĩa</th><th>Ví dụ</th></tr>
+        <tr><td><b>must</b></td><td>bắt buộc — thường do <b>người nói</b> thấy cần</td><td>I <em class="g">must</em> call Mum tonight.</td></tr>
+        <tr><td><b>have to</b></td><td>bắt buộc — do <b>quy định bên ngoài</b>; dùng cho mọi thì</td><td>We <em class="g">have to</em> wear a uniform. / I <em class="g">had to</em> work yesterday.</td></tr>
+        <tr><td><b>mustn't</b></td><td><b>CẤM</b></td><td>You <em class="g">mustn't</em> smoke here.</td></tr>
+        <tr><td><b>don't have to</b></td><td><b>KHÔNG CẦN</b> (làm cũng được)</td><td>You <em class="g">don't have to</em> pay. It's free.</td></tr>
+        <tr><td><b>should</b></td><td>lời khuyên</td><td>You <em class="g">should</em> rest.</td></tr>
+      </table>
+      <div class="warn"><b>Bẫy lớn nhất:</b> mustn't ≠ don't have to.<br>
+        You <b>mustn't</b> come = Cấm đến. · You <b>don't have to</b> come = Không đến cũng được.</div>
+      <h3>③ Xin phép</h3>
+      <p><b>Can I…?</b> (thân mật) → <b>Could I…?</b> → <b>May I…?</b> (lịch sự nhất)</p>
+      <div class="box">Sau modal luôn là <b>V nguyên mẫu</b>, không "to", không "s": <s>must to go</s>, <s>she cans</s>.</div>` },
+
+    { type: "cards", time: "2 phút · Flashcards", title: "Ghi nhớ nhanh",
+      items: [
+        ["mustn't", "cấm"],
+        ["don't have to", "không cần"],
+        ["must vs have to", "người nói thấy cần vs quy định bên ngoài"],
+        ["could vs was able to", "khả năng chung vs làm được 1 lần cụ thể"],
+        ["will can?", "✘ → will be able to"],
+        ["Xin phép lịch sự nhất", "May I ...?"],
+      ] },
+
+    { type: "mcq", key: "M", time: "6 phút · Trắc nghiệm", title: "Chọn đáp án đúng",
+      items: [
+        { q: "You ___ smoke in the hospital. It's forbidden.", opts: ["mustn't", "don't have to", "needn't"], a: 0, why: "Cấm → mustn't." },
+        { q: "Tomorrow is Sunday, so I ___ get up early.", opts: ["mustn't", "don't have to", "can't"], a: 1, why: "Không cần → don't have to." },
+        { q: "I ___ swim when I was five.", opts: ["could", "can", "am able"], a: 0, why: "Khả năng chung trong quá khứ → could." },
+        { q: "The fire spread fast, but everyone ___ escape.", opts: ["could", "was able to", "can"], a: 1, why: "Làm được trong một lần cụ thể → was able to." },
+        { q: "I'll ___ speak English fluently after this course.", opts: ["can", "be able to", "could"], a: 1, why: "will + be able to." },
+        { q: "You look tired. You ___ go to bed earlier.", opts: ["should", "mustn't", "have"], a: 0, why: "Lời khuyên → should." },
+        { q: "In Vietnam, you ___ wear a helmet on a motorbike. It's the law.", opts: ["have to", "should", "may"], a: 0, why: "Quy định bên ngoài (luật) → have to." },
+        { q: "I ___ go to work yesterday because it was a public holiday.", opts: ["mustn't", "couldn't", "didn't have to"], a: 2, why: "Không cần (vì ngày lễ) → didn't have to." },
+        { q: "___ I use your phone, please?", opts: ["May", "Must", "Should"], a: 0, why: "Xin phép lịch sự → May I." },
+      ] },
+
+    { type: "typed", key: "G", short: true, time: "5 phút · Điền từ", title: "Điền modal phù hợp với nghĩa tiếng Việt",
+      hint: "Chỉ gõ phần điền vào chỗ trống.",
+      items: [
+        { q: "Students ___ (không được) cheat in exams.", ans: ["mustn't", "must not"], why: "Cấm." },
+        { q: "You ___ (không cần) bring food. We have plenty.", ans: ["don't have to", "do not have to", "don't need to", "needn't"], why: "Không cần." },
+        { q: "Last year I ___ (phải) work every Saturday.", ans: ["had to"], why: "must không có quá khứ → had to." },
+        { q: "Will you ___ (có thể) come to my party next week?", ans: ["be able to"], why: "will + be able to." },
+        { q: "You ___ (nên) see a doctor about that cough.", ans: ["should", "ought to"], why: "Lời khuyên." },
+        { q: "After hours of trying, she ___ (đã xoay xở được) fix the car.", ans: ["was able to", "managed to"], why: "Thành công trong 1 lần cụ thể." },
+      ] },
+
+    { type: "typed", key: "E", time: "4 phút · Sửa lỗi", title: "Sửa lỗi sai",
+      items: [
+        { q: "You don't have to touch that wire! It's dangerous.", ans: ["You mustn't touch that wire! It's dangerous.", "You must not touch that wire! It's dangerous."], why: "Nguy hiểm → cấm → mustn't." },
+        { q: "I must to finish this report today.", ans: ["I must finish this report today."], why: "must + V (không to)." },
+        { q: "She cans speak three languages.", ans: ["She can speak three languages."], why: "Modal không thêm s." },
+        { q: "We will can travel next year.", ans: ["We will be able to travel next year.", "We'll be able to travel next year."], why: "will + be able to." },
+      ] },
+
+    { type: "writing", time: "3 phút · Tự viết", title: "Quy định ở nơi bạn làm việc / học",
+      hint: "4 câu: 1 <b>have to</b> · 1 <b>mustn't</b> · 1 <b>don't have to</b> · 1 lời khuyên với <b>should</b>.",
+      placeholder: "1. At my company, we have to ...\n2. ...\n3. ...\n4. ..." },
+  ],
+};
+</script>
+<script src="assets/lesson.js"></script>
+</body>
+</html>

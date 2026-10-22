@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mixed Grammar Review</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+<main id="app"></main>
+<script>
+window.LESSON = {
+  id: "32",
+  title: "Ôn tổng hợp bài 19–31",
+  sub: "Giai đoạn 4 · 30 phút · bản mặc định — sẽ được điều chỉnh theo nhật ký lỗi của bạn",
+  sections: [
+    { type: "explain", time: "2 phút · Cách làm", title: "Bài kiểm tra tổng hợp", html: `
+      <p>Mỗi câu thuộc một bài khác nhau, được ghi ở cuối giải thích. Câu nào sai thì <b>mở lại bài đó</b> và đọc phần "Hiểu logic".</p>
+      <div class="box">Mục tiêu: ≥ 80% đúng. Nhóm lỗi nào sai ≥ 2 câu sẽ được ôn lại trong buổi sau.</div>` },
+
+    { type: "mcq", key: "M", time: "10 phút · Trắc nghiệm", title: "Chọn đáp án đúng",
+      items: [
+        { q: "The man ___ car was stolen called the police.", opts: ["whose", "who", "which"], a: 0, why: "Sở hữu → whose. (Bài 19)", tag: "19 relative" },
+        { q: "My sister, ___ lives in Hue, is a teacher.", opts: ["who", "that"], a: 0, why: "Có dấu phẩy → không dùng that. (Bài 19)", tag: "19 relative" },
+        { q: "The students ___ in the library are preparing for exams.", opts: ["studying", "studied", "are studying"], a: 0, why: "Rút gọn chủ động → V-ing. (Bài 20)", tag: "20 reduced RC" },
+        { q: "I'm looking forward to ___ you.", opts: ["seeing", "see"], a: 0, why: "to là giới từ → V-ing. (Bài 21)", tag: "21 gerund" },
+        { q: "I ___ live in the countryside, but now I live in the city.", opts: ["used to", "am used to"], a: 0, why: "Quá khứ, giờ không còn. (Bài 22)", tag: "22 used to" },
+        { q: "Could you tell me where ___?", opts: ["the station is", "is the station"], a: 0, why: "Câu gián tiếp → S + V. (Bài 23)", tag: "23 indirect Q" },
+        { q: "You ___ wear a uniform; it's optional.", opts: ["don't have to", "mustn't"], a: 0, why: "Không cần. (Bài 24)", tag: "24 obligation" },
+        { q: "She's not answering. She ___ be asleep.", opts: ["might", "mustn't", "should"], a: 0, why: "Không chắc → might. (Bài 25)", tag: "25 deduction" },
+        { q: "I ___ the window. Now the room is full of mosquitoes.", opts: ["shouldn't have opened", "mustn't have opened", "can't have opened"], a: 0, why: "Hối tiếc → shouldn't have. (Bài 26)", tag: "26 past modals" },
+        { q: "I wish I ___ more confident.", opts: ["were", "am", "would be"], a: 0, why: "Ước hiện tại → were. (Bài 27)", tag: "27 wish" },
+        { q: "I need to get my passport ___.", opts: ["renewed", "renew", "to renew"], a: 0, why: "get sth + V3. (Bài 28)", tag: "28 causative" },
+        { q: "The more you read, ___ your vocabulary becomes.", opts: ["the bigger", "bigger", "the biggest"], a: 0, why: "The more…, the + -er. (Bài 29)", tag: "29 comparatives" },
+        { q: "___ the traffic, we arrived on time.", opts: ["Despite", "Although", "However"], a: 0, why: "+ danh từ → Despite. (Bài 30)", tag: "30 linking" },
+        { q: "___ the email, he closed his laptop.", opts: ["Having sent", "Sent", "Having send"], a: 0, why: "Xảy ra trước → Having + V3. (Bài 31)", tag: "31 participle" },
+      ] },
+
+    { type: "typed", key: "E", time: "8 phút · Sửa lỗi", title: "Sửa lỗi sai",
+      items: [
+        { q: "This is the house where I bought it last year.", ans: ["This is the house which I bought last year.", "This is the house that I bought last year.", "This is the house I bought last year."], why: "Tân ngữ → which/that + bỏ 'it'. (Bài 19)", tag: "19 relative" },
+        { q: "I decided studying abroad.", ans: ["I decided to study abroad."], why: "decide + to V. (Bài 21)", tag: "21 gerund" },
+        { q: "I'm not used to drive on the left.", ans: ["I'm not used to driving on the left.", "I am not used to driving on the left."], why: "be used to + V-ing. (Bài 22)", tag: "22 used to" },
+        { q: "Do you know what time is it?", ans: ["Do you know what time it is?"], why: "Câu gián tiếp → S + V. (Bài 23)", tag: "23 indirect Q" },
+        { q: "He must have went home.", ans: ["He must have gone home."], why: "have + V3. (Bài 26)", tag: "26 past modals" },
+        { q: "Although it was late but she kept working.", ans: ["Although it was late, she kept working.", "It was late, but she kept working."], why: "Chỉ 1 từ nối. (Bài 30)", tag: "30 linking" },
+      ] },
+
+    { type: "writing", time: "10 phút · Viết đoạn", title: "Một thay đổi trong cuộc sống của tôi",
+      hint: "Viết 6–8 câu về một thay đổi lớn trong cuộc sống của bạn (chuyển nhà, đổi việc, học điều mới…). Dùng ít nhất <b>5 cấu trúc</b> khác nhau từ bài 19–31 và <b>gạch chân/ghi chú</b> chúng bằng [ngoặc vuông].",
+      placeholder: "Two years ago, I [used to] ..." },
+  ],
+};
+</script>
+<script src="assets/lesson.js"></script>
+</body>
+</html>

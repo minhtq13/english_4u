@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relative Clauses 1</title>
+<link rel="stylesheet" href="assets/lesson.css">
+</head>
+<body>
+<main id="app"></main>
+<script>
+window.LESSON = {
+  id: "19.1",
+  title: "Relative Clauses — mệnh đề quan hệ xác định",
+  sub: "Giai đoạn 1 · 30 phút · who / which / that / whose / where / when",
+  sections: [
+    { type: "mcq", key: "W", time: "4 phút · Warm-up", title: "Kiểm tra nhanh bài cũ",
+      hint: "4 câu chẩn đoán từ các bài đã học — giúp tôi biết phần nào cần ôn lại.",
+      items: [
+        { q: "She said she ___ the film before.", opts: ["has seen", "had seen", "saw"], a: 1,
+          why: "Reported speech: present perfect → past perfect khi lùi thì.", tag: "Reported speech" },
+        { q: "The bridge ___ in 1990.", opts: ["built", "was built", "has built"], a: 1,
+          why: "Cây cầu không tự xây → bị động: was built.", tag: "Passive" },
+        { q: "If I ___ more time, I would learn Japanese.", opts: ["have", "had", "would have"], a: 1,
+          why: "Second conditional: If + past simple, would + V.", tag: "2nd conditional" },
+        { q: "I've lived here ___ 2019.", opts: ["for", "since", "from"], a: 1,
+          why: "since + mốc thời gian; for + khoảng thời gian.", tag: "Present perfect" },
+      ] },
+
+    { type: "explain", time: "6 phút · Hiểu logic", title: "Mệnh đề quan hệ dùng để làm gì?", html: `
+      <p><b>Logic:</b> mệnh đề quan hệ <b>xác định danh từ nào</b> bạn đang nói tới. Nó ghép 2 câu thành 1, thay danh từ lặp lại bằng một đại từ quan hệ.</p>
+      <div class="box">I know <b>a girl</b>. <b>She</b> speaks five languages.<br>→ I know a girl <em class="g">who</em> speaks five languages.</div>
+      <table>
+        <tr><th>Từ</th><th>Thay cho</th><th>Ví dụ</th></tr>
+        <tr><td><b>who</b></td><td>người</td><td>The man <em class="g">who</em> called you is my boss.</td></tr>
+        <tr><td><b>which</b></td><td>vật / con vật</td><td>The phone <em class="g">which</em> I bought is broken.</td></tr>
+        <tr><td><b>that</b></td><td>người hoặc vật (chỉ trong mệnh đề xác định)</td><td>The book <em class="g">that</em> you lent me is great.</td></tr>
+        <tr><td><b>whose</b> + N</td><td>sở hữu (của ai / của cái gì)</td><td>I have a friend <em class="g">whose</em> father is a pilot.</td></tr>
+        <tr><td><b>where</b></td><td>nơi chốn (= in/at which)</td><td>This is the café <em class="g">where</em> we met.</td></tr>
+        <tr><td><b>when</b></td><td>thời gian (= on/in which)</td><td>I remember the day <em class="g">when</em> I passed the exam.</td></tr>
+      </table>
+      <h3>3 quy tắc quan trọng</h3>
+      <div class="warn"><b>① Không lặp lại chủ ngữ/tân ngữ</b> — lỗi rất phổ biến của người Việt:<br>
+        The man who I met <s>him</s> yesterday… → The man who I met yesterday…</div>
+      <div class="warn"><b>② Được bỏ who/which/that khi nó là TÂN NGỮ</b> (phía sau còn chủ ngữ khác):<br>
+        The film <s>(that)</s> <b>we</b> watched was boring. ✔ bỏ được<br>
+        The film <b>that</b> won the prize was boring. ✘ không bỏ được (that là chủ ngữ của "won")</div>
+      <div class="warn"><b>③ where vs which</b> — sau <b>where</b> là một câu đầy đủ; <b>which</b> thì câu sau thiếu chủ ngữ/tân ngữ:<br>
+        This is the hotel <b>where</b> we stayed. (stayed <i>in it</i> → nơi chốn)<br>
+        This is the hotel <b>which</b> we booked. (booked <i>it</i> → tân ngữ)</div>` },
+
+    { type: "cards", time: "3 phút · Flashcards", title: "Lật thẻ để ghi nhớ",
+      hint: "Nhìn mặt trước, tự nói đáp án trong đầu, rồi bấm để lật.",
+      items: [
+        ["who", "người — chủ ngữ hoặc tân ngữ<br><i>the teacher who helped me</i>"],
+        ["which", "vật, con vật<br><i>the laptop which I use</i>"],
+        ["whose + N", "sở hữu<br><i>a boy whose bike was stolen</i>"],
+        ["where", "nơi chốn + câu đầy đủ<br><i>the town where I grew up</i>"],
+        ["when", "thời gian<br><i>the year when we met</i>"],
+        ["Bỏ đại từ khi nào?", "Khi nó là TÂN NGỮ<br><i>the cake (that) she made</i>"],
+      ] },
+
+    { type: "mcq", key: "M", time: "5 phút · Trắc nghiệm", title: "Chọn đại từ quan hệ đúng",
+      hint: "Mỗi câu chỉ được chọn 1 lần. Đọc kỹ giải thích khi sai.",
+      items: [
+        { q: "The woman ___ lives next door is a doctor.", opts: ["who", "which", "whose"], a: 0,
+          why: "Người + làm chủ ngữ của 'lives' → who." },
+        { q: "This is the restaurant ___ we had our first date.", opts: ["which", "where", "who"], a: 1,
+          why: "Sau chỗ trống là câu đầy đủ 'we had our first date' → nơi chốn → where." },
+        { q: "I met a man ___ son plays for Hanoi FC.", opts: ["who", "whose", "that"], a: 1,
+          why: "'___ son' = con trai CỦA ông ấy → whose." },
+        { q: "The bag ___ I left on the bus had my passport in it.", opts: ["who", "where", "which"], a: 2,
+          why: "Cái túi (vật) là tân ngữ của 'left' → which (hoặc that, hoặc bỏ)." },
+        { q: "Do you remember the day ___ we first met?", opts: ["when", "which", "where"], a: 0,
+          why: "the day + câu đầy đủ → thời gian → when." },
+        { q: "The museum ___ we visited was closed on Mondays.", opts: ["where", "which", "whose"], a: 1,
+          why: "visited the museum → museum là TÂN NGỮ của 'visited' → which, không phải where." },
+        { q: "Students ___ homework is late will lose points.", opts: ["who", "whose", "which"], a: 1,
+          why: "bài tập CỦA học sinh → whose + homework." },
+        { q: "Which sentence is CORRECT?", opts: ["The car that I bought it is red.", "The car I bought is red.", "The car where I bought is red."], a: 1,
+          why: "Car là tân ngữ → bỏ được that. Câu 1 thừa 'it'; câu 3 sai 'where'." },
+      ] },
+
+    { type: "typed", key: "E", time: "5 phút · Sửa lỗi", title: "Mỗi câu có 1 lỗi — viết lại câu đúng",
+      hint: "Gõ lại cả câu đã sửa rồi bấm Kiểm tra (hoặc Enter).",
+      items: [
+        { q: "The girl who she sits next to me is very funny.",
+          ans: ["The girl who sits next to me is very funny.", "The girl that sits next to me is very funny."],
+          why: "Thừa 'she' — who đã là chủ ngữ rồi." },
+        { q: "I lost the watch who my dad gave me.",
+          ans: ["I lost the watch which my dad gave me.", "I lost the watch that my dad gave me.", "I lost the watch my dad gave me."],
+          why: "Đồng hồ là vật → which/that (hoặc bỏ), không dùng who." },
+        { q: "That's the man whose his car was stolen.",
+          ans: ["That's the man whose car was stolen.", "That is the man whose car was stolen."],
+          why: "whose đã mang nghĩa 'của ông ấy' → bỏ 'his'." },
+        { q: "The city which I was born is very small.",
+          ans: ["The city where I was born is very small.", "The city in which I was born is very small.", "The city which I was born in is very small.", "The city that I was born in is very small.", "The city I was born in is very small."],
+          why: "'I was born' là câu đầy đủ, cần 'in' → where (= in which)." },
+        { q: "The movie that we watched it last night was amazing.",
+          ans: ["The movie that we watched last night was amazing.", "The movie which we watched last night was amazing.", "The movie we watched last night was amazing."],
+          why: "Thừa 'it' — that đã là tân ngữ của 'watched'." },
+      ] },
+
+    { type: "typed", key: "C", time: "4 phút · Nối câu", title: "Nối 2 câu thành 1 bằng mệnh đề quan hệ",
+      hint: "Không dùng dấu phẩy. Có thể có nhiều đáp án đúng.",
+      items: [
+        { q: "I have a neighbour. She keeps three cats.",
+          ans: ["I have a neighbour who keeps three cats.", "I have a neighbour that keeps three cats.", "I have a neighbor who keeps three cats.", "I have a neighbor that keeps three cats."],
+          why: "She → who (người, chủ ngữ)." },
+        { q: "This is the laptop. I bought it last week.",
+          ans: ["This is the laptop which I bought last week.", "This is the laptop that I bought last week.", "This is the laptop I bought last week."],
+          why: "it → which/that (tân ngữ) — có thể bỏ." },
+        { q: "I know a boy. His mother is a famous singer.",
+          ans: ["I know a boy whose mother is a famous singer."],
+          why: "His mother → whose mother." },
+        { q: "We visited the village. My grandparents live there.",
+          ans: ["We visited the village where my grandparents live.", "We visited the village in which my grandparents live.", "We visited the village which my grandparents live in.", "We visited the village that my grandparents live in.", "We visited the village my grandparents live in."],
+          why: "there → where." },
+      ] },
+
+    { type: "writing", time: "3 phút · Tự viết", title: "Viết về cuộc sống của bạn",
+      hint: "Viết 4 câu, mỗi câu dùng một từ: <b>who</b>, <b>which/that</b>, <b>whose</b>, <b>where</b>. Ví dụ: <i>I have a colleague whose hobby is running marathons.</i>",
+      placeholder: "1. ...\n2. ...\n3. ...\n4. ..." },
+  ],
+};
+</script>
+<script src="assets/lesson.js"></script>
+</body>
+</html>

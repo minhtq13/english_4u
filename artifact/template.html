@@ -1,0 +1,585 @@
+<title>Grammar B1→B2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+  /* Layout: one reading column; lessons are stacked sections, a sticky save/score bar at the bottom. */
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1d2330; --muted: #646d7d;
+    --line: #dfe3ea; --accent: #2b5fd0; --accent-soft: #e5ecfb; --on-accent: #ffffff;
+    --ok: #1b7543; --ok-soft: #e1f3e8; --bad: #b3261e; --bad-soft: #fbe6e4;
+    --warn-soft: #fbf1d6; --shadow: rgba(20, 30, 50, .10);
+    --font: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171d; --card: #1d2129; --text: #e7e9ee; --muted: #9aa3b2;
+      --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
+      --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
+      --warn-soft: #3a3322; --shadow: rgba(0, 0, 0, .4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171d; --card: #1d2129; --text: #e7e9ee; --muted: #9aa3b2;
+    --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
+    --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
+    --warn-soft: #3a3322; --shadow: rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 var(--font);
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 760px; margin: 0 auto; padding-block: 24px 40px; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 4px; text-wrap: balance; }
+  h2 { font-size: 1.2rem; margin: 0 0 4px; text-wrap: balance; }
+  h3 { font-size: 1.05rem; margin: 16px 0 6px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .back-link { display: inline-block; font-size: .9rem; margin-bottom: 12px; text-decoration: none; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .time { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; margin-bottom: 10px; }
+  .hint { color: var(--muted); font-size: .92rem; margin: 0 0 14px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .box { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
+  .warn { background: var(--warn-soft); border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
+  em.g { font-style: normal; font-weight: 700; color: var(--accent); }
+  s { color: var(--bad); }
+
+  .status { display: flex; gap: 8px; align-items: center; font-size: .88rem; color: var(--muted);
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 16px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .status.cloud .dot { background: var(--ok); }
+  .status.error .dot { background: var(--bad); }
+
+  .feedback { border-left: 4px solid var(--ok); background: var(--ok-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+  .feedback b { color: var(--ok); }
+  .feedback p { margin: 4px 0 0; white-space: pre-line; color: var(--text); }
+
+  .q { padding: 12px 0; border-top: 1px solid var(--line); }
+  .q:first-child { border-top: 0; padding-top: 0; }
+  .q p { margin: 0 0 8px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; }
+  .opts button, .btn, .chip { border: 1px solid var(--line); background: var(--bg); color: var(--text);
+    padding: 6px 14px; border-radius: 8px; cursor: pointer; text-align: left; }
+  .opts button:hover:not(:disabled), .chip:hover, .btn:hover { border-color: var(--accent); }
+  .opts button:disabled { cursor: default; }
+  .opts button.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+  .opts button.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+  .btn.ghost { background: transparent; color: var(--muted); }
+  .btn.danger { color: var(--bad); border-color: var(--bad); }
+  input[type=text], textarea { font: inherit; width: 100%; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  input.short { max-width: 260px; }
+  textarea { min-height: 160px; resize: vertical; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row input:not(.short) { flex: 1; min-width: 0; }
+  .fb { margin-top: 8px; font-size: .93rem; border-radius: 8px; padding: 8px 10px; }
+  .fb.ok { background: var(--ok-soft); color: var(--ok); }
+  .fb.no { background: var(--bad-soft); color: var(--bad); }
+  .fb .why { color: var(--text); display: block; margin-top: 4px; }
+
+  .built { min-height: 44px; border: 1px dashed var(--line); border-radius: 8px; padding: 6px;
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .pool { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip { padding: 4px 10px; }
+  .built .chip { background: var(--accent-soft); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .card { perspective: 800px; height: 160px; cursor: pointer; }
+  .card-inner { position: relative; width: 100%; height: 100%; transition: transform .45s; transform-style: preserve-3d; }
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: .95rem; }
+  .face-front { background: var(--accent-soft); font-weight: 700; font-size: 1.1rem; }
+  .face-back { background: var(--bg); transform: rotateY(180deg); }
+  @media (prefers-reduced-motion: reduce) { .card-inner { transition: none; } }
+
+  .scorebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--card);
+    border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between;
+    align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 4px 16px var(--shadow); }
+  .scorebar .meta { display: flex; flex-direction: column; font-size: .9rem; min-width: 0; }
+  .scorebar .meta b { font-variant-numeric: tabular-nums; }
+  .scorebar .meta small { color: var(--muted); }
+  .tools { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
+
+  .phase h2 { margin-bottom: 10px; }
+  .lesson { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0;
+    border-top: 1px solid var(--line); text-decoration: none; color: var(--text); }
+  .phase .lesson:first-of-type { border-top: 0; }
+  .lesson:hover b { color: var(--accent); }
+  .lesson span:first-child { min-width: 0; }
+  .lesson small { color: var(--muted); display: block; }
+  .badge { white-space: nowrap; font-size: .8rem; padding: 2px 10px; border-radius: 999px;
+    color: var(--muted); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .badge.done { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+  .badge.partial { color: var(--accent); border-color: var(--accent); }
+</style>
+
+<main id="app"><p class="sub">Đang tải bài học…</p></main>
+
+<script>window.COURSE = __COURSE__;</script>
+<script>
+(function () {
+  const COURSE = window.COURSE;
+  const LESSONS = {};
+  COURSE.phases.forEach(p => p.lessons.forEach(l => { LESSONS[l.id] = l; }));
+  const app = document.getElementById("app");
+
+  const norm = s => s.toLowerCase().replace(/[’']/g, "").replace(/[.,!?;:"“”]/g, "").replace(/\s+/g, " ").trim();
+  const el = (tag, cls, html) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  };
+  const shuffle = a => {
+    const orig = a.join("|");
+    for (let t = 0; t < 10; t++) {
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      if (a.join("|") !== orig) break;
+    }
+    return a;
+  };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const deepMerge = (t, p) => {
+    for (const k in p) {
+      if (p[k] && typeof p[k] === "object" && !Array.isArray(p[k]) && t[k] && typeof t[k] === "object") deepMerge(t[k], p[k]);
+      else t[k] = p[k];
+    }
+    return t;
+  };
+  const local = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  };
+  const totalOf = lesson => lesson.data.sections.reduce((n, s) => n + (s.key ? s.items.length : 0), 0);
+  const hashFor = id => "bai-" + id;
+
+  // ---- persistence: the artifact's db (synced to the account) when available, else this browser ----
+  const store = { db: null, docs: {}, exists: {}, pending: {}, timers: {}, busy: {}, state: "local" };
+  store.ready = (async () => {
+    try {
+      if (window.claude && window.claude.use) {
+        const db = await window.claude.use("db");
+        if (db) { store.db = db; store.state = "cloud"; }
+      }
+    } catch (e) {}
+    renderStatus();
+  })();
+  const ref = id => store.db.collection("results").doc(id);
+
+  async function loadDoc(id) {
+    await store.ready;
+    let d = null;
+    if (store.db) {
+      try {
+        const snap = await ref(id).get();
+        store.exists[id] = snap.exists;
+        if (snap.exists) d = clone(snap.data());
+      } catch (e) { setState("error"); }
+    }
+    if (!d) d = local.get("res-" + id); // first visit in the cloud: carry over what this browser has
+    d = d || { lesson: id };
+    d.answers = d.answers || {};
+    d.writing = d.writing || "";
+    store.docs[id] = d;
+    return d;
+  }
+
+  async function loadAll() {
+    await store.ready;
+    const out = {};
+    if (store.db) {
+      try {
+        const q = await store.db.collection("results").get();
+        q.docs.forEach(s => { out[s.id] = s.data(); });
+      } catch (e) { setState("error"); }
+    }
+    Object.keys(LESSONS).forEach(id => { if (!out[id]) out[id] = local.get("res-" + id); });
+    return out;
+  }
+
+  function save(id, patch) {
+    const d = store.docs[id];
+    deepMerge(d, clone(patch));
+    d.updatedAt = new Date().toISOString();
+    local.set("res-" + id, d);
+    if (!store.db) return;
+    store.pending[id] = deepMerge(store.pending[id] || {}, clone(patch));
+    clearTimeout(store.timers[id]);
+    store.timers[id] = setTimeout(() => flush(id), 700);
+    setSaveText("Đang lưu…");
+  }
+
+  async function flush(id, retried) {
+    if (store.busy[id]) { store.timers[id] = setTimeout(() => flush(id), 400); return; }
+    const patch = store.pending[id];
+    if (!patch) return;
+    delete store.pending[id];
+    patch.updatedAt = store.docs[id].updatedAt;
+    store.busy[id] = true;
+    try {
+      if (store.exists[id]) {
+        try { await ref(id).update(patch); }
+        catch (e) {
+          if (e && e.code === "invalid_argument") await ref(id).set(store.docs[id]); // doc was removed elsewhere
+          else throw e;
+        }
+      } else {
+        await ref(id).set(store.docs[id]);
+      }
+      store.exists[id] = true;
+      setState("cloud");
+      setSaveText("Đã lưu vào tài khoản");
+    } catch (e) {
+      store.pending[id] = deepMerge(patch, store.pending[id] || {});
+      if (!retried && e && e.code === "unavailable") {
+        store.busy[id] = false;
+        setTimeout(() => flush(id, true), 1000 + Math.random() * 1000);
+        return;
+      }
+      setState("error");
+      setSaveText("Chưa lưu được lên tài khoản — bài làm vẫn được giữ trên trình duyệt này.");
+    } finally {
+      store.busy[id] = false;
+    }
+  }
+
+  async function resetLesson(id) {
+    const old = store.docs[id] || {};
+    const d = { lesson: id, answers: {}, writing: "", updatedAt: new Date().toISOString() };
+    if (old.feedback) d.feedback = old.feedback;
+    clearTimeout(store.timers[id]);
+    delete store.pending[id];
+    store.docs[id] = d;
+    local.set("res-" + id, d);
+    if (store.db) {
+      try { await ref(id).set(d); store.exists[id] = true; } catch (e) { setState("error"); }
+    }
+  }
+
+  // ---- status line ----
+  function setState(s) { store.state = s; renderStatus(); }
+  function renderStatus() {
+    const box = document.getElementById("status");
+    if (!box) return;
+    const text = {
+      cloud: "Kết quả tự động lưu vào artifact này trên tài khoản của bạn — mở lại ở máy nào cũng còn.",
+      local: "Đang lưu trên trình duyệt này (mở trong claude.ai để lưu vào tài khoản).",
+      error: "Không kết nối được kho lưu trữ — bài làm tạm giữ trên trình duyệt này.",
+    }[store.state];
+    box.className = "status " + store.state;
+    box.innerHTML = `<span class="dot"></span><span></span>`;
+    box.lastChild.textContent = text;
+  }
+  function setSaveText(t) {
+    const s = document.getElementById("saveText");
+    if (s) s.textContent = t;
+  }
+
+  // ---- index ----
+  async function showIndex() {
+    app.innerHTML = "";
+    app.appendChild(el("h1", null, "Grammar B1 → B2"));
+    app.appendChild(el("p", "sub", "30 phút mỗi ngày trong 3 tháng. Mỗi câu trả lời được lưu ngay khi bạn làm. Làm xong, nhắn Claude “chấm bài 19.1” (hoặc số bài bạn vừa học)."));
+    const status = el("div", "status");
+    status.id = "status";
+    app.appendChild(status);
+    renderStatus();
+    const badges = {};
+    COURSE.phases.forEach(p => {
+      const sec = el("section", "phase", `<h2></h2>`);
+      sec.firstChild.textContent = p.name;
+      p.lessons.forEach(l => {
+        const a = el("a", "lesson", `<span><b></b><small></small></span><span class="badge">…</span>`);
+        a.href = "#" + hashFor(l.id);
+        a.querySelector("b").textContent = `${l.id}. ${l.title}`;
+        a.querySelector("small").textContent = l.desc;
+        badges[l.id] = a.querySelector(".badge");
+        sec.appendChild(a);
+      });
+      app.appendChild(sec);
+    });
+    const all = await loadAll();
+    Object.entries(badges).forEach(([id, b]) => {
+      const d = all[id];
+      const total = totalOf(LESSONS[id]);
+      const answers = d && d.answers ? Object.values(d.answers) : [];
+      const ok = answers.filter(r => r.ok).length;
+      let text = "chưa làm", cls = "badge";
+      if (answers.length >= total) { text = `✓ ${ok}/${total}`; cls += " done"; }
+      else if (answers.length) { text = `đang làm ${answers.length}/${total}`; cls += " partial"; }
+      if (d && d.feedback) text += " · có nhận xét";
+      b.className = cls;
+      b.textContent = text;
+    });
+  }
+
+  // ---- lesson ----
+  async function showLesson(id) {
+    const lesson = LESSONS[id];
+    const L = lesson.data;
+    app.innerHTML = `<p class="sub">Đang tải bài làm…</p>`;
+    window.scrollTo(0, 0);
+    const doc = await loadDoc(id);
+    if (location.hash !== "#" + hashFor(id)) return; // navigated away while loading
+
+    const scored = [];
+    const total = totalOf(lesson);
+    const answers = doc.answers;
+
+    app.innerHTML = "";
+    const back = el("a", "back-link", "← Danh sách bài học");
+    back.href = "#";
+    app.appendChild(back);
+    app.appendChild(el("h1", null, `Bài ${L.id} — ${L.title}`));
+    app.appendChild(el("p", "sub", L.sub));
+    const status = el("div", "status");
+    status.id = "status";
+    app.appendChild(status);
+    renderStatus();
+
+    if (doc.feedback) {
+      const f = typeof doc.feedback === "string" ? { text: doc.feedback } : doc.feedback;
+      const box = el("div", "feedback", `<b>Nhận xét của Claude</b><p></p>`);
+      if (f.date) box.firstChild.textContent += ` · ${f.date}`;
+      box.lastChild.textContent = f.text || "";
+      app.appendChild(box);
+    }
+
+    function updateScore() {
+      const vals = Object.values(answers);
+      const ok = vals.filter(r => r.ok).length;
+      const s = document.getElementById("scoreText");
+      if (s) s.textContent = `Điểm: ${ok} / ${vals.length} · bài có ${total} câu`;
+      return { ok, done: vals.length, total };
+    }
+    function fbHtml(ok, why, correct) {
+      const w = why ? ` <span class="why">${why}</span>` : "";
+      return ok ? `✔ Đúng!${w}` : `✘ Chưa đúng.${correct ? ` Đáp án: <b>${correct}</b>` : ""}${w}`;
+    }
+    function showFb(fb, ok, why, correct) {
+      fb.hidden = false;
+      fb.className = "fb " + (ok ? "ok" : "no");
+      fb.innerHTML = fbHtml(ok, why, correct);
+    }
+    function record(qid, r) {
+      if (qid in answers) return; // the first attempt counts
+      answers[qid] = r;
+      save(id, { answers: { [qid]: r }, score: updateScore() });
+    }
+
+    const render = {
+      explain(s, body) {
+        body.innerHTML = s.html;
+        body.querySelectorAll("table").forEach(t => {
+          const w = el("div", "table-wrap");
+          t.replaceWith(w);
+          w.appendChild(t);
+        });
+      },
+
+      cards(s, body) {
+        const box = el("div", "cards");
+        s.items.forEach(([f, b]) => {
+          const c = el("div", "card", `<div class="card-inner"><div class="face face-front">${f}</div><div class="face face-back">${b}</div></div>`);
+          c.tabIndex = 0;
+          c.setAttribute("role", "button");
+          const flip = () => c.classList.toggle("flipped");
+          c.onclick = flip;
+          c.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } };
+          box.appendChild(c);
+        });
+        body.appendChild(box);
+      },
+
+      mcq(s, body) {
+        s.items.forEach((it, i) => {
+          const qid = `${s.key}${i + 1}`;
+          const div = el("div", "q", `<p><b>${i + 1}.</b> ${it.q}</p><div class="opts"></div><div class="fb" hidden></div>`);
+          const opts = div.querySelector(".opts"), fb = div.querySelector(".fb");
+          const buttons = it.opts.map(o => { const b = el("button", null, o); opts.appendChild(b); return b; });
+          const mark = j => {
+            buttons.forEach((x, k) => { x.disabled = true; if (k === it.a) x.classList.add("right"); });
+            if (j !== it.a && buttons[j]) buttons[j].classList.add("wrong");
+            showFb(fb, j === it.a, it.why, j === it.a ? "" : it.opts[it.a]);
+          };
+          buttons.forEach((b, j) => {
+            b.onclick = () => {
+              mark(j);
+              record(qid, { ok: j === it.a, q: it.q, given: it.opts[j], correct: it.opts[it.a], tag: it.tag || "" });
+            };
+          });
+          if (answers[qid]) mark(it.opts.indexOf(answers[qid].given));
+          body.appendChild(div);
+        });
+      },
+
+      typed(s, body) {
+        s.items.forEach((it, i) => {
+          const qid = `${s.key}${i + 1}`;
+          const div = el("div", "q", `<p><b>${i + 1}.</b> ${it.q}</p>
+            <div class="row"><input type="text" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn">Kiểm tra</button></div>
+            <div class="fb" hidden></div>`);
+          const input = div.querySelector("input"), fb = div.querySelector(".fb");
+          input.id = `in-${L.id}-${qid}`;
+          if (s.short) input.className = "short";
+          const accepted = it.ans.map(norm);
+          const check = () => {
+            if (!input.value.trim()) return;
+            const ok = accepted.includes(norm(input.value));
+            showFb(fb, ok, it.why, ok ? "" : it.ans[0]);
+            record(qid, { ok, q: it.q.replace(/<[^>]+>/g, ""), given: input.value.trim(), correct: it.ans[0], tag: it.tag || "" });
+          };
+          div.querySelector("button").onclick = check;
+          input.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+          if (answers[qid]) {
+            input.value = answers[qid].given;
+            showFb(fb, answers[qid].ok, it.why, answers[qid].ok ? "" : it.ans[0]);
+          }
+          body.appendChild(div);
+        });
+      },
+
+      // Words are given in the correct order, separated by "|"; they get shuffled.
+      order(s, body) {
+        s.items.forEach((it, i) => {
+          const qid = `${s.key}${i + 1}`;
+          const words = it.words.split("|").map(w => w.trim());
+          const correct = words.join(" ");
+          const accepted = [correct, ...(it.alt || [])].map(norm);
+          const div = el("div", "q", `<p><b>${i + 1}.</b> ${it.prompt || "Sắp xếp thành câu đúng:"}</p>
+            <div class="built"></div><div class="pool"></div>
+            <div class="row"><button class="btn">Kiểm tra</button><button class="btn ghost">Làm lại</button></div>
+            <div class="fb" hidden></div>`);
+          const built = div.querySelector(".built"), pool = div.querySelector(".pool"), fb = div.querySelector(".fb");
+          const [checkBtn, resetBtn] = div.querySelectorAll(".row button");
+          let chosen = [];
+          const order = shuffle(words.map((_, k) => k));
+          const draw = () => {
+            built.innerHTML = ""; pool.innerHTML = "";
+            chosen.forEach((k, pos) => {
+              const c = el("button", "chip", words[k]);
+              c.onclick = () => { chosen.splice(pos, 1); draw(); };
+              built.appendChild(c);
+            });
+            order.filter(k => !chosen.includes(k)).forEach(k => {
+              const c = el("button", "chip", words[k]);
+              c.onclick = () => { chosen.push(k); draw(); };
+              pool.appendChild(c);
+            });
+          };
+          checkBtn.onclick = () => {
+            if (chosen.length !== words.length) return;
+            const given = chosen.map(k => words[k]).join(" ");
+            const ok = accepted.includes(norm(given));
+            showFb(fb, ok, it.why, ok ? "" : correct);
+            record(qid, { ok, q: it.prompt || "Sắp xếp câu", given, correct, chosen: chosen.slice(), tag: it.tag || "" });
+          };
+          resetBtn.onclick = () => { chosen = []; fb.hidden = true; draw(); };
+          if (answers[qid]) {
+            chosen = (answers[qid].chosen || []).filter(k => k < words.length);
+            showFb(fb, answers[qid].ok, it.why, answers[qid].ok ? "" : correct);
+          }
+          draw();
+          body.appendChild(div);
+        });
+      },
+
+      writing(s, body) {
+        const ta = el("textarea");
+        ta.id = `writing-${L.id}`;
+        ta.placeholder = s.placeholder || "Viết ở đây...";
+        ta.value = doc.writing;
+        let t;
+        ta.addEventListener("input", () => {
+          clearTimeout(t);
+          t = setTimeout(() => save(id, { writing: ta.value }), 800);
+        });
+        body.appendChild(ta);
+      },
+    };
+
+    L.sections.forEach((s, idx) => {
+      const sec = el("section");
+      if (s.time) sec.appendChild(el("span", "time", s.time));
+      sec.appendChild(el("h2", null, `${idx + 1}. ${s.title}`));
+      if (s.hint) sec.appendChild(el("p", "hint", s.hint));
+      const body = el("div");
+      sec.appendChild(body);
+      render[s.type](s, body);
+      if (s.key) scored.push({ key: s.key, title: s.title, count: s.items.length });
+      app.appendChild(sec);
+    });
+
+    // reset with an in-page confirmation step
+    const tools = el("div", "tools");
+    const resetBtn = el("button", "btn ghost", "Làm lại bài này từ đầu");
+    let armed = false;
+    resetBtn.onclick = async () => {
+      if (!armed) {
+        armed = true;
+        resetBtn.className = "btn danger";
+        resetBtn.textContent = "Bấm lần nữa để xoá bài làm";
+        setTimeout(() => { armed = false; resetBtn.className = "btn ghost"; resetBtn.textContent = "Làm lại bài này từ đầu"; }, 4000);
+        return;
+      }
+      await resetLesson(id);
+      showLesson(id);
+    };
+    tools.appendChild(resetBtn);
+    app.appendChild(tools);
+
+    const bar = el("div", "scorebar", `<div class="meta"><b id="scoreText"></b><small id="saveText"></small></div>
+      <button class="btn primary" id="copyBtn">Copy kết quả</button>`);
+    app.appendChild(bar);
+    updateScore();
+    setSaveText(store.db ? "Tự động lưu từng câu" : "Lưu trên trình duyệt này");
+
+    document.getElementById("copyBtn").onclick = () => {
+      const vals = Object.entries(answers);
+      const ok = vals.filter(([, r]) => r.ok).length;
+      const lines = [`KẾT QUẢ BÀI ${L.id} — ${L.title}`, `Tổng: ${ok}/${vals.length} câu đã làm`];
+      scored.forEach(({ key, title, count }) => {
+        const items = vals.filter(([k]) => k.replace(/\d+$/, "") === key);
+        const wrong = items.filter(([, r]) => !r.ok);
+        lines.push(`${title}: ${items.length - wrong.length}/${items.length}${items.length < count ? ` (bỏ ${count - items.length} câu)` : ""}`);
+        wrong.forEach(([k, r]) => lines.push(`  ✘ ${k}: "${r.q}" → tôi: "${r.given}" | đúng: "${r.correct}"${r.tag ? ` [${r.tag}]` : ""}`));
+      });
+      const w = document.getElementById(`writing-${L.id}`);
+      if (w) lines.push("", "BÀI VIẾT:", w.value.trim() || "(chưa viết)");
+      const text = lines.join("\n");
+      navigator.clipboard.writeText(text)
+        .then(() => setSaveText("Đã copy kết quả."))
+        .catch(() => {
+          const ta = el("textarea");
+          ta.value = text;
+          bar.after(ta);
+          ta.select();
+          setSaveText("Không copy tự động được — hãy chọn và copy đoạn bên dưới.");
+        });
+    };
+  }
+
+  // ---- routing ----
+  function route() {
+    const m = location.hash.match(/^#bai-(.+)$/);
+    if (m && LESSONS[m[1]]) showLesson(m[1]);
+    else showIndex();
+  }
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
