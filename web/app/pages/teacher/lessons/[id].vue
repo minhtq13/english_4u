@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Database, Tables } from "~/types/database.types"
-import type { DraftSection, LessonDraft, PresetKey, SectionType } from "~/utils/lessonDraft"
+import type { DraftSection, LessonDraft } from "~/utils/lessonDraft"
 import type { Lesson } from "~/utils/course"
 
 definePageMeta({ roles: ["teacher"] })
@@ -45,6 +45,18 @@ const gradeClasses = computed(() => classes.value.filter(c => c.course_id === co
 
 const draft = reactive<LessonDraft>({ label: "", title: "", description: "", subtitle: "", sections: STANDARD_STRUCTURE() })
 
+// A new lesson goes through two stages: "setup" (grade, term, structure) then "content" (info and questions).
+// An existing lesson opens at its content; the stepper leads back to the setup.
+const stage = ref<"setup" | "content">(editId ? "content" : "setup")
+const grade = computed(() => courses.value.find(k => k.id === courseId.value))
+const phase = computed(() => phases.value.find(p => p.id === phaseId.value))
+const canContinue = computed(() => !!courseId.value && !!phaseId.value && draft.sections.length > 0)
+function go(next: "setup" | "content") {
+  if (next === "content" && !canContinue.value) return
+  stage.value = next
+  window.scrollTo({ top: 0, behavior: "smooth" })
+}
+
 onMounted(async () => {
   try {
     const [c, k] = await Promise.all([
@@ -59,6 +71,7 @@ onMounted(async () => {
       Object.assign(draft, { label: t("editor.reviewLabel"), title: reviewDraft.value.title, sections: reviewDraft.value.sections })
       reviewStudent.value = reviewDraft.value.studentId
       reviewDraft.value = null
+      stage.value = "content"
     }
     else courseId.value = classes.value.find(x => x.id === fromClass)?.course_id
       ?? (courseChoices.value.length === 1 ? courseChoices.value[0]!.id : "")
@@ -109,49 +122,7 @@ watch(courseId, async (id) => {
     .map(l => ({ id: l.id, label: l.label, title: l.title }))
 }, { immediate: true })
 
-// ---- structure templates ----
-const templateId = ref("standard")
-const withContent = ref(false)
-const templateSections = shallowRef<DraftSection[]>(STANDARD_STRUCTURE())
-const picked = ref<number[]>(templateSections.value.map(s => s.uid))
-const templateBusy = ref(false)
-
-watch([templateId, withContent], async () => {
-  templateBusy.value = true
-  try {
-    if (templateId.value === "standard") {
-      templateSections.value = STANDARD_STRUCTURE()
-    } else {
-      const { data } = await client.from("lesson_sections").select("*, section_items(*)").eq("lesson_id", templateId.value)
-      templateSections.value = sectionsFromRows((data ?? []) as SectionRow[], withContent.value)
-    }
-    picked.value = templateSections.value.map(s => s.uid)
-  } finally {
-    templateBusy.value = false
-  }
-})
-
-const applyArmed = ref(false)
-function applyTemplate() {
-  const hasWork = draft.sections.some(s => s.body || s.items.some(i => i.prompt || i.back || i.words))
-  if (hasWork && !applyArmed.value) {
-    applyArmed.value = true
-    setTimeout(() => { applyArmed.value = false }, 4000)
-    return
-  }
-  applyArmed.value = false
-  draft.sections = templateSections.value.filter(s => picked.value.includes(s.uid)).map(cloneSection)
-}
-
 // ---- sections ----
-// The add menu offers plain section types and ready-made exam formats ("preset:<key>").
-const newType = ref<string>("mcq")
-function addSection() {
-  const v = newType.value
-  draft.sections.push(v.startsWith("preset:")
-    ? SECTION_PRESETS[v.slice(7) as PresetKey].make()
-    : emptySection(v as SectionType, { title: SECTION_TYPES[v as SectionType].label }))
-}
 function moveSection(i: number, delta: number) {
   const [s] = draft.sections.splice(i, 1)
   draft.sections.splice(i + delta, 0, s!)
@@ -208,6 +179,7 @@ async function save() {
 }
 
 const deleteArmed = ref(false)
+const { deleteLesson } = useLessonDelete()
 async function removeLesson() {
   if (!editId) return
   if (!deleteArmed.value) {
@@ -215,11 +187,12 @@ async function removeLesson() {
     setTimeout(() => { deleteArmed.value = false }, 4000)
     return
   }
-  const { error: e } = await client.from("lessons").delete().eq("id", editId)
-  if (e) {
-    message.value = t("editor.notDeleted", { msg: errorText(e.message) })
+  const failure = await deleteLesson(editId)
+  if (failure) {
+    message.value = t("editor.notDeleted", { msg: failure })
     return
   }
+  await loadOutline(courseId.value, true)
   await navigateTo(doneTo.value)
 }
 </script>
@@ -248,97 +221,90 @@ async function removeLesson() {
       </div>
     </div>
     <template v-else>
-      <section class="card stack">
-        <h2>1. {{ $t("editor.step1") }}</h2>
-        <div class="grid3">
-          <label>{{ $t("editor.grade") }}
-            <select v-model="courseId" :disabled="!!editId">
-              <option value="">{{ $t("editor.pickGradeOption") }}</option>
-              <option v-for="k in courseChoices" :key="k.id" :value="k.id">{{ localName(k.name) }}</option>
-            </select>
-          </label>
-          <label>{{ $t("editor.phase") }}
-            <select v-model="phaseId" :disabled="!phases.length">
-              <option v-if="!phases.length" :value="null">{{ courseId ? $t("editor.noPhases") : $t("editor.gradeFirst") }}</option>
-              <option v-for="p in phases" :key="p.id" :value="p.id">{{ localName(p.name) }}</option>
-            </select>
-          </label>
-        </div>
-        <div v-if="!editId && gradeClasses.length" class="assign">
-          <span class="small muted">{{ $t("editor.assignNow") }}</span>
-          <div class="row">
-            <label v-for="c in gradeClasses" :key="c.id" class="chip-check" :class="{ on: assignTo.includes(c.id) }">
-              <input v-model="assignTo" type="checkbox" :value="c.id"> {{ c.name }}
+      <ol class="steps" :aria-label="$t('editor.steps')">
+        <li :class="{ on: stage === 'setup', done: stage === 'content' }">
+          <button type="button" @click="go('setup')"><span class="dot">{{ stage === "content" ? "✓" : 1 }}</span>{{ $t("editor.stepGrade") }}</button>
+        </li>
+        <li :class="{ on: stage === 'setup', done: stage === 'content' }">
+          <button type="button" @click="go('setup')"><span class="dot">{{ stage === "content" ? "✓" : 2 }}</span>{{ $t("editor.stepStructure") }}</button>
+        </li>
+        <li :class="{ on: stage === 'content' }">
+          <button type="button" :disabled="!canContinue" :aria-current="stage === 'content' ? 'step' : undefined" @click="go('content')">
+            <span class="dot">3</span>{{ $t("editor.stepContent") }}
+          </button>
+        </li>
+      </ol>
+
+      <template v-if="stage === 'setup'">
+        <section class="card stack">
+          <h2>1. {{ $t("editor.step1") }}</h2>
+          <div class="grid3">
+            <label>{{ $t("editor.grade") }}
+              <select v-model="courseId" :disabled="!!editId">
+                <option value="">{{ $t("editor.pickGradeOption") }}</option>
+                <option v-for="k in courseChoices" :key="k.id" :value="k.id">{{ localName(k.name) }}</option>
+              </select>
+            </label>
+            <label>{{ $t("editor.phase") }}
+              <select v-model="phaseId" :disabled="!phases.length">
+                <option v-if="!phases.length" :value="null">{{ courseId ? $t("editor.noPhases") : $t("editor.gradeFirst") }}</option>
+                <option v-for="p in phases" :key="p.id" :value="p.id">{{ localName(p.name) }}</option>
+              </select>
             </label>
           </div>
-        </div>
-        <p v-else-if="editId" class="hint">{{ $t("editor.assignLater") }}</p>
-      </section>
+          <div v-if="!editId && gradeClasses.length" class="assign">
+            <span class="small muted">{{ $t("editor.assignNow") }}</span>
+            <div class="row">
+              <label v-for="c in gradeClasses" :key="c.id" class="chip-check" :class="{ on: assignTo.includes(c.id) }">
+                <input v-model="assignTo" type="checkbox" :value="c.id"> {{ c.name }}
+              </label>
+            </div>
+          </div>
+          <p v-else-if="editId" class="hint">{{ $t("editor.assignLater") }}</p>
+        </section>
 
-      <section class="card stack">
-        <h2>2. {{ $t("editor.step2") }}</h2>
-        <p class="hint">{{ $t("editor.step2Help") }}</p>
-        <div class="grid3">
-          <label>{{ $t("editor.template") }}
-            <select v-model="templateId">
-              <option value="standard">{{ $t("editor.standard") }}</option>
-              <option v-for="tp in templates" :key="tp.id" :value="tp.id">{{ $t("editor.fromLesson", { name: `${tp.label} - ${tp.title}` }) }}</option>
-            </select>
-          </label>
-          <label v-if="templateId !== 'standard'" class="row inline"><input v-model="withContent" type="checkbox"> {{ $t("editor.withContent") }}</label>
-        </div>
-        <div class="picks">
-          <label v-for="(s, i) in templateSections" :key="s.uid" class="pick" :class="{ on: picked.includes(s.uid) }">
-            <input v-model="picked" type="checkbox" :value="s.uid">
-            <span class="pick-text">
-              <b>{{ i + 1 }}. {{ SECTION_TYPES[s.type].label }}</b>
-              <span class="small">{{ s.title }}</span>
-              <span v-if="s.time" class="small muted">{{ s.time }}</span>
-            </span>
-          </label>
-        </div>
-        <div class="row pick-tools small">
-          <button class="link" @click="picked = templateSections.map(s => s.uid)">{{ $t("editor.selectAll") }}</button>
-          <button class="link" @click="picked = []">{{ $t("editor.selectNone") }}</button>
-        </div>
-        <div>
-          <button class="btn" :class="applyArmed ? 'danger' : 'primary'" :disabled="templateBusy || !picked.length" @click="applyTemplate">
-            {{ applyArmed ? $t("editor.applyConfirm") : $t("editor.apply", { n: picked.length }) }}
-          </button>
-        </div>
-      </section>
+        <LessonEditorStructure v-model="draft.sections" :lessons="templates" />
 
-      <section class="card stack">
-        <h2>3. {{ $t("editor.step3") }}</h2>
-        <div class="grid3">
-          <label>{{ $t("editor.label") }} <span class="muted">{{ $t("editor.labelEx") }}</span><input v-model="draft.label" type="text"></label>
-          <label class="span2">{{ $t("editor.lessonTitle") }}<input v-model="draft.title" type="text" :placeholder="$t('editor.lessonTitleEx')"></label>
+        <div class="savebar">
+          <span v-if="!canContinue" class="small muted">{{ $t("editor.nextNeed") }}</span>
+          <span class="spacer" />
+          <button class="btn primary" :disabled="!canContinue" @click="go('content')">{{ $t("editor.next") }}</button>
         </div>
-        <label>{{ $t("editor.desc") }} <span class="muted">{{ $t("editor.descHelp") }}</span><input v-model="draft.description" type="text"></label>
-        <label>{{ $t("editor.subtitle") }} <span class="muted">{{ $t("sectionEd.optional") }}</span><input v-model="draft.subtitle" type="text" :placeholder="$t('editor.subtitleEx')"></label>
-      </section>
+      </template>
 
-      <LessonEditorSection
-        v-for="(s, i) in draft.sections"
-        :key="s.uid"
-        :section="s" :index="i" :count="draft.sections.length" :course-id="courseId"
-        @move="moveSection(i, $event)"
-        @remove="draft.sections.splice(i, 1)"
-        @preview="previewSection(i)"
-      />
+      <template v-else>
+        <div class="card row summary">
+          <span class="grow">
+            <b>{{ grade ? localName(grade.name) : "" }}</b> · {{ phase ? localName(phase.name) : "" }} · {{ $t("structure.sectionsN", { n: draft.sections.length }) }}
+          </span>
+          <button class="btn small" @click="go('setup')">{{ $t("editor.changeSetup") }}</button>
+        </div>
 
-      <div class="card row add">
-        <select v-model="newType">
-          <optgroup :label="$t('editor.sectionTypes')">
-            <option v-for="(t, key) in SECTION_TYPES" :key="key" :value="key">{{ t.label }}</option>
-          </optgroup>
-          <optgroup :label="$t('editor.presets')">
-            <option v-for="(p, key) in SECTION_PRESETS" :key="key" :value="`preset:${key}`">{{ p.label }}</option>
-          </optgroup>
-        </select>
-        <button class="btn" @click="addSection">{{ $t("editor.addSection") }}</button>
-      </div>
+        <section class="card stack">
+          <h2>3. {{ $t("editor.step3") }}</h2>
+          <div class="grid3">
+            <label><span class="lab">{{ $t("editor.label") }} <span class="muted">{{ $t("editor.labelEx") }}</span></span><input v-model="draft.label" type="text"></label>
+            <label class="span2"><span class="lab">{{ $t("editor.lessonTitle") }}</span><input v-model="draft.title" type="text" :placeholder="$t('editor.lessonTitleEx')"></label>
+          </div>
+          <label><span class="lab">{{ $t("editor.desc") }} <span class="muted">{{ $t("editor.descHelp") }}</span></span><input v-model="draft.description" type="text"></label>
+          <label><span class="lab">{{ $t("editor.subtitle") }} <span class="muted">{{ $t("sectionEd.optional") }}</span></span><input v-model="draft.subtitle" type="text" :placeholder="$t('editor.subtitleEx')"></label>
+        </section>
 
+        <LessonEditorSection
+          v-for="(s, i) in draft.sections"
+          :key="s.uid"
+          :section="s" :index="i" :count="draft.sections.length" :course-id="courseId"
+          @move="moveSection(i, $event)"
+          @remove="draft.sections.splice(i, 1)"
+          @preview="previewSection(i)"
+        />
+
+        <div class="card">
+          <LessonEditorAddSection @add="draft.sections.push($event)" />
+        </div>
+      </template>
+
+      <template v-if="stage === 'content'">
       <div v-if="problems.length" class="fb no">
         <b>{{ $t("editor.fixFirst") }}</b>
         <ul><li v-for="p in problems" :key="p">{{ p }}</li></ul>
@@ -354,6 +320,7 @@ async function removeLesson() {
         <button class="btn" :disabled="!draft.sections.length" @click="previewAll">👁 {{ $t("editor.previewAll") }}</button>
         <button class="btn primary" :disabled="saving" @click="save">{{ saving ? $t("common.saving") : $t("editor.save") }}</button>
       </div>
+      </template>
     </template>
     <LessonPreview v-if="preview" :lesson="preview.lesson" :title="preview.title" @close="preview = null" />
   </div>
@@ -363,23 +330,25 @@ async function removeLesson() {
 .stack label { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; font-weight: 500; }
 .stack label .muted { font-weight: 400; }
 .stack label.inline { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: end; }
+/* Label and its hint share one line, so neighbouring inputs start at the same height. */
+.stack label .lab { display: block; }
 .span2 { grid-column: span 2; }
 .assign { display: flex; flex-direction: column; gap: 6px; }
 .stack label.chip-check { flex-direction: row; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--line);
   border-radius: 999px; background: var(--bg); cursor: pointer; font-weight: 500; }
 .stack label.chip-check.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
-.stack label.pick { flex-direction: row; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line);
-  border-radius: 10px; background: var(--bg); cursor: pointer; font-weight: 400; }
-.stack label.pick:hover { border-color: var(--accent); }
-.stack label.pick.on { border-color: var(--accent); background: var(--accent-soft); }
-.pick input { margin-top: 3px; }
-.pick-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.pick-tools { gap: 12px; }
-.link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
-.link:hover { text-decoration: underline; }
-.add select { width: auto; }
+.steps { list-style: none; margin: 0 0 16px; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.steps li { flex: 1 1 150px; }
+.steps button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--card); color: var(--muted); font: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; text-align: left; }
+.steps button:disabled { opacity: .55; cursor: default; }
+.steps .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--bg); border: 1px solid var(--line); font-size: .8rem; font-weight: 700; }
+.steps li.on button { border-color: var(--accent); color: var(--text); }
+.steps li.on .dot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.steps li.done .dot { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.summary { justify-content: space-between; padding: 10px 14px; }
+.summary .grow { flex: 1; min-width: 0; }
 .fb ul { margin: 6px 0 0; padding-left: 20px; }
 .savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--card); border: 1px solid var(--line);
   border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px var(--shadow); }

@@ -44,6 +44,7 @@ không tự tạo tài khoản bằng Google (tài khoản do trang quản lý t
 |---|---|---|
 | Chấm lần lượt | Chấm bài → "Chấm lần lượt", hoặc cột Chờ chấm ở trang lớp | Lưu nhận xét / trả kết quả là tự sang em tiếp theo. |
 | Nhận xét mẫu | Ô nhận xét ở trang chấm (`comment_templates`) | Bấm để chèn; "Lưu thành mẫu"; mỗi giáo viên có mẫu riêng. |
+| Cấu trúc bài đã lưu | Bước "Cấu trúc bài" của trang soạn bài (`lesson_structures`) | Lưu danh sách phần (loại, tiêu đề, gợi ý, số câu, mẫu đề THCS), không lưu câu hỏi; mỗi giáo viên có mẫu riêng. |
 | Trả kết quả cả lớp | Cột Chờ chấm ở trang lớp (`release_class_results()`) | Cho phiếu chỉ có câu tự chấm. |
 | Chưa nộp | Mục "Chưa nộp" ở trang lớp (view `class_missing_work`) | Theo bài, gần hạn trước; copy để nhắn Zalo. |
 | In phiếu | Nút "In" ở danh sách bài / xem trước (`/teacher/print/<id>`) | Bản học sinh hoặc bản đáp án; in hoặc lưu PDF từ trình duyệt. |

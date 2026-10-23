@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Database, Tables, Views } from "~/types/database.types"
 import type { Course } from "~/utils/course"
+import type { GiveSettings } from "~/utils/classLesson"
 
 definePageMeta({ roles: ["teacher"] })
 
@@ -9,6 +10,8 @@ const classId = route.params.id as string
 const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const { load } = useCourse()
+/** Which classes of this grade already have each lesson (shown in the panel before giving it). */
+const assignments = useAssignments()
 const { t } = useI18n()
 
 type ClassRow = Tables<"classes"> & { courses: Pick<Tables<"courses">, "name"> | null }
@@ -55,6 +58,7 @@ onMounted(async () => {
       loadStudents(),
       loadPicks(),
       loadMissing(),
+      assignments.load(cls.value.course_id),
     ])
     outline.value = o
     unlocked.value = new Map((u.data ?? []).map(r => [r.lesson_id, { show_results: r.show_results, for_all: r.for_all, closed: r.closed, due_at: r.due_at, shuffle: r.shuffle }]))
@@ -127,12 +131,34 @@ function arm(key: string) {
   return false
 }
 
-async function assign(lessonId: string) {
+// One lesson at a time opens its panel (info + settings) before it is given.
+const setupOpen = ref<string | null>(null)
+const toggleSetup = (lessonId: string) => (setupOpen.value = setupOpen.value === lessonId ? null : lessonId)
+const pickable = computed(() => students.value.map(st => ({ id: st.user_id ?? "", name: st.full_name || st.username || st.email || "?" })))
+/** Other classes of the grade (not this one) that have the lesson. */
+const givenToOthers = (lessonId: string) => assignments.classesOf(lessonId).filter(c => c.id !== classId).map(c => c.name)
+
+async function give(lessonId: string, settings: GiveSettings) {
   busy.value = lessonId
   error2.value = message.value = ""
-  const { error: e } = await client.from("class_lessons").insert({ class_id: classId, lesson_id: lessonId, unlocked_by: user.value?.sub })
+  const { error: e } = await client.from("class_lessons").insert({
+    class_id: classId, lesson_id: lessonId, unlocked_by: user.value?.sub,
+    due_at: settings.dueAt, for_all: settings.forAll, show_results: settings.showResults, shuffle: settings.shuffle,
+  })
   if (fail(e)) return
-  unlocked.value = new Map(unlocked.value).set(lessonId, { show_results: false, for_all: true, closed: false, due_at: null, shuffle: false })
+  if (!settings.forAll) {
+    const { error: e2 } = await client.from("class_lesson_students")
+      .insert(settings.studentIds.map(id => ({ class_id: classId, lesson_id: lessonId, student_id: id })))
+    if (e2) error2.value = t("common.notChanged", { msg: errorText(e2.message) })
+    else picks.value = new Map(picks.value).set(lessonId, new Set(settings.studentIds))
+  }
+  unlocked.value = new Map(unlocked.value).set(lessonId, {
+    show_results: settings.showResults, for_all: settings.forAll, closed: false, due_at: settings.dueAt, shuffle: settings.shuffle,
+  })
+  busy.value = null
+  setupOpen.value = null
+  message.value = t("classPage.setup.given", { lesson: lessonName(lessonId), name: cls.value?.name ?? "" })
+  assignments.load(cls.value!.course_id)
   loadMissing()
 }
 
@@ -146,6 +172,7 @@ async function takeBack(lessonId: string) {
   const next = new Map(unlocked.value)
   next.delete(lessonId)
   unlocked.value = next
+  assignments.load(cls.value!.course_id)
   loadMissing()
 }
 
@@ -348,11 +375,21 @@ async function copyCode() {
                 <span v-if="l.createdBy" class="badge own">{{ $t("classPage.byTeacher") }}</span>
                 <NuxtLink v-if="canEditLesson(l)" :to="`/teacher/lessons/${l.id}?class=${classId}`" class="small">{{ $t("common.edit") }}</NuxtLink>
               </div>
-              <button v-if="!unlocked.has(l.id)" class="btn primary small" :disabled="busy === l.id" @click="assign(l.id)">{{ $t("classPage.give") }}</button>
+              <button
+                v-if="!unlocked.has(l.id)" class="btn small" :class="setupOpen === l.id ? 'ghost' : 'primary'"
+                :aria-expanded="setupOpen === l.id" :aria-controls="`setup-${l.id}`" @click="toggleSetup(l.id)"
+              >{{ $t("classPage.give") }} {{ setupOpen === l.id ? "▴" : "▾" }}</button>
               <span v-else class="badge" :class="unlocked.get(l.id)!.closed ? '' : 'done'">
                 {{ unlocked.get(l.id)!.closed ? $t("classPage.stateClosed") : $t("classPage.stateOpen") }}
               </span>
             </div>
+
+            <ClassLessonSetup
+              v-if="!unlocked.has(l.id) && setupOpen === l.id"
+              :id="`setup-${l.id}`" :lesson-id="l.id" :class-name="cls.name" :students="pickable"
+              :assigned-to="givenToOthers(l.id)" :busy="busy === l.id"
+              @give="give(l.id, $event)" @cancel="setupOpen = null"
+            />
 
             <template v-if="unlocked.has(l.id)">
               <div class="lesson-stats">

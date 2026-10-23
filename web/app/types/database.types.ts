@@ -232,6 +232,12 @@ export type Database = {
         Update: { body?: string; created_at?: string; id?: string; teacher_id?: string }
         Relationships: []
       }
+      lesson_structures: {
+        Row: { created_at: string; id: string; name: string; sections: Json; teacher_id: string }
+        Insert: { created_at?: string; id?: string; name: string; sections: Json; teacher_id?: string }
+        Update: { created_at?: string; id?: string; name?: string; sections?: Json; teacher_id?: string }
+        Relationships: []
+      }
       class_lesson_students: {
         Row: { class_id: string; created_at: string; lesson_id: string; student_id: string }
         Insert: { class_id: string; created_at?: string; lesson_id: string; student_id: string }

@@ -33,6 +33,8 @@ export interface DraftSection {
   placeholder: string
   short: boolean
   items: DraftItem[]
+  /** Key of the exam-format preset the section was made from (SECTION_PRESETS), kept so a saved structure rebuilds it. */
+  preset?: string
 }
 
 export interface LessonDraft {
@@ -92,24 +94,91 @@ export const STANDARD_STRUCTURE = (): DraftSection[] => [
  * Ready-made sections for THCS exam formats, built on the section types above (i18n presets.*).
  * Each sets a title, an instruction and starter questions; the teacher fills in the content.
  */
-const preset = (key: string, type: SectionType, init: Partial<DraftSection> = {}) => ({
+// `init` is a function: starter questions use tr(), which only works once the app (and i18n) is running, not at import time.
+const preset = (key: string, type: SectionType, init: () => Partial<DraftSection> = () => ({})) => ({
   get label() { return tr(`presets.${key}.label`) },
-  make: (): DraftSection => emptySection(type, { title: tr(`presets.${key}.label`), hint: tr(`presets.${key}.hint`), ...init }),
+  make: (): DraftSection => emptySection(type, { title: tr(`presets.${key}.label`), hint: tr(`presets.${key}.hint`), ...init(), preset: key }),
 })
 const repeat = (n: number, item: (i: number) => Partial<DraftItem>) => Array.from({ length: n }, (_, i) => emptyItem(item(i)))
 export const SECTION_PRESETS = {
-  pronunciation: preset("pronunciation", "mcq", { items: repeat(4, () => ({ prompt: tr("presets.pronunciation.prompt"), options: ["", "", "", ""] })) }),
-  stress: preset("stress", "mcq", { items: repeat(4, () => ({ prompt: tr("presets.stress.prompt"), options: ["", "", "", ""] })) }),
-  trueFalse: preset("trueFalse", "mcq", { items: repeat(4, () => ({ options: ["True", "False"] })) }),
-  reading: preset("reading", "mcq", { items: repeat(4, () => ({ options: ["", "", "", ""] })) }),
-  cloze: preset("cloze", "mcq", { items: repeat(5, i => ({ prompt: `(${i + 1})`, options: ["", "", "", ""] })) }),
-  clozeTyped: preset("clozeTyped", "typed", { short: true, items: repeat(5, i => ({ prompt: `(${i + 1})` })) }),
-  wordForm: preset("wordForm", "typed", { short: true, items: repeat(4, () => ({})) }),
-  rewrite: preset("rewrite", "typed", { short: false, items: repeat(3, () => ({})) }),
-  match: preset("match", "match", { items: repeat(5, () => ({})) }),
-  error: preset("error", "error", { items: repeat(4, () => ({})) }),
+  pronunciation: preset("pronunciation", "mcq", () => ({ items: repeat(4, () => ({ prompt: tr("presets.pronunciation.prompt"), options: ["", "", "", ""] })) })),
+  stress: preset("stress", "mcq", () => ({ items: repeat(4, () => ({ prompt: tr("presets.stress.prompt"), options: ["", "", "", ""] })) })),
+  trueFalse: preset("trueFalse", "mcq", () => ({ items: repeat(4, () => ({ options: ["True", "False"] })) })),
+  reading: preset("reading", "mcq", () => ({ items: repeat(4, () => ({ options: ["", "", "", ""] })) })),
+  cloze: preset("cloze", "mcq", () => ({ items: repeat(5, i => ({ prompt: `(${i + 1})`, options: ["", "", "", ""] })) })),
+  clozeTyped: preset("clozeTyped", "typed", () => ({ short: true, items: repeat(5, i => ({ prompt: `(${i + 1})` })) })),
+  wordForm: preset("wordForm", "typed", () => ({ short: true, items: repeat(4, () => ({})) })),
+  rewrite: preset("rewrite", "typed", () => ({ short: false, items: repeat(3, () => ({})) })),
+  match: preset("match", "match", () => ({ items: repeat(5, () => ({})) })),
+  error: preset("error", "error", () => ({ items: repeat(4, () => ({})) })),
 }
 export type PresetKey = keyof typeof SECTION_PRESETS
+
+/** The exam layout of a "Luyện đề" worksheet: pronunciation, true/false reading, cloze, matching, error finding. */
+export const EXAM_STRUCTURE = (): DraftSection[] =>
+  (["pronunciation", "trueFalse", "cloze", "match", "error"] as const).map(k => SECTION_PRESETS[k].make())
+
+// ---- saved structures: the outline of a lesson without any question or answer ----
+
+/** What is stored in lesson_structures.sections, one entry per section. */
+export interface StructureSpec {
+  type: SectionType
+  title: string
+  time: string
+  hint: string
+  short: boolean
+  /** Number of (empty) questions or cards. */
+  items: number
+  preset?: string
+}
+export const MAX_ITEMS_PER_SECTION = 60
+
+export const structureOf = (sections: DraftSection[]): StructureSpec[] => sections.map(s => ({
+  type: s.type, title: s.title.trim(), time: s.time.trim(), hint: s.hint.trim(), short: s.short, items: s.items.length,
+  ...(s.preset ? { preset: s.preset } : {}),
+}))
+
+/** A section whose body or questions hold something the teacher typed (a preset's starter prompt and True / False options do not count). */
+export function hasContent(s: DraftSection): boolean {
+  if (s.body.trim() || s.placeholder.trim()) return true
+  const starter = s.preset && s.preset in SECTION_PRESETS ? SECTION_PRESETS[s.preset as PresetKey].make().items[0]?.prompt ?? "" : ""
+  return s.items.some((i) => {
+    const prompt = i.prompt.trim() === starter.trim() || /^\(\d+\)$/.test(i.prompt.trim()) ? "" : i.prompt
+    return !!(prompt.trim() || i.back.trim() || i.words.trim() || i.answers.trim()
+      || i.options.some(o => o.trim() && o !== "True" && o !== "False"))
+  })
+}
+
+/** Resizes the question list of a section: new questions copy the option layout of the last one, never its text. */
+export function resizeItems(s: DraftSection, n: number) {
+  const target = Math.max(1, Math.min(MAX_ITEMS_PER_SECTION, n))
+  while (s.items.length > target) s.items.pop()
+  while (s.items.length < target) {
+    const last = s.items.at(-1)
+    s.items.push(emptyItem(last ? { options: last.options.map(o => (o === "True" || o === "False" ? o : "")) } : {}))
+  }
+}
+
+/** Rebuilds sections from a stored structure; anything malformed is skipped, so old data never breaks the editor. */
+export function sectionsFromStructure(spec: unknown): DraftSection[] {
+  if (!Array.isArray(spec)) return []
+  const out: DraftSection[] = []
+  for (const raw of spec) {
+    const r = raw as Partial<StructureSpec> | null
+    if (!r || typeof r !== "object" || !r.type || !(r.type in SECTION_TYPES)) continue
+    const base = r.preset && r.preset in SECTION_PRESETS ? SECTION_PRESETS[r.preset as PresetKey].make() : emptySection(r.type)
+    const s: DraftSection = {
+      ...base,
+      type: r.type,
+      title: String(r.title ?? ""), time: String(r.time ?? ""), hint: String(r.hint ?? ""),
+      short: typeof r.short === "boolean" ? r.short : base.short,
+    }
+    if (hasItems(s.type)) resizeItems(s, Number(r.items) || s.items.length || 1)
+    else s.items = []
+    out.push(s)
+  }
+  return out
+}
 
 type SectionRow = Tables<"lesson_sections"> & { section_items: Tables<"section_items">[] }
 const byPosition = (a: { position: number }, b: { position: number }) => a.position - b.position
