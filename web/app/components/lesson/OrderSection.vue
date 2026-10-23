@@ -1,59 +1,71 @@
 <script setup lang="ts">
-import type { Answer, OrderItem } from "~/utils/course"
+import type { Answer, OrderItem, Response } from "~/utils/course"
 
-const props = defineProps<{ sectionKey: string; items: OrderItem[]; answers: Record<string, Answer> }>()
-const emit = defineEmits<{ answer: [qid: string, answer: Answer] }>()
+const props = defineProps<{
+  sectionKey: string
+  items: OrderItem[]
+  responses: Record<string, Response>
+  /** Graded answers; null while results are hidden. */
+  results: Record<string, Answer> | null
+  locked?: boolean
+  /** Teacher preview: show the answer of unanswered questions without marking them wrong. */
+  showKey?: boolean
+}>()
+const emit = defineEmits<{ respond: [qid: string, response: Response | null] }>()
 
-const qid = (i: number) => `${props.sectionKey}${i + 1}`
+const qid = (i: number) => qidOf(props.sectionKey, props.items[i]!, i)
 
-// Words are stored in the correct order, separated by "|"; the pool shows them shuffled.
-const items = props.items.map(it => {
-  const words = it.words.split("|").map(w => w.trim())
-  return { it, words, correct: words.join(" "), pool: shuffled(words.map((_, k) => k)) }
-})
-const chosen = ref<number[][]>(items.map((_, i) => props.answers[qid(i)]?.chosen?.slice() ?? []))
-const results = ref<(boolean | null)[]>(items.map((_, i) => props.answers[qid(i)]?.ok ?? null))
+// `words` arrive in a fixed shuffled order (saved `chosen` indices point into it); the pool reshuffles for display.
+const rows = props.items.map(it => ({ it, pool: shuffled(it.words.map((_, k) => k)) }))
+const chosen = ref<number[][]>(props.items.map((it, i) => restore(it.words, props.responses[qid(i)])))
 
-watch(() => props.answers, (answers) => {
-  items.forEach((_, i) => {
-    if (!answers[qid(i)]) { chosen.value[i] = []; results.value[i] = null }
-  })
-})
-
-const add = (i: number, k: number) => { chosen.value[i]!.push(k) }
-const remove = (i: number, pos: number) => { chosen.value[i]!.splice(pos, 1) }
-const clear = (i: number) => { chosen.value[i] = []; results.value[i] = null }
-
-function check(i: number) {
-  const { it, words, correct } = items[i]!
-  const picked = chosen.value[i]!
-  if (picked.length !== words.length) return
-  const given = picked.map(k => words[k]).join(" ")
-  const ok = [correct, ...(it.alt || [])].map(norm).includes(norm(given))
-  results.value[i] = ok
-  emit("answer", qid(i), { ok, q: it.prompt || "Sắp xếp câu", given, correct, chosen: picked.slice(), tag: it.tag || "" })
+/** Saved indices, or (for answers saved before words were served shuffled) indices rebuilt from the sentence. */
+function restore(words: string[], r?: Response): number[] {
+  if (!r) return []
+  if (r.chosen && r.chosen.map(k => words[k]).join(" ") === r.given) return r.chosen.slice()
+  const picked: number[] = []
+  let rest = r.given
+  while (rest) {
+    const k = words.findIndex((w, j) => !picked.includes(j) && (rest === w || rest.startsWith(`${w} `)))
+    if (k < 0) return []
+    picked.push(k)
+    rest = rest.slice(words[k]!.length).trimStart()
+  }
+  return picked
 }
+
+// A sentence counts as answered once every chunk is placed.
+function save(i: number) {
+  const { it } = rows[i]!
+  const picked = chosen.value[i]!
+  emit("respond", qid(i), picked.length === it.words.length
+    ? { given: picked.map(k => it.words[k]).join(" "), chosen: picked.slice() }
+    : null)
+}
+
+const add = (i: number, k: number) => { if (!props.locked) { chosen.value[i]!.push(k); save(i) } }
+const remove = (i: number, pos: number) => { if (!props.locked) { chosen.value[i]!.splice(pos, 1); save(i) } }
+const clear = (i: number) => { chosen.value[i] = []; save(i) }
 </script>
 
 <template>
   <div>
-    <div v-for="(row, i) in items" :key="i" class="q">
-      <p><b>{{ i + 1 }}.</b> {{ row.it.prompt || "Sắp xếp thành câu đúng:" }}</p>
+    <div v-for="(row, i) in rows" :key="i" class="q">
+      <p><b>{{ i + 1 }}.</b> {{ row.it.prompt || $t("lesson.orderPrompt") }}</p>
       <div class="built">
-        <button v-for="(k, pos) in chosen[i]" :key="`${k}-${pos}`" class="chip" @click="remove(i, pos)">
-          {{ row.words[k] }}
+        <button v-for="(k, pos) in chosen[i]" :key="`${k}-${pos}`" class="chip" :disabled="locked" @click="remove(i, pos)">
+          {{ row.it.words[k] }}
         </button>
       </div>
-      <div class="pool">
-        <template v-for="k in row.pool" :key="k">
-          <button v-if="!chosen[i]!.includes(k)" class="chip" @click="add(i, k)">{{ row.words[k] }}</button>
-        </template>
-      </div>
-      <div class="row">
-        <button class="btn" :disabled="chosen[i]!.length !== row.words.length" @click="check(i)">Kiểm tra</button>
-        <button class="btn ghost" @click="clear(i)">Làm lại</button>
-      </div>
-      <AnswerFeedback v-if="results[i] !== null" :ok="!!results[i]" :why="row.it.why" :correct="results[i] ? '' : row.correct" />
+      <template v-if="!locked">
+        <div class="pool">
+          <template v-for="k in row.pool" :key="k">
+            <button v-if="!chosen[i]!.includes(k)" class="chip" @click="add(i, k)">{{ row.it.words[k] }}</button>
+          </template>
+        </div>
+        <button v-if="chosen[i]!.length" class="btn ghost small" @click="clear(i)">{{ $t("lesson.reorder") }}</button>
+      </template>
+      <AnswerFeedback v-if="results" :show-key="showKey" :result="results[qid(i)]" :why="row.it.why" :correct="row.it.ans[0]" />
     </div>
   </div>
 </template>

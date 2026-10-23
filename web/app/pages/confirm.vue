@@ -11,6 +11,6 @@ watch(user, (u) => {
 
 <template>
   <main class="container">
-    <p class="muted">Đang đăng nhập…</p>
+    <p class="muted">{{ $t("login.signingIn") }}</p>
   </main>
 </template>

@@ -2,60 +2,75 @@
 import type { Database, Tables } from "~/types/database.types"
 import type { Score } from "~/utils/course"
 
-useHead({ title: "Tiến độ — Grammar B1→B2" })
+definePageMeta({ roles: ["student"] })
+const { t } = useI18n()
+useHead({ title: () => t("progress.pageTitle") })
 
 const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 
 type AttemptRow = Pick<Tables<"attempts">, "id" | "lesson_id" | "score" | "status" | "updated_at"> & {
   feedback: Pick<Tables<"feedback">, "id" | "body" | "created_at">[]
+  lessons: Pick<Tables<"lessons">, "title" | "label"> | null
 }
 const attempts = shallowRef<AttemptRow[]>([])
+/** Lessons of the class whose results show as soon as they are submitted. */
+const showsAtOnce = shallowRef<Set<string>>(new Set())
+const { myClass } = useProfile()
 const errors = shallowRef<Tables<"error_log">[]>([])
 const loaded = ref(false)
 
 onMounted(async () => {
   const me = user.value?.sub
   if (!me) return
-  const [a, e] = await Promise.all([
-    client.from("attempts").select("id, lesson_id, score, status, updated_at, feedback(id, body, created_at)")
+  const [a, e, c] = await Promise.all([
+    client.from("attempts").select("id, lesson_id, score, status, updated_at, feedback(id, body, created_at), lessons(title, label)")
       .eq("user_id", me).order("updated_at", { ascending: false }),
     client.from("error_log").select("*").eq("user_id", me),
+    myClass.value
+      ? client.from("class_lessons").select("lesson_id").eq("class_id", myClass.value.id).eq("show_results", true)
+      : { data: [] },
   ])
+  showsAtOnce.value = new Set((c.data ?? []).map(r => r.lesson_id))
   attempts.value = (a.data ?? []) as AttemptRow[]
   errors.value = e.data ?? []
   loaded.value = true
 })
 
 const score = (row: AttemptRow) => row.score as unknown as Score
+const released = (row: AttemptRow) =>
+  row.status === "graded" || (row.status === "submitted" && showsAtOnce.value.has(row.lesson_id))
+const statusText = (row: AttemptRow) =>
+  row.status === "submitted" && released(row) ? t("progress.submitted") : ATTEMPT_STATUS[row.status]
 const latestFeedback = (row: AttemptRow) =>
   [...row.feedback].sort((x, y) => y.created_at.localeCompare(x.created_at))[0]
 </script>
 
 <template>
   <div>
-    <h1>Tiến độ của bạn</h1>
-    <p class="sub">Lỗi giáo viên ghi lại sau mỗi bài viết. Lỗi nào còn "Đang mắc" sẽ được ưu tiên ôn lại trước khi học bài mới.</p>
+    <h1>{{ $t("progress.title") }}</h1>
+    <p class="sub">{{ $t("progress.intro") }}</p>
 
-    <p v-if="!loaded" class="muted">Đang tải…</p>
+    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
     <template v-else>
       <section class="card">
-        <h2>Lỗi đang theo dõi</h2>
+        <h2>{{ $t("progress.errors") }}</h2>
         <ErrorLogList :entries="errors" />
       </section>
 
       <section class="card">
-        <h2>Lịch sử làm bài</h2>
-        <p v-if="!attempts.length" class="muted small">Bạn chưa làm bài nào. <NuxtLink to="/">Bắt đầu với bài 19.1</NuxtLink>.</p>
+        <h2>{{ $t("progress.history") }}</h2>
+        <p v-if="!attempts.length" class="muted small">{{ $t("progress.none") }} <NuxtLink to="/">{{ $t("progress.seeRoadmap") }}</NuxtLink>.</p>
         <NuxtLink v-for="row in attempts" :key="row.id" :to="`/lessons/${row.lesson_id}`" class="list-row">
           <span>
-            <b>Bài {{ row.lesson_id }} — {{ LESSONS[row.lesson_id]?.title ?? "" }}</b>
+            <b>{{ row.lessons?.label ?? row.lesson_id }} - {{ row.lessons?.title ?? "" }}</b>
             <small>
-              {{ score(row).ok ?? 0 }}/{{ score(row).done ?? 0 }} câu đúng · {{ formatDate(row.updated_at) }}
-              <template v-if="latestFeedback(row)"> · Nhận xét: “{{ latestFeedback(row)!.body.slice(0, 90) }}{{ latestFeedback(row)!.body.length > 90 ? "…" : "" }}”</template>
+              <template v-if="released(row)">{{ $t("progress.correct", { ok: score(row).ok ?? 0, total: score(row).total ?? score(row).done ?? 0 }) }} · </template>
+              {{ formatDate(row.updated_at) }}
+              <template v-if="latestFeedback(row)"> · {{ $t("progress.comment") }}: “{{ latestFeedback(row)!.body.slice(0, 90) }}{{ latestFeedback(row)!.body.length > 90 ? "…" : "" }}”</template>
             </small>
           </span>
-          <span class="badge" :class="row.status">{{ ATTEMPT_STATUS[row.status] }}</span>
+          <span class="badge" :class="row.status">{{ statusText(row) }}</span>
         </NuxtLink>
       </section>
     </template>

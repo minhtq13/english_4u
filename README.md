@@ -4,10 +4,6 @@ Lộ trình ngữ pháp tiếng Anh B1 → B2, 30 phút mỗi ngày: 16 bài (m�
 
 | Thư mục | Nội dung |
 |---|---|
-| [`web/`](web/) | Website Nuxt 4 + Supabase (đăng nhập Google, nhiều học viên, trang chấm bài cho giáo viên). Xem [web/README.md](web/README.md). |
-| [`lessons/`](lessons/) | Bản gốc của từng bài học (dữ liệu `window.LESSON`), mở trực tiếp bằng trình duyệt được. |
-| `index.html` | Danh sách bài học offline và thứ tự các giai đoạn. |
-| [`artifact/`](artifact/) | Bản một-trang dùng trên claude.ai Artifact (`node artifact/build.js`). |
+| [`web/`](web/) | Website Nuxt 4 + Supabase (đăng nhập Google, nhiều học viên, trang chấm bài cho giáo viên). Nội dung bài học nằm trong database Supabase — sửa bằng Table Editor. Xem [web/README.md](web/README.md). |
+| `artifact/grammar-b2.html` | Bản lưu của trang một-trang đã đăng trên claude.ai Artifact (không còn build tự động). |
 | `progress.md` | Nhật ký học tập ban đầu. |
-
-Sửa hoặc thêm bài: chỉnh file trong `lessons/` (và `index.html` nếu là bài mới), rồi chạy `npm run lessons` trong `web/`.

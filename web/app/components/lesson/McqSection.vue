@@ -1,30 +1,31 @@
 <script setup lang="ts">
-import type { Answer, McqItem } from "~/utils/course"
+import type { Answer, McqItem, Response } from "~/utils/course"
 
-const props = defineProps<{ sectionKey: string; items: McqItem[]; answers: Record<string, Answer> }>()
-const emit = defineEmits<{ answer: [qid: string, answer: Answer] }>()
+const props = defineProps<{
+  sectionKey: string
+  items: McqItem[]
+  responses: Record<string, Response>
+  /** Graded answers; null while results are hidden. */
+  results: Record<string, Answer> | null
+  locked?: boolean
+  /** Teacher preview: show the answer of unanswered questions without marking them wrong. */
+  showKey?: boolean
+}>()
+const emit = defineEmits<{ respond: [qid: string, response: Response | null] }>()
 
-const qid = (i: number) => `${props.sectionKey}${i + 1}`
-const pickedIndex = (it: McqItem, i: number) => {
-  const a = props.answers[qid(i)]
-  return a ? it.opts.indexOf(a.given) : -1
-}
+const qid = (i: number) => qidOf(props.sectionKey, props.items[i]!, i)
 
 function pick(it: McqItem, i: number, j: number) {
-  if (props.answers[qid(i)]) return
-  emit("answer", qid(i), {
-    ok: j === it.a,
-    q: stripTags(it.q),
-    given: it.opts[j]!,
-    correct: it.opts[it.a]!,
-    tag: it.tag || "",
-  })
+  if (props.locked) return
+  emit("respond", qid(i), { given: it.opts[j]! })
 }
 
 function optionClass(it: McqItem, i: number, j: number) {
-  if (!props.answers[qid(i)]) return ""
-  if (j === it.a) return "right"
-  return j === pickedIndex(it, i) ? "wrong" : ""
+  const picked = props.responses[qid(i)]?.given === it.opts[j]
+  if (!props.results) return picked ? "picked" : ""
+  const correct = props.results[qid(i)]?.correct ?? it.opts[it.a]
+  if (it.opts[j] === correct) return "right"
+  return picked ? "wrong" : ""
 }
 </script>
 
@@ -36,18 +37,14 @@ function optionClass(it: McqItem, i: number, j: number) {
         <button
           v-for="(o, j) in it.opts"
           :key="j"
-          :disabled="!!answers[qid(i)]"
+          :disabled="locked"
           :class="optionClass(it, i, j)"
+          :aria-pressed="responses[qid(i)]?.given === o"
           @click="pick(it, i, j)"
-          v-html="o"
+          v-html="markUnderline(o)"
         />
       </div>
-      <AnswerFeedback
-        v-if="answers[qid(i)]"
-        :ok="answers[qid(i)]!.ok"
-        :why="it.why"
-        :correct="answers[qid(i)]!.ok ? '' : it.opts[it.a]"
-      />
+      <AnswerFeedback v-if="results" :show-key="showKey" :result="results[qid(i)]" :why="it.why" :correct="it.opts[it.a]" />
     </div>
   </div>
 </template>

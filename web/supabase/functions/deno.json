@@ -1,0 +1,9 @@
+{
+  "nodeModulesDir": "none",
+  "lint": {
+    "rules": {
+      // The functions are deployed as single files through the Supabase MCP, so the `npm:` import stays inline.
+      "exclude": ["no-import-prefix"]
+    }
+  }
+}

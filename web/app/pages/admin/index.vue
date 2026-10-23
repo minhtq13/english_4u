@@ -1,79 +1,118 @@
 <script setup lang="ts">
-import type { Database, Tables } from "~/types/database.types"
-import type { Score } from "~/utils/course"
+import type { Database, Views } from "~/types/database.types"
 
-definePageMeta({ middleware: "admin" })
-useHead({ title: "Chấm bài — Grammar B1→B2" })
+definePageMeta({ roles: ["admin"] })
+const { t } = useI18n()
+useHead({ title: "Dashboard - Grammar" })
 
 const client = useSupabaseClient<Database>()
 
-type AttemptRow = Pick<Tables<"attempts">, "id" | "lesson_id" | "score" | "status" | "submitted_at" | "updated_at" | "user_id"> & {
-  profiles: Pick<Tables<"profiles">, "full_name" | "email"> | null
-}
-const attempts = shallowRef<AttemptRow[]>([])
-const students = shallowRef<Tables<"profiles">[]>([])
+// Numbers come pre-aggregated from the course_summary view; tiles use count-only (head) queries.
+const summaries = shallowRef<Views<"course_summary">[]>([])
+const totals = reactive({ students: 0, noClass: 0, active: 0, attemptsWeek: 0, waiting: 0, accuracy: null as number | null })
 const loaded = ref(false)
+const error = ref("")
 
 onMounted(async () => {
-  const [a, p] = await Promise.all([
-    client.from("attempts")
-      .select("id, lesson_id, score, status, submitted_at, updated_at, user_id, profiles(full_name, email)")
-      .order("updated_at", { ascending: false }).limit(300),
-    client.from("profiles").select("*").order("created_at", { ascending: false }),
-  ])
-  attempts.value = (a.data ?? []) as AttemptRow[]
-  students.value = p.data ?? []
+  try {
+    const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
+    const [c, all, noClass, week] = await Promise.all([
+      client.from("course_summary").select("*").order("position"),
+      client.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student"),
+      client.from("profiles").select("id", { count: "exact", head: true }).eq("role", "student").is("class_id", null),
+      client.from("attempts").select("id", { count: "exact", head: true }).gte("updated_at", since),
+    ])
+    for (const r of [c, all, noClass, week]) if (r.error) throw r.error
+    summaries.value = c.data ?? []
+    const sum = (k: "active" | "waiting" | "ok" | "done") => summaries.value.reduce((n, x) => n + (x[k] ?? 0), 0)
+    totals.students = all.count ?? 0
+    totals.noClass = noClass.count ?? 0
+    totals.attemptsWeek = week.count ?? 0
+    totals.active = sum("active")
+    totals.waiting = sum("waiting")
+    totals.accuracy = accuracyOf(sum("ok"), sum("done"))
+  } catch (e) {
+    error.value = t("dashboard.loadFailed", { msg: (e as Error).message })
+  }
   loaded.value = true
 })
 
-const waiting = computed(() =>
-  attempts.value.filter(a => a.status === "submitted")
-    .sort((x, y) => (x.submitted_at ?? "").localeCompare(y.submitted_at ?? "")),
-)
-const recent = computed(() => attempts.value.filter(a => a.status !== "submitted").slice(0, 20))
-const name = (p: { full_name: string | null; email: string } | null) => p?.full_name || p?.email || "Học viên"
-const score = (row: AttemptRow) => row.score as unknown as Score
-const countFor = (userId: string) => attempts.value.filter(a => a.user_id === userId).length
+const pct = (part: number | null, whole: number | null) => (whole ? Math.round(((part ?? 0) / whole) * 100) : null)
 </script>
 
 <template>
   <div>
-    <h1>Chấm bài</h1>
-    <p class="sub">Bài đã nộp xếp theo thời gian nộp, cũ nhất lên đầu.</p>
+    <h1>Dashboard</h1>
+    <p class="sub">{{ $t("dashboard.intro") }}</p>
+    <p v-if="error" class="fb no">{{ error }}</p>
 
-    <p v-if="!loaded" class="muted">Đang tải…</p>
-    <template v-else>
-      <section class="card">
-        <h2>Chờ chấm ({{ waiting.length }})</h2>
-        <p v-if="!waiting.length" class="muted small">Không có bài nào đang chờ.</p>
-        <NuxtLink v-for="a in waiting" :key="a.id" :to="`/admin/attempts/${a.id}`" class="list-row">
-          <span>
-            <b>{{ name(a.profiles) }} · Bài {{ a.lesson_id }}</b>
-            <small>{{ score(a).ok ?? 0 }}/{{ score(a).done ?? 0 }} câu đúng · nộp {{ formatDate(a.submitted_at) }}</small>
-          </span>
-          <span class="badge submitted">Chấm bài</span>
-        </NuxtLink>
-      </section>
+    <div class="stats">
+      <div class="stat">
+        <b>{{ loaded ? totals.students : "…" }}</b>
+        <span>{{ $t("teacherHome.students") }}<template v-if="totals.noClass"> · {{ $t("dashboard.noClass", { n: totals.noClass }) }}</template></span>
+      </div>
+      <div class="stat"><b>{{ loaded ? totals.active : "…" }}</b><span>{{ $t("dashboard.active") }}</span></div>
+      <div class="stat"><b>{{ loaded ? totals.attemptsWeek : "…" }}</b><span>{{ $t("dashboard.attemptsWeek") }}</span></div>
+      <div class="stat"><b>{{ loaded ? (totals.accuracy === null ? "-" : `${totals.accuracy}%`) : "…" }}</b><span>{{ $t("dashboard.accuracy") }}</span></div>
+      <NuxtLink to="/teacher/grading" class="stat stat-link" :class="{ alert: totals.waiting > 0 }">
+        <b>{{ loaded ? totals.waiting : "…" }}</b><span>{{ $t("dashboard.waiting") }} →</span>
+      </NuxtLink>
+    </div>
 
-      <section class="card">
-        <h2>Học viên ({{ students.length }})</h2>
-        <NuxtLink v-for="s in students" :key="s.id" :to="`/admin/students/${s.id}`" class="list-row">
-          <span><b>{{ name(s) }}</b><small>{{ s.email }} · {{ countFor(s.id) }} bài đã mở</small></span>
-          <span class="badge" :class="s.role === 'admin' ? 'graded' : ''">{{ s.role === "admin" ? "Giáo viên" : "Học viên" }}</span>
-        </NuxtLink>
-      </section>
-
-      <section class="card">
-        <h2>Hoạt động gần đây</h2>
-        <p v-if="!recent.length" class="muted small">Chưa có hoạt động.</p>
-        <NuxtLink v-for="a in recent" :key="a.id" :to="`/admin/attempts/${a.id}`" class="list-row">
-          <span>
-            <b>{{ name(a.profiles) }} · Bài {{ a.lesson_id }}</b>
-            <small>{{ score(a).ok ?? 0 }}/{{ score(a).done ?? 0 }} câu đúng · {{ formatDate(a.updated_at) }}</small>
-          </span>
-          <span class="badge" :class="a.status">{{ ATTEMPT_STATUS[a.status] }}</span>
-        </NuxtLink>
-      </section>
-    </template>
+    <section class="card">
+      <h2>{{ $t("dashboard.byGrade") }}</h2>
+      <p class="hint">{{ $t("dashboard.byGradeHint") }}</p>
+      <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+      <div v-else class="table-wrap">
+        <table class="course-table">
+          <thead>
+            <tr>
+              <th>{{ $t("editor.grade") }}</th>
+              <th class="n">{{ $t("nav.classes") }}</th>
+              <th class="n">{{ $t("nav.students") }}</th>
+              <th class="n">{{ $t("dashboard.active7") }}</th>
+              <th class="n">{{ $t("nav.lessons") }}</th>
+              <th class="n">{{ $t("dashboard.attempts") }}</th>
+              <th>{{ $t("classPage.submitted") }}</th>
+              <th>{{ $t("classPage.accuracy") }}</th>
+              <th class="n">{{ $t("classPage.waiting") }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="c in summaries" :key="c.course_id ?? ''">
+              <td><NuxtLink :to="`/admin/courses/${c.course_id}`"><b>{{ localName(c.name) }}</b></NuxtLink></td>
+              <td class="n">{{ c.classes }}</td>
+              <td class="n">{{ c.students }}</td>
+              <td class="n">{{ c.active }}</td>
+              <td class="n">{{ c.lessons }}</td>
+              <td class="n">{{ c.attempts }}</td>
+              <td>
+                <StatBar
+                  :value="pct(c.completed, c.attempts)"
+                  :text="`${c.completed}/${c.attempts}`"
+                  :title="$t('dashboard.completedTitle', { n: c.completed, total: c.attempts })"
+                />
+              </td>
+              <td><StatBar :value="accuracyOf(c.ok, c.done)" /></td>
+              <td class="n">
+                <NuxtLink v-if="c.waiting" :to="`/teacher/grading`" class="badge submitted">{{ c.waiting }}</NuxtLink>
+                <span v-else class="muted">0</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </template>
+
+<style scoped>
+.stat-link { text-decoration: none; color: var(--text); }
+.stat-link:hover { border-color: var(--accent); }
+.stat.alert { border-color: var(--warn); background: var(--warn-soft); }
+.course-table td { white-space: nowrap; }
+.course-table th { vertical-align: bottom; }
+.course-table td:nth-child(7), .course-table td:nth-child(8) { min-width: 130px; }
+.n { text-align: right; font-variant-numeric: tabular-nums; }
+.course-table a { text-decoration: none; }
+</style>

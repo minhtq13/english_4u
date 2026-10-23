@@ -22,19 +22,19 @@ const bump = (e: Tables<"error_log">) => patch(e.id, { occurrences: e.occurrence
 </script>
 
 <template>
-  <p v-if="!entries.length" class="muted small">Chưa có lỗi nào được ghi lại.</p>
+  <p v-if="!entries.length" class="muted small">{{ $t("errors.none") }}</p>
   <div v-else>
     <div v-for="e in sorted" :key="e.id" class="list-row">
       <span>
         <b>{{ e.note }}</b>
         <small>
           {{ ERROR_CATEGORIES[e.category] }}
-          <template v-if="e.lesson_id"> · bài {{ e.lesson_id }}</template>
-          · gặp {{ e.occurrences }} lần · {{ formatDate(e.updated_at) }}
+          <template v-if="e.lesson_id"> · {{ $t("errors.lesson", { id: e.lesson_id }) }}</template>
+          · {{ $t("errors.times", { n: e.occurrences }) }} · {{ formatDate(e.updated_at) }}
         </small>
       </span>
       <span v-if="editable" class="row controls">
-        <button class="btn small" :disabled="busy === e.id" title="Học viên lại mắc lỗi này" @click="bump(e)">+1 lần</button>
+        <button class="btn small" :disabled="busy === e.id" :title="$t('errors.againTitle')" @click="bump(e)">{{ $t("errors.again") }}</button>
         <select :value="e.status" :disabled="busy === e.id" @change="setStatus(e, ($event.target as HTMLSelectElement).value as Enums<'error_status'>)">
           <option v-for="(label, key) in ERROR_STATUS" :key="key" :value="key">{{ label }}</option>
         </select>

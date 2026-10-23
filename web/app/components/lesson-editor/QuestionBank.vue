@@ -1,0 +1,117 @@
+<script setup lang="ts">
+import type { Database, Views } from "~/types/database.types"
+import type { DraftItem, SectionType } from "~/utils/lessonDraft"
+
+// Pick questions of one type from earlier lessons (question_bank view: what the teacher may see with
+// answers) and copy them into the section being edited.
+const props = defineProps<{ type: SectionType; courseId: string }>()
+const emit = defineEmits<{ pick: [items: DraftItem[]]; close: [] }>()
+
+const client = useSupabaseClient<Database>()
+const { listCourses } = useCourse()
+
+type Row = Views<"question_bank">
+const courses = shallowRef<{ id: string; name: string }[]>([])
+const course = ref(props.courseId)
+const search = ref("")
+const tag = ref("")
+const rows = shallowRef<Row[]>([])
+const total = ref(0)
+const page = ref(0)
+const PAGE = 15
+const picked = ref(new Map<string, Row>())
+
+async function load() {
+  const [from, to] = pageRange(page.value, PAGE)
+  let q = client.from("question_bank").select("*", { count: "exact" }).eq("type", props.type)
+  if (course.value) q = q.eq("course_id", course.value)
+  const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
+  if (term) q = q.or(`prompt.ilike.*${term}*,explanation.ilike.*${term}*`)
+  if (tag.value.trim()) q = q.ilike("tag", `%${tag.value.trim().replace(/[%_\\]/g, "")}%`)
+  const { data, count } = await q.order("lesson_id").range(from, to)
+  rows.value = data ?? []
+  total.value = count ?? 0
+}
+onMounted(async () => {
+  courses.value = (await listCourses()).map(c => ({ id: c.id, name: c.name }))
+  await load()
+})
+watch(page, load)
+let timer: ReturnType<typeof setTimeout> | undefined
+watch([course, search, tag], () => {
+  clearTimeout(timer)
+  timer = setTimeout(() => (page.value === 0 ? load() : (page.value = 0)), 300)
+})
+
+function toggle(r: Row) {
+  const next = new Map(picked.value)
+  if (next.has(r.id ?? "")) next.delete(r.id ?? "")
+  else next.set(r.id ?? "", r)
+  picked.value = next
+}
+const answerOf = answerText
+const questionOf = questionText
+
+function add() {
+  emit("pick", [...picked.value.values()].map(r => itemToDraft(r, r.type)))
+}
+
+const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") emit("close") }
+onMounted(() => document.addEventListener("keydown", onKey))
+onBeforeUnmount(() => document.removeEventListener("keydown", onKey))
+</script>
+
+<template>
+  <div class="overlay" @click.self="emit('close')">
+    <div class="dialog" role="dialog" aria-modal="true" :aria-label="$t('bank.title')">
+      <header class="bar">
+        <b>{{ $t("bank.title") }} · {{ SECTION_TYPES[type].label }}</b>
+        <span class="row">
+          <button class="btn small primary" :disabled="!picked.size" @click="add">{{ $t("bank.add", { n: picked.size }) }}</button>
+          <button class="btn small" @click="emit('close')">{{ $t("common.close") }} ✕</button>
+        </span>
+      </header>
+      <div class="body">
+        <div class="row filters">
+          <select v-model="course">
+            <option value="">{{ $t("bank.allGrades") }}</option>
+            <option v-for="c in courses" :key="c.id" :value="c.id">{{ localName(c.name) }}</option>
+          </select>
+          <input v-model="search" type="search" :placeholder="$t('bank.search')">
+          <input v-model="tag" type="search" class="tag" :placeholder="$t('bank.tag')">
+        </div>
+        <p v-if="!rows.length" class="muted small">{{ $t("bank.none") }}</p>
+        <label v-for="r in rows" :key="r.id ?? ''" class="q-row" :class="{ on: picked.has(r.id ?? '') }">
+          <input type="checkbox" :checked="picked.has(r.id ?? '')" @change="toggle(r)">
+          <span class="q-text">
+            <span>{{ questionOf(r) }}</span>
+            <small class="muted">
+              → <b>{{ stripTags(answerOf(r)) }}</b>
+              <template v-if="r.tag"> · [{{ r.tag }}]</template>
+              · {{ r.lesson_label }} - {{ r.lesson_title }}
+            </small>
+          </span>
+        </label>
+        <Pager v-model:page="page" :page-size="PAGE" :total="total" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
+  align-items: flex-start; padding: 24px 16px; overflow-y: auto; }
+.dialog { width: 100%; max-width: 760px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
+.bar { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; }
+.bar .btn { padding: 4px 12px; }
+.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.filters select { width: auto; }
+.filters input { flex: 1; min-width: 160px; }
+.filters .tag { max-width: 220px; }
+.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.q-row:hover { border-color: var(--accent); }
+.q-row.on { border-color: var(--accent); background: var(--accent-soft); }
+.q-row input { margin-top: 4px; }
+.q-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+</style>
