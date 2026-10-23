@@ -1,54 +1,89 @@
+# Daily encrypted backup of the Supabase database (the Free plan has no downloadable backups).
+#
+# Needs two repository secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_DB_URL    the "Session pooler" connection string of the project (Dashboard -> Connect), password filled in
+#                      (URL-encode special characters). Not the direct db.<ref>.supabase.co host: it is IPv6 only.
+#   BACKUP_PASSPHRASE  a long random passphrase; keep a copy in a password manager, without it a backup cannot be opened.
+#
+# Result: an artifact "db-backup-YYYY-MM-DD" (backup-YYYY-MM-DD.tar.gpg) on the run page, kept for 30 days. It holds
+#   public.dump  schema "public" + "private" (tables, data, RLS policies, functions, triggers)
+#   auth.dump    data of auth.users and auth.identities (accounts with password hashes)
+# and is encrypted with the passphrase, so it stays unreadable even if the repository is public.
+#
+# Open a backup (macOS has no gpg: use Docker, or `brew install gnupg` and `gpg -d FILE | tar -x`):
+#   docker run --rm -it -v "$PWD":/w alpine sh -c 'apk add -q gnupg && gpg -d /w/backup-2026-10-23.tar.gpg | tar -x -C /w'
+# Restore into an EMPTY Supabase project (URL = its session pooler string). Tested: a restored copy matched production
+# on every row count, 56 policies, 36 functions, 9 triggers, 50 indexes and a checksum of all lesson content.
+#   1. pg_restore --data-only --no-owner -d "$URL" auth.dump       accounts first (profiles refers to them)
+#   2. pg_restore --no-owner --no-privileges -d "$URL" public.dump  no --clean on an empty project: it only prints noise
+#   3. psql "$URL" -c "create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user()"
+#      (this trigger lives on auth.users, so neither the dump nor the migrations contain it)
+#   4. re-create the pg_cron job close-due-lessons from web/supabase/migrations/20261022000023_lesson_deadlines.sql
+# Then compare row counts with what you expect.
 name: db-backup
 
-# Backup hằng ngày lúc 02:00 giờ Việt Nam (19:00 UTC hôm trước).
-# GitHub chỉ chạy lịch từ nhánh mặc định (main).
 on:
   schedule:
-    - cron: "0 19 * * *"
-  workflow_dispatch:
+    - cron: "0 19 * * *" # 19:00 UTC = 02:00 in Vietnam
+  workflow_dispatch: {} # "Run workflow" button, to try it or to take a backup before a risky change
 
-permissions:
-  contents: read
+permissions: {}
+
+concurrency: db-backup
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      # Server Supabase đang là PostgreSQL 17.x, pg_dump phải cùng major version.
-      - name: Install PostgreSQL 17 client
+      - name: Install PostgreSQL 17 client (the server runs 17)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl ca-certificates gnupg lsb-release
           sudo install -d /usr/share/postgresql-common/pgdg
-          sudo curl -fsS -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          sudo curl --fail -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
 
       - name: Dump and encrypt
+        id: dump
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           set -euo pipefail
-          STAMP=$(date -u +%Y%m%d-%H%M)
-          # public = dữ liệu app, auth = tài khoản người dùng
-          /usr/lib/postgresql/17/bin/pg_dump "$DB_URL" \
-            --format=custom --no-owner --no-privileges \
-            --schema=public --schema=auth \
-            --file=backup.dump
-          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback \
-            --passphrase-fd 0 --symmetric --cipher-algo AES256 \
-            --output "backup-$STAMP.dump.gpg" backup.dump
-          rm -f backup.dump
-          ls -lh backup-*.dump.gpg
-          echo "BACKUP_FILE=backup-$STAMP.dump.gpg" >> "$GITHUB_ENV"
+          if [ -z "$DB_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::error::Set the repository secrets SUPABASE_DB_URL and BACKUP_PASSPHRASE first."
+            exit 1
+          fi
+          PG=/usr/lib/postgresql/17/bin
+          stamp=$(TZ=Asia/Ho_Chi_Minh date +%Y-%m-%d)
+          echo "date=$stamp" >> "$GITHUB_OUTPUT"
+          mkdir out
 
-      - name: Upload encrypted backup
-        uses: actions/upload-artifact@v4
+          # schema + data of the app; "private" holds the helper functions the RLS policies call
+          "$PG/pg_dump" "$DB_URL" --schema=public --schema=private --no-owner --no-privileges --format=custom --file=out/public.dump
+          # accounts: data only
+          "$PG/pg_dump" "$DB_URL" --data-only --table=auth.users --table=auth.identities --no-owner --no-privileges --format=custom --file=out/auth.dump
+
+          # refuse to publish an empty dump as if it were a backup
+          check_size() { # file, minimum bytes (a real public.dump is ~220 KB, auth.dump ~5 KB)
+            size=$(stat -c%s "$1")
+            echo "$1: $size bytes"
+            [ "$size" -gt "$2" ] || { echo "::error::$1 is suspiciously small"; exit 1; }
+          }
+          check_size out/public.dump 50000
+          check_size out/auth.dump 1000
+          "$PG/pg_restore" --list out/public.dump | grep -c "TABLE DATA" | xargs echo "tables with data:"
+
+          tar -C out -cf - public.dump auth.dump \
+            | gpg --batch --yes --pinentry-mode loopback --passphrase "$PASSPHRASE" --symmetric --cipher-algo AES256 \
+                  --output "backup-$stamp.tar.gpg"
+          ls -l backup-*.tar.gpg
+
+      - name: Keep the encrypted backup
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: db-backup
-          path: ${{ env.BACKUP_FILE }}
+          name: db-backup-${{ steps.dump.outputs.date }}
+          path: backup-*.tar.gpg
           retention-days: 30
           if-no-files-found: error
