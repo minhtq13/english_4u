@@ -5,21 +5,19 @@
 #                      (URL-encode special characters). Not the direct db.<ref>.supabase.co host: it is IPv6 only.
 #   BACKUP_PASSPHRASE  a long random passphrase; keep a copy in a password manager, without it a backup cannot be opened.
 #
-# Result: an artifact "db-backup-YYYY-MM-DD" (backup-YYYY-MM-DD.tar.gpg) on the run page, kept for 30 days. It holds
-#   public.dump  schema "public" + "private" (tables, data, RLS policies, functions, triggers)
-#   auth.dump    data of auth.users and auth.identities (accounts with password hashes)
-# and is encrypted with the passphrase, so it stays unreadable even if the repository is public.
+# Result: an artifact "db-backup-YYYY-MM-DD" (backup-YYYY-MM-DD.tar.gpg) on the run page, kept for 30 days. Every table that holds data:
+#   public.dump      schema "public" + "private" (tables, data, RLS policies, functions, triggers)
+#   auth.dump        data of every auth table (accounts with password hashes, identities, sessions, refresh tokens, MFA)
+#   storage.dump     data of the storage tables (buckets and object metadata; the files themselves are not in the database)
+#   migrations.dump  supabase_migrations.schema_migrations (the history of applied migrations, with their SQL)
+#   cron-jobs.sql    the pg_cron job definitions as SQL (pg_cron's own run log is left out)
+# Left out on purpose: auth/storage/realtime schema_migrations (Supabase manages them, restoring would clash) and cron.job_run_details.
+# The archive is encrypted with the passphrase, so it stays unreadable even if the repository is public.
 #
 # Open a backup (macOS has no gpg: use Docker, or `brew install gnupg` and `gpg -d FILE | tar -x`):
 #   docker run --rm -it -v "$PWD":/w alpine sh -c 'apk add -q gnupg && gpg -d /w/backup-2026-10-23.tar.gpg | tar -x -C /w'
-# Restore into an EMPTY Supabase project (URL = its session pooler string). Tested: a restored copy matched production
-# on every row count, 56 policies, 36 functions, 9 triggers, 50 indexes and a checksum of all lesson content.
-#   1. pg_restore --data-only --no-owner -d "$URL" auth.dump       accounts first (profiles refers to them)
-#   2. pg_restore --no-owner --no-privileges -d "$URL" public.dump  no --clean on an empty project: it only prints noise
-#   3. psql "$URL" -c "create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user()"
-#      (this trigger lives on auth.users, so neither the dump nor the migrations contain it)
-#   4. re-create the pg_cron job close-due-lessons from web/supabase/migrations/20261022000023_lesson_deadlines.sql
-# Then compare row counts with what you expect.
+# Restore into a NEW Supabase project: see web/supabase/RESTORE.md. Tested with web/supabase/backup-test.sh: the restored copy matched
+# production on every table, 56 policies, 36 functions, 9 triggers, 50 indexes and the checksums of lesson content and migration history.
 name: db-backup
 
 on:
@@ -62,8 +60,12 @@ jobs:
 
           # schema + data of the app; "private" holds the helper functions the RLS policies call
           "$PG/pg_dump" "$DB_URL" --schema=public --schema=private --no-owner --no-privileges --format=custom --file=out/public.dump
-          # accounts: data only
-          "$PG/pg_dump" "$DB_URL" --data-only --table=auth.users --table=auth.identities --no-owner --no-privileges --format=custom --file=out/auth.dump
+          # everything else that holds data (each dump skips the tables Supabase manages itself)
+          "$PG/pg_dump" "$DB_URL" --data-only --schema=auth --exclude-table-data=auth.schema_migrations --no-owner --no-privileges --format=custom --file=out/auth.dump
+          "$PG/pg_dump" "$DB_URL" --data-only --schema=storage --exclude-table-data=storage.migrations --no-owner --no-privileges --format=custom --file=out/storage.dump
+          "$PG/pg_dump" "$DB_URL" --data-only --table=supabase_migrations.schema_migrations --no-owner --no-privileges --format=custom --file=out/migrations.dump
+          # pg_cron jobs live in schema cron, which a dump of the app does not carry: save them as SQL to run again after a restore
+          "$PG/psql" "$DB_URL" -At -c 'select case when jobname is null then format($q$select cron.schedule(%L, %L);$q$, schedule, command) else format($q$select cron.schedule(%L, %L, %L);$q$, jobname, schedule, command) end from cron.job order by jobid' > out/cron-jobs.sql
 
           # refuse to publish an empty dump as if it were a backup
           check_size() { # file, minimum bytes (a real public.dump is ~220 KB, auth.dump ~5 KB)
@@ -73,9 +75,10 @@ jobs:
           }
           check_size out/public.dump 50000
           check_size out/auth.dump 1000
+          check_size out/migrations.dump 1000
           "$PG/pg_restore" --list out/public.dump | grep -c "TABLE DATA" | xargs echo "tables with data:"
 
-          tar -C out -cf - public.dump auth.dump \
+          tar -C out -cf - . \
             | gpg --batch --yes --pinentry-mode loopback --passphrase "$PASSPHRASE" --symmetric --cipher-algo AES256 \
                   --output "backup-$stamp.tar.gpg"
           ls -l backup-*.tar.gpg

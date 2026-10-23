@@ -52,6 +52,14 @@ không tự tạo tài khoản bằng Google (tài khoản do trang quản lý t
 | Trộn đề | Ô "Trộn câu cho từng em" ở trang lớp (`class_lessons.shuffle`) | Mỗi em thứ tự câu và lựa chọn riêng, cố định; chấm vẫn theo câu gốc. |
 | Phiếu ôn từ câu sai | Trang lớp / hồ sơ học sinh → "Tạo phiếu ôn" (`wrong_questions()`) | Chọn bài + cả lớp hoặc 1 em → chọn câu → mở trình soạn; phiếu cho 1 em chỉ mở cho em đó. |
 
+### Sao lưu
+
+Gói Supabase Free không có bản sao lưu tải về được, nên dùng các cách sau (đều chỉ đọc dữ liệu production):
+
+- **Hằng ngày, tự động**: workflow `.github/workflows/db-backup.yml` chạy `pg_dump` lúc 02:00 giờ VN, lấy mọi bảng có dữ liệu (app, `auth`, `storage`, lịch sử migration, job `pg_cron`), mã hoá bằng mật khẩu rồi giữ 30 ngày ở mục *Artifacts* của lần chạy (tab Actions). Cần hai secret của repo: `SUPABASE_DB_URL` (chuỗi *Session pooler* ở Dashboard → Connect) và `BACKUP_PASSPHRASE`. Có nút *Run workflow* để chạy ngay, ví dụ trước khi sửa dữ liệu hàng loạt. Cách mở và khôi phục khi mất dữ liệu: xem `supabase/RESTORE.md`.
+- **Thử khôi phục**: `bash supabase/backup-test.sh file <file .tar.gpg>` mở một backup, khôi phục vào database tạm trong Docker và đối chiếu với production.
+- **Thủ công**: `supabase/backup.sql` chạy trong SQL Editor, trả về một script `INSERT` khôi phục dữ liệu các bảng.
+
 ### Ngôn ngữ giao diện
 
 Tiếng Việt (mặc định) và tiếng Anh; đổi bằng nút **VI / EN** ở thanh bên, trang đăng nhập và trang Tài khoản (lưu trong cookie `lang`).
