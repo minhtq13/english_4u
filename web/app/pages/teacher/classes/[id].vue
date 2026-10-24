@@ -2,6 +2,7 @@
 import type { Database, Tables, Views } from "~/types/database.types"
 import type { Course } from "~/utils/course"
 import type { GiveSettings } from "~/utils/classLesson"
+import type { SettingPatch } from "~/composables/useClassLessons"
 
 definePageMeta({ roles: ["teacher"] })
 
@@ -16,15 +17,14 @@ const { t } = useI18n()
 
 type ClassRow = Tables<"classes"> & { courses: Pick<Tables<"courses">, "name"> | null }
 type StudentRow = Pick<Views<"student_progress">, "user_id" | "full_name" | "email" | "username" | "submitted" | "waiting" | "ok" | "done" | "last_activity">
-type LessonRow = Pick<Views<"class_lesson_stats">, "lesson_id" | "submitted" | "waiting" | "ok" | "done">
+type LessonRow = Pick<Views<"class_lesson_stats">, "lesson_id" | "submitted" | "waiting" | "ok" | "done" | "started">
 
 const cls = shallowRef<ClassRow | null>(null)
 const outline = shallowRef<Course | null>(null)
-/** Lessons given to this class → how students may work on them. */
-type Setting = Pick<Tables<"class_lessons">, "show_results" | "for_all" | "closed" | "due_at" | "shuffle">
-const unlocked = ref<Map<string, Setting>>(new Map())
-/** For lessons not open to the whole class: the students it is open to. */
-const picks = ref<Map<string, Set<string>>>(new Map())
+/** Lessons given to this class (`unlocked`), who they are open to (`picks`), and every change to them. */
+const classLessons = useClassLessons(classId)
+const { settings: unlocked, picks, stateOf } = classLessons
+const queue = useGradingQueue()
 const students = shallowRef<StudentRow[]>([])
 const lessonRows = shallowRef<Record<string, LessonRow>>({})
 const otherClasses = shallowRef<Pick<Tables<"classes">, "id" | "name">[]>([])
@@ -39,7 +39,7 @@ async function loadStudents() {
     client.from("student_progress")
       .select("user_id, full_name, email, username, submitted, waiting, ok, done, last_activity")
       .eq("class_id", classId).order("full_name"),
-    client.from("class_lesson_stats").select("lesson_id, submitted, waiting, ok, done").eq("class_id", classId),
+    client.from("class_lesson_stats").select("lesson_id, submitted, waiting, ok, done, started").eq("class_id", classId),
   ])
   students.value = (st.data ?? []) as StudentRow[]
   lessonRows.value = Object.fromEntries(((ls.data ?? []) as LessonRow[]).map(r => [r.lesson_id ?? "", r]))
@@ -51,17 +51,15 @@ onMounted(async () => {
     if (e) throw e
     cls.value = data as ClassRow | null
     if (!cls.value) return
-    const [o, u, others] = await Promise.all([
+    const [o, others] = await Promise.all([
       load(cls.value.course_id, true),
-      client.from("class_lessons").select("lesson_id, show_results, for_all, closed, due_at, shuffle").eq("class_id", classId),
       client.from("classes").select("id, name").neq("id", classId).order("name"),
+      classLessons.load(),
       loadStudents(),
-      loadPicks(),
       loadMissing(),
       assignments.load(cls.value.course_id),
     ])
     outline.value = o
-    unlocked.value = new Map((u.data ?? []).map(r => [r.lesson_id, { show_results: r.show_results, for_all: r.for_all, closed: r.closed, due_at: r.due_at, shuffle: r.shuffle }]))
     otherClasses.value = others.data ?? []
   } catch (e) {
     error.value = t("classPage.loadFailed", { msg: (e as Error).message })
@@ -96,31 +94,27 @@ const lessonName = (id: string) => {
 const personName = (m: Missing) => m.full_name || m.username || "?"
 const remindText = (g: { lessonId: string; due: string | null; people: Missing[] }) =>
   t(g.due ? "classPage.remindDue" : "classPage.remind", { lesson: lessonName(g.lessonId), due: formatDate(g.due), names: g.people.map(personName).join(", ") })
-const copiedRemind = ref("")
-async function copyRemind(text: string, key: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copiedRemind.value = key
-    setTimeout(() => { if (copiedRemind.value === key) copiedRemind.value = "" }, 2000)
-  } catch { /* the list stays on screen to copy by hand */ }
-}
+const missingOf = (lessonId: string) => missingByLesson.value.find(g => g.lessonId === lessonId)
+const missingCount = (lessonId: string) => missingOf(lessonId)?.people.length ?? 0
+/** The lesson whose "Chưa nộp" popup is open. */
+const missingOpen = ref<string | null>(null)
+/** The lesson whose "Tình trạng nộp bài" popup (every student, where they stand) is open. */
+const progressOpen = ref<string | null>(null)
+const remindAll = computed(() => missingByLesson.value.map(remindText).join("\n"))
 
-async function loadPicks() {
-  const { data } = await client.from("class_lesson_students").select("lesson_id, student_id").eq("class_id", classId)
-  const m = new Map<string, Set<string>>()
-  for (const r of data ?? []) m.set(r.lesson_id, new Set([...(m.get(r.lesson_id) ?? []), r.student_id]))
-  picks.value = m
-}
-
-// ---- giving lessons to the class ----
-const error2 = ref("")
-function fail(e: { message: string } | null) {
+// ---- changing lessons given to the class: one busy key per control; the outcome shows under that lesson ----
+/** The last change's outcome, shown inside the lesson it was about (the list is long; the page top is out of sight). */
+const notice = ref<{ lessonId: string; text: string; ok: boolean } | null>(null)
+const tell = (lessonId: string, text: string, ok = true) => { notice.value = { lessonId, text, ok } }
+/** Runs one change on a lesson with `key` marked busy; true when it went through. */
+async function act(lessonId: string, key: string, change: () => Promise<string | null>) {
+  busy.value = key
+  notice.value = null
+  const e = await change()
   busy.value = null
-  if (e) error2.value = t("common.notChanged", { msg: errorText(e.message) })
-  return !!e
+  if (e) tell(lessonId, e, false)
+  return !e
 }
-const patchSetting = (lessonId: string, patch: Partial<Setting>) =>
-  (unlocked.value = new Map(unlocked.value).set(lessonId, { ...unlocked.value.get(lessonId)!, ...patch }))
 
 // Taking a lesson back is a second click; the database refuses it once students have worked on it.
 const armed = ref<string | null>(null)
@@ -139,39 +133,23 @@ const pickable = computed(() => students.value.map(st => ({ id: st.user_id ?? ""
 const givenToOthers = (lessonId: string) => assignments.classesOf(lessonId).filter(c => c.id !== classId).map(c => c.name)
 
 async function give(lessonId: string, settings: GiveSettings) {
-  busy.value = lessonId
-  error2.value = message.value = ""
-  const { error: e } = await client.from("class_lessons").insert({
-    class_id: classId, lesson_id: lessonId, unlocked_by: user.value?.sub,
-    due_at: settings.dueAt, for_all: settings.forAll, show_results: settings.showResults, shuffle: settings.shuffle,
-  })
-  if (fail(e)) return
-  if (!settings.forAll) {
-    const { error: e2 } = await client.from("class_lesson_students")
-      .insert(settings.studentIds.map(id => ({ class_id: classId, lesson_id: lessonId, student_id: id })))
-    if (e2) error2.value = t("common.notChanged", { msg: errorText(e2.message) })
-    else picks.value = new Map(picks.value).set(lessonId, new Set(settings.studentIds))
+  const ok = await act(lessonId, lessonId, () => classLessons.give(lessonId, settings))
+  if (unlocked.value.has(lessonId)) {
+    setupOpen.value = null
+    if (ok) tell(lessonId, t("classPage.setup.given", { lesson: lessonName(lessonId), name: cls.value?.name ?? "" }))
+    assignments.load(cls.value!.course_id)
+    loadMissing()
   }
-  unlocked.value = new Map(unlocked.value).set(lessonId, {
-    show_results: settings.showResults, for_all: settings.forAll, closed: false, due_at: settings.dueAt, shuffle: settings.shuffle,
-  })
-  busy.value = null
-  setupOpen.value = null
-  message.value = t("classPage.setup.given", { lesson: lessonName(lessonId), name: cls.value?.name ?? "" })
-  assignments.load(cls.value!.course_id)
-  loadMissing()
 }
+
+/** Taking back is refused once any student has opened the lesson, even without submitting. */
+const canTakeBack = (lessonId: string) => lessonStats(lessonId).started === 0
 
 async function takeBack(lessonId: string) {
   if (!arm(`back-${lessonId}`)) return
   armed.value = null
-  busy.value = lessonId
-  error2.value = message.value = ""
-  const { error: e } = await client.from("class_lessons").delete().eq("class_id", classId).eq("lesson_id", lessonId)
-  if (fail(e)) return
-  const next = new Map(unlocked.value)
-  next.delete(lessonId)
-  unlocked.value = next
+  if (!await act(lessonId, lessonId, () => classLessons.takeBack(lessonId))) return
+  tell(lessonId, t("classPage.takenBack", { lesson: lessonName(lessonId) }))
   assignments.load(cls.value!.course_id)
   loadMissing()
 }
@@ -179,63 +157,42 @@ async function takeBack(lessonId: string) {
 async function setClosed(lessonId: string, close: boolean) {
   if (close && !arm(`close-${lessonId}`)) return
   armed.value = null
-  busy.value = lessonId
-  error2.value = message.value = ""
-  const { data, error: e } = await client.rpc("close_class_lesson", { target_class: classId, target_lesson: lessonId, close_it: close })
-  if (fail(e)) return
-  const due = unlocked.value.get(lessonId)?.due_at
-  patchSetting(lessonId, close ? { closed: true } : { closed: false, due_at: isPastDue(due) ? null : due })
-  message.value = close
-    ? [t("classPage.closed"), data ? t("classPage.autoSubmitted", { n: data }) : "", t("classPage.closedReview")].filter(Boolean).join(" ")
-    : t("classPage.reopened")
-  if (close && data) await loadStudents()
+  let submitted = 0
+  const ok = await act(lessonId, lessonId, async () => {
+    const r = await classLessons.setClosed(lessonId, close)
+    submitted = r.submitted
+    return r.error
+  })
+  if (!ok) return
+  tell(lessonId, close
+    ? [t("classPage.closed"), submitted ? t("classPage.autoSubmitted", { n: submitted }) : "", t("classPage.closedReview")].filter(Boolean).join(" ")
+    : t("classPage.reopened"))
+  if (close && submitted) await loadStudents()
   loadMissing()
 }
 
-async function setShuffle(lessonId: string, on: boolean) {
-  busy.value = `shuffle-${lessonId}`
-  error2.value = ""
-  const { error: e } = await client.from("class_lessons").update({ shuffle: on }).eq("class_id", classId).eq("lesson_id", lessonId)
-  if (fail(e)) return
-  patchSetting(lessonId, { shuffle: on })
+/** Results at submit, shuffle, who may work: one switch each. Who may work changes who still owes work. */
+async function setSetting(lessonId: string, key: "show" | "shuffle" | "who", patch: SettingPatch) {
+  if (await act(lessonId, `${key}-${lessonId}`, () => classLessons.update(lessonId, patch)) && key === "who") loadMissing()
 }
 
-async function setShowResults(lessonId: string, show: boolean) {
-  busy.value = `show-${lessonId}`
-  error2.value = ""
-  const { error: e } = await client.from("class_lessons").update({ show_results: show }).eq("class_id", classId).eq("lesson_id", lessonId)
-  if (fail(e)) return
-  patchSetting(lessonId, { show_results: show })
-}
-
-// ---- grading shortcuts ----
-async function startQueue(lessonId: string) {
-  const { data } = await client.from("attempts")
-    .select("id, profiles!inner(class_id)")
-    .eq("lesson_id", lessonId).eq("status", "submitted").eq("profiles.class_id", classId)
-    .order("submitted_at", { ascending: true }).limit(1)
-  const first = data?.[0]?.id
-  if (first) await navigateTo(`/teacher/attempts/${first}?queue=${encodeURIComponent(lessonId)}&class=${classId}`)
-}
 async function releaseAll(lessonId: string) {
   if (!arm(`release-${lessonId}`)) return
   armed.value = null
-  busy.value = `release-${lessonId}`
-  error2.value = message.value = ""
-  const { data, error: e } = await client.rpc("release_class_results", { target_class: classId, target_lesson: lessonId })
-  if (fail(e)) return
-  message.value = t("classPage.released", { n: data ?? 0 })
+  let released = 0
+  const ok = await act(lessonId, `release-${lessonId}`, async () => {
+    const r = await classLessons.release(lessonId)
+    released = r.released
+    return r.error
+  })
+  if (!ok) return
+  tell(lessonId, t("classPage.released", { n: released }))
   await loadStudents()
 }
 
 // ---- deadline: past it students cannot work, and the lesson closes itself (pg_cron, every minute) ----
 const dueEditing = ref<string | null>(null)
 const dueValue = ref("")
-/** datetime-local value (local time) ↔ ISO timestamp */
-const toLocalInput = (iso: string) => {
-  const d = new Date(iso)
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-}
 function editDue(lessonId: string) {
   const current = unlocked.value.get(lessonId)?.due_at
   // Default: one week from now at 21:00.
@@ -247,42 +204,44 @@ function editDue(lessonId: string) {
 async function saveDue(lessonId: string, clear = false) {
   const due = clear ? null : new Date(dueValue.value).toISOString()
   if (due && isPastDue(due)) {
-    error2.value = t("classPage.dueInPast")
+    tell(lessonId, t("classPage.dueInPast"), false)
     return
   }
-  busy.value = `due-${lessonId}`
-  error2.value = ""
-  const { error: e } = await client.from("class_lessons").update({ due_at: due }).eq("class_id", classId).eq("lesson_id", lessonId)
-  if (fail(e)) return
-  patchSetting(lessonId, { due_at: due })
+  if (!await act(lessonId, `due-${lessonId}`, () => classLessons.update(lessonId, { due_at: due }))) return
   loadMissing()
   dueEditing.value = null
-  message.value = due ? t("classPage.dueSet", { date: formatDate(due) }) : t("classPage.dueCleared")
+  tell(lessonId, due ? t("classPage.dueSet", { date: formatDate(due) }) : t("classPage.dueCleared"))
+}
+
+// ---- a given lesson folds down to one line; unfolded it shows its numbers and controls ----
+const openLessons = shallowRef(new Set<string>())
+const isOpen = (lessonId: string) => openLessons.value.has(lessonId)
+function toggleOpen(lessonId: string) {
+  const next = new Set(openLessons.value)
+  if (!next.delete(lessonId)) next.add(lessonId)
+  openLessons.value = next
+}
+/** The given lessons on the current page of the list: what "expand all" acts on. */
+const givenShown = computed(() => lessonFilter.groups.flatMap(g => g.lessons).filter(l => unlocked.value.has(l.id)).map(l => l.id))
+const allOpen = computed(() => givenShown.value.length > 0 && givenShown.value.every(isOpen))
+function toggleAll() {
+  const next = new Set(openLessons.value)
+  for (const id of givenShown.value) {
+    if (allOpen.value) next.delete(id)
+    else next.add(id)
+  }
+  openLessons.value = next
+}
+/** One line for a folded lesson: how many have submitted, how well, how many wait for a grade. */
+const summaryOf = (lessonId: string) => {
+  const n = lessonStats(lessonId)
+  return t("classPage.summary", { done: n.done, total: students.value.length, acc: n.accuracy === null ? "-" : `${n.accuracy}%`, waiting: n.waiting })
 }
 
 // ---- who may work on a lesson (default: the whole class) ----
-const expanded = ref<string | null>(null)
-async function setForAll(lessonId: string, forAll: boolean) {
-  busy.value = `who-${lessonId}`
-  error2.value = ""
-  const { error: e } = await client.from("class_lessons").update({ for_all: forAll }).eq("class_id", classId).eq("lesson_id", lessonId)
-  if (fail(e)) return
-  patchSetting(lessonId, { for_all: forAll })
-  loadMissing()
-}
+const whoOpen = ref<string | null>(null)
 async function togglePick(lessonId: string, studentId: string) {
-  const set = new Set(picks.value.get(lessonId) ?? [])
-  const on = set.has(studentId)
-  busy.value = `pick-${lessonId}-${studentId}`
-  error2.value = ""
-  const { error: e } = on
-    ? await client.from("class_lesson_students").delete().eq("class_id", classId).eq("lesson_id", lessonId).eq("student_id", studentId)
-    : await client.from("class_lesson_students").insert({ class_id: classId, lesson_id: lessonId, student_id: studentId })
-  if (fail(e)) return
-  if (on) set.delete(studentId)
-  else set.add(studentId)
-  picks.value = new Map(picks.value).set(lessonId, set)
-  loadMissing()
+  if (await act(lessonId, `pick-${lessonId}-${studentId}`, () => classLessons.togglePick(lessonId, studentId))) loadMissing()
 }
 const whoText = (lessonId: string) => {
   const st = unlocked.value.get(lessonId)
@@ -293,19 +252,15 @@ const whoText = (lessonId: string) => {
 const lessonIds = computed(() => outline.value?.order ?? [])
 const { isAdmin } = useProfile()
 const canEditLesson = (l: { createdBy: string | null }) => isAdmin.value || (!!l.createdBy && l.createdBy === user.value?.sub)
-const pct = (part: number, whole: number) => (whole ? Math.round((part / whole) * 100) : null)
 
 // Lesson list: search, kind, term, author and how the lesson stands in this class, paged in the browser.
 const LESSON_STATUSES = ["given", "notGiven", "open", "closed", "waiting"] as const
 const lessonStatuses = computed(() => LESSON_STATUSES.map(key => ({ key, label: t(`lessonFilter.status.${key}`) })))
 const lessonFilter = useLessonFilter(outline, {
   match: (l, status) => {
-    const st = unlocked.value.get(l.id)
     switch (status) {
-      case "given": return !!st
-      case "notGiven": return !st
-      case "open": return !!st && !st.closed && !isPastDue(st.due_at)
-      case "closed": return !!st && (st.closed || isPastDue(st.due_at))
+      case "given": return stateOf(l.id) !== "notGiven"
+      case "notGiven": case "open": case "closed": return stateOf(l.id) === status
       case "waiting": return lessonStats(l.id).waiting > 0
       default: return true
     }
@@ -314,10 +269,8 @@ const lessonFilter = useLessonFilter(outline, {
 
 const lessonStats = (id: string) => {
   const r = lessonRows.value[id]
-  return { done: r?.submitted ?? 0, accuracy: accuracyOf(r?.ok, r?.done), waiting: r?.waiting ?? 0 }
+  return { done: r?.submitted ?? 0, accuracy: percentOf(r?.ok, r?.done), waiting: r?.waiting ?? 0, started: r?.started ?? 0 }
 }
-const studentStats = (s: StudentRow) =>
-  ({ done: s.submitted ?? 0, accuracy: accuracyOf(s.ok, s.done), waiting: s.waiting ?? 0, last: s.last_activity })
 
 // ---- moving a student ----
 async function moveStudent(s: StudentRow, target: string) {
@@ -364,7 +317,6 @@ async function copyCode() {
         </div>
       </div>
       <p v-if="message" class="fb ok">{{ message }}</p>
-      <p v-if="error2" class="fb no">{{ error2 }}</p>
 
       <section class="card">
         <div class="section-head">
@@ -384,24 +336,43 @@ async function copyCode() {
         <p v-if="!lessonIds.length" class="muted small">{{ $t("classPage.noLessons") }}</p>
         <LessonFilters v-else :filter="lessonFilter" :phases="outline?.phases ?? []" :statuses="lessonStatuses" />
         <p v-if="lessonIds.length && !lessonFilter.total" class="muted small">{{ $t("lessonFilter.none") }}</p>
+        <p v-if="givenShown.length" class="expand-all">
+          <button type="button" class="link small" @click="toggleAll">{{ allOpen ? $t("classPage.collapseAll") : $t("classPage.expandAll") }}</button>
+        </p>
 
         <template v-for="phase in lessonFilter.groups" :key="phase.id">
           <h3 v-if="phase.lessons.length" class="phase">{{ localName(phase.name) }}</h3>
           <div v-for="l in phase.lessons" :key="l.id" class="lesson" :class="{ given: unlocked.has(l.id) }">
             <div class="lesson-top">
               <div class="lesson-name">
+                <button
+                  v-if="unlocked.has(l.id)" type="button" class="chev" :aria-expanded="isOpen(l.id)" :aria-controls="`lesson-${l.id}`"
+                  :aria-label="isOpen(l.id) ? $t('classPage.collapse') : $t('classPage.expand')" :title="isOpen(l.id) ? $t('classPage.collapse') : $t('classPage.expand')"
+                  @click="toggleOpen(l.id)"
+                >{{ isOpen(l.id) ? "▾" : "▸" }}</button>
                 <NuxtLink :to="`/lessons/${l.id}`"><b>{{ l.label }}</b> - {{ l.title }}</NuxtLink>
                 <span v-if="l.createdBy" class="badge own">{{ $t("classPage.byTeacher") }}</span>
-                <NuxtLink v-if="canEditLesson(l)" :to="`/teacher/lessons/${l.id}?class=${classId}`" class="small">{{ $t("common.edit") }}</NuxtLink>
               </div>
-              <button
-                v-if="!unlocked.has(l.id)" class="btn small" :class="setupOpen === l.id ? 'ghost' : 'primary'"
-                :aria-expanded="setupOpen === l.id" :aria-controls="`setup-${l.id}`" @click="toggleSetup(l.id)"
-              >{{ $t("classPage.give") }} {{ setupOpen === l.id ? "▴" : "▾" }}</button>
-              <span v-else class="badge" :class="unlocked.get(l.id)!.closed ? '' : 'done'">
-                {{ unlocked.get(l.id)!.closed ? $t("classPage.stateClosed") : $t("classPage.stateOpen") }}
+              <span class="top-actions">
+                <NuxtLink v-if="canEditLesson(l)" :to="`/teacher/lessons/${l.id}?class=${classId}`" class="btn small ghost edit-btn" :title="$t('classPage.editLessonTitle')">
+                  ✎ {{ $t("classPage.editLesson") }}
+                </NuxtLink>
+                <button v-if="unlocked.has(l.id) && missingCount(l.id)" type="button" class="btn small ghost missing-btn" @click="missingOpen = l.id">
+                  {{ $t("classPage.missingBtn", { n: missingCount(l.id) }) }}
+                </button>
+                <button
+                  v-if="!unlocked.has(l.id)" class="btn small" :class="setupOpen === l.id ? 'ghost' : 'primary'"
+                  :aria-expanded="setupOpen === l.id" :aria-controls="`setup-${l.id}`" @click="toggleSetup(l.id)"
+                >{{ $t("classPage.give") }} {{ setupOpen === l.id ? "▴" : "▾" }}</button>
+                <span v-else class="badge" :class="stateOf(l.id) === 'closed' ? '' : 'done'">
+                  {{ stateOf(l.id) === "closed" ? $t("classPage.stateClosed") : $t("classPage.stateOpen") }}
+                </span>
               </span>
             </div>
+            <p v-if="unlocked.has(l.id) && !isOpen(l.id)" class="small muted folded">
+              {{ summaryOf(l.id) }}
+              <span v-if="unlocked.get(l.id)!.due_at" :class="{ late: isPastDue(unlocked.get(l.id)!.due_at) }"> · ⏰ {{ formatDate(unlocked.get(l.id)!.due_at) }}</span>
+            </p>
 
             <ClassLessonSetup
               v-if="!unlocked.has(l.id) && setupOpen === l.id"
@@ -409,12 +380,14 @@ async function copyCode() {
               :assigned-to="givenToOthers(l.id)" :busy="busy === l.id"
               @give="give(l.id, $event)" @cancel="setupOpen = null"
             />
+            <!-- Outside the "given" block, so it also shows after a lesson is taken back or fails to be given. -->
+            <p v-if="notice?.lessonId === l.id" class="fb small notice" :class="notice.ok ? 'ok' : 'no'" role="status">{{ notice.text }}</p>
 
-            <template v-if="unlocked.has(l.id)">
+            <div v-if="unlocked.has(l.id) && isOpen(l.id)" :id="`lesson-${l.id}`" class="lesson-body">
               <div class="lesson-stats">
                 <div class="stat-cell">
                   <span class="small muted">{{ $t("classPage.submitted") }}</span>
-                  <StatBar :value="pct(lessonStats(l.id).done, students.length)" :text="`${lessonStats(l.id).done}/${students.length}`" />
+                  <StatBar :value="percentOf(lessonStats(l.id).done, students.length)" :text="`${lessonStats(l.id).done}/${students.length}`" />
                 </div>
                 <div class="stat-cell">
                   <span class="small muted">{{ $t("classPage.accuracy") }}</span>
@@ -425,7 +398,7 @@ async function copyCode() {
                   <span class="row">
                     <span class="badge" :class="lessonStats(l.id).waiting ? 'submitted' : ''">{{ lessonStats(l.id).waiting }}</span>
                     <template v-if="lessonStats(l.id).waiting">
-                      <button class="link small" @click="startQueue(l.id)">{{ $t("classPage.queue") }}</button>
+                      <button class="link small" @click="queue.start(l.id, classId)">{{ $t("classPage.queue") }}</button>
                       <button
                         class="btn small" :class="armed === `release-${l.id}` ? 'danger' : 'ghost'" :disabled="busy === `release-${l.id}`"
                         :title="$t('classPage.releaseTitle')" @click="releaseAll(l.id)"
@@ -433,6 +406,10 @@ async function copyCode() {
                     </template>
                   </span>
                 </div>
+              </div>
+
+              <div>
+                <button type="button" class="btn small" @click="progressOpen = l.id">📋 {{ $t("classPage.lessonProgress.open") }}</button>
               </div>
 
               <div class="lesson-controls">
@@ -443,11 +420,15 @@ async function copyCode() {
                     :title="$t('classPage.closeTitle')" @click="setClosed(l.id, true)"
                   >{{ armed === `close-${l.id}` ? $t("classPage.closeConfirm") : $t("classPage.close") }}</button>
                   <button
-                    class="btn small" :class="armed === `back-${l.id}` ? 'danger' : 'ghost'" :disabled="busy === l.id"
+                    v-if="canTakeBack(l.id)" class="btn small" :class="armed === `back-${l.id}` ? 'danger' : 'ghost'" :disabled="busy === l.id"
                     :title="$t('classPage.takeBackTitle')" @click="takeBack(l.id)"
                   >{{ armed === `back-${l.id}` ? $t("classPage.takeBackConfirm") : $t("classPage.takeBack") }}</button>
-                  <button class="btn ghost small" @click="expanded = expanded === l.id ? null : l.id">
-                    👥 {{ whoText(l.id) }} {{ expanded === l.id ? "▴" : "▾" }}
+                  <span v-else class="opt">
+                    <button type="button" class="btn small ghost" disabled>{{ $t("classPage.takeBack") }}</button>
+                    <InfoTip :text="$t('classPage.takeBackBlockedTip', lessonStats(l.id).started)" />
+                  </span>
+                  <button class="btn ghost small" @click="whoOpen = whoOpen === l.id ? null : l.id">
+                    👥 {{ whoText(l.id) }} {{ whoOpen === l.id ? "▴" : "▾" }}
                   </button>
                 </span>
 
@@ -468,21 +449,27 @@ async function copyCode() {
                 </span>
 
                 <span class="toggles">
-                  <label class="toggle small">
-                    <input type="checkbox" :checked="unlocked.get(l.id)!.show_results" :disabled="busy === `show-${l.id}`" @change="setShowResults(l.id, ($event.target as HTMLInputElement).checked)">
-                    {{ $t("classPage.showResults") }}
-                  </label>
-                  <label class="toggle small" :title="$t('classPage.shuffleTitle')">
-                    <input type="checkbox" :checked="unlocked.get(l.id)!.shuffle" :disabled="busy === `shuffle-${l.id}`" @change="setShuffle(l.id, ($event.target as HTMLInputElement).checked)">
-                    {{ $t("classPage.shuffle") }}
-                  </label>
+                  <span class="opt">
+                    <label class="toggle small">
+                      <input type="checkbox" :checked="unlocked.get(l.id)!.show_results" :disabled="busy === `show-${l.id}`" @change="setSetting(l.id, 'show', { show_results: ($event.target as HTMLInputElement).checked })">
+                      {{ $t("classPage.showResults") }}
+                    </label>
+                    <InfoTip :text="$t('giveForm.showResultsTip')" />
+                  </span>
+                  <span class="opt">
+                    <label class="toggle small">
+                      <input type="checkbox" :checked="unlocked.get(l.id)!.shuffle" :disabled="busy === `shuffle-${l.id}`" @change="setSetting(l.id, 'shuffle', { shuffle: ($event.target as HTMLInputElement).checked })">
+                      {{ $t("classPage.shuffle") }}
+                    </label>
+                    <InfoTip :text="$t('giveForm.shuffleTip')" />
+                  </span>
                 </span>
               </div>
 
-              <div v-if="expanded === l.id" class="who-panel">
+              <div v-if="whoOpen === l.id" class="who-panel">
                 <span class="row">
-                  <label class="toggle"><input type="radio" :checked="unlocked.get(l.id)!.for_all" :disabled="busy === `who-${l.id}`" @change="setForAll(l.id, true)"> {{ $t("classPage.whoAll") }}</label>
-                  <label class="toggle"><input type="radio" :checked="!unlocked.get(l.id)!.for_all" :disabled="busy === `who-${l.id}`" @change="setForAll(l.id, false)"> {{ $t("classPage.whoSome") }}</label>
+                  <label class="toggle"><input type="radio" :checked="unlocked.get(l.id)!.for_all" :disabled="busy === `who-${l.id}`" @change="setSetting(l.id, 'who', { for_all: true })"> {{ $t("classPage.whoAll") }}</label>
+                  <label class="toggle"><input type="radio" :checked="!unlocked.get(l.id)!.for_all" :disabled="busy === `who-${l.id}`" @change="setSetting(l.id, 'who', { for_all: false })"> {{ $t("classPage.whoSome") }}</label>
                 </span>
                 <template v-if="!unlocked.get(l.id)!.for_all">
                   <p v-if="!students.length" class="muted small">{{ $t("classPage.noStudents") }}</p>
@@ -495,72 +482,30 @@ async function copyCode() {
                   <p class="hint">{{ $t("classPage.whoHint") }}</p>
                 </template>
               </div>
-            </template>
+            </div>
           </div>
         </template>
         <Pager v-model:page="lessonFilter.page" :page-size="lessonFilter.pageSize" :total="lessonFilter.total" />
       </section>
 
-      <section v-if="missingByLesson.length" class="card">
-        <div class="section-head">
-          <h2>{{ $t("classPage.missing") }}</h2>
-          <button class="btn ghost small" @click="copyRemind(missingByLesson.map(remindText).join('\n'), 'all')">
-            {{ copiedRemind === "all" ? $t("common.copied") : $t("classPage.copyAll") }}
-          </button>
-        </div>
-        <p class="hint">{{ $t("classPage.missingHint") }}</p>
-        <div v-for="g in missingByLesson" :key="g.lessonId" class="missing">
-          <div class="missing-head">
-            <b>{{ lessonName(g.lessonId) }}</b>
-            <span v-if="g.due" class="small" :class="{ late: isPastDue(g.due) }">⏰ {{ formatDate(g.due) }}<template v-if="timeLeft(g.due)"> · {{ timeLeft(g.due) }}</template></span>
-            <span class="small muted">{{ $t("common.students", g.people.length) }}</span>
-            <button class="link small" @click="copyRemind(remindText(g), g.lessonId)">{{ copiedRemind === g.lessonId ? $t("common.copied") : $t("common.copy") }}</button>
-          </div>
-          <div class="row names">
-            <span v-for="m in g.people" :key="m.user_id ?? ''" class="name-chip" :class="{ started: m.started }" :title="m.started ? $t('classPage.inProgress') : $t('classPage.notStarted')">
-              {{ personName(m) }}<template v-if="m.started"> · {{ $t("classPage.inProgress") }}</template>
-            </span>
-          </div>
-        </div>
-      </section>
+      <ClassStudents
+        :students="students" :given="unlocked.size" :other-classes="otherClasses" :busy="busy" :join-code="cls.join_code"
+        @move="moveStudent"
+      />
 
-      <section class="card">
-        <div class="section-head">
-          <h2>{{ $t("nav.students") }}</h2>
-          <NuxtLink to="/teacher/students" class="btn ghost small">{{ $t("classPage.manageStudents") }} →</NuxtLink>
-        </div>
-        <p v-if="!students.length" class="muted small" v-html="$t('classPage.noStudentsCode', { code: cls.join_code })" />
-        <div v-else class="table-wrap">
-          <table class="stats-table">
-            <thead>
-              <tr>
-                <th>{{ $t("common.student") }}</th><th>{{ $t("classPage.submittedLessons") }}</th><th>{{ $t("classPage.accuracy") }}</th>
-                <th class="n">{{ $t("classPage.waiting") }}</th><th>{{ $t("classPage.lastActive") }}</th><th>{{ $t("classPage.moveTo") }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="s in students" :key="s.user_id ?? ''">
-                <td><NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink><br><span class="small muted">{{ loginOf(s) }}</span></td>
-                <td><StatBar :value="pct(studentStats(s).done, unlocked.size)" :text="`${studentStats(s).done}/${unlocked.size}`" /></td>
-                <td><StatBar :value="studentStats(s).accuracy" /></td>
-                <td class="n">{{ studentStats(s).waiting }}</td>
-                <td class="small muted">{{ studentStats(s).last ? formatDate(studentStats(s).last) : $t("classPage.neverActive") }}</td>
-                <td>
-                  <select
-                    :id="`move-${s.user_id}`"
-                    :disabled="busy === s.user_id || !otherClasses.length"
-                    value=""
-                    @change="moveStudent(s, ($event.target as HTMLSelectElement).value)"
-                  >
-                    <option value="">{{ otherClasses.length ? $t("classPage.pickClass") : $t("classPage.noOtherClass") }}</option>
-                    <option v-for="o in otherClasses" :key="o.id" :value="o.id">{{ o.name }}</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <LessonProgressDialog
+        v-if="progressOpen"
+        :lesson-id="progressOpen" :lesson-name="lessonName(progressOpen)" :classes="[{ id: classId, name: cls.name }]"
+        @close="progressOpen = null"
+      />
+
+      <MissingWorkDialog
+        v-if="missingOpen"
+        :lesson="lessonName(missingOpen)" :due="missingOf(missingOpen)?.due ?? unlocked.get(missingOpen)?.due_at ?? null"
+        :people="missingOf(missingOpen)?.people ?? []"
+        :remind="missingOf(missingOpen) ? remindText(missingOf(missingOpen)!) : ''" :remind-all="remindAll"
+        @close="missingOpen = null"
+      />
     </template>
   </div>
 </template>
@@ -584,6 +529,14 @@ async function copyCode() {
 .lesson-name { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
 .lesson-name a { text-decoration: none; }
 .lesson-top .btn { padding: 4px 12px; }
+.top-actions { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.missing-btn { color: var(--warn); border-color: var(--warn); }
+.edit-btn { text-decoration: none; }
+.chev { width: 26px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--muted); cursor: pointer; flex: none; align-self: center; }
+.chev:hover { border-color: var(--accent); color: var(--accent); }
+.folded { margin: -4px 0 0 34px; }
+.lesson-body { display: flex; flex-direction: column; gap: 10px; }
+.expand-all { margin: 0 0 8px; text-align: right; }
 .own { font-size: .72rem; }
 .lesson-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .stat-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -596,28 +549,19 @@ async function copyCode() {
 .due { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .due input { width: auto; padding: 2px 6px; }
 .toggles { display: inline-flex; gap: 6px 14px; flex-wrap: wrap; }
+.opt { display: inline-flex; align-items: center; gap: 6px; }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .late { color: var(--bad); }
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
 .link:hover { text-decoration: underline; }
+.notice { margin: 0; }
 .who-panel { display: flex; flex-direction: column; gap: 8px; background: var(--bg); border-radius: 8px; padding: 10px 12px; }
 .picks { gap: 6px; }
 .pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px;
   background: var(--card); cursor: pointer; font-size: .88rem; }
 .pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
-.missing { border-top: 1px solid var(--line); padding: 10px 0; }
-.missing:first-of-type { border-top: 0; }
-.missing-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-.names { gap: 6px; }
-.name-chip { font-size: .85rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); }
-.name-chip.started { border-color: var(--warn); background: var(--warn-soft); color: var(--warn); }
 
-.stats-table th { white-space: nowrap; }
-.stats-table td:has(.meter) { min-width: 140px; }
-.stats-table a { text-decoration: none; }
-.stats-table select { width: auto; }
-.n { text-align: right; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) {
   .lesson-stats { grid-template-columns: 1fr 1fr; }
   .stat-cell.waiting { grid-column: span 2; }

@@ -16,7 +16,7 @@ const groups = computed<NavGroup[]>(() => {
   const teacher = {
     title: t("nav.groupTeach"),
     links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading"),
-      link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson")],
+      link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson"), link("/teacher/bank", "bank")],
   }
   const admin = {
     title: t("nav.groupAdmin"),
@@ -96,6 +96,7 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
     <main class="container" :class="{ wide: /^\/(admin|teacher|courses)/.test($route.path) }">
       <slot />
     </main>
+    <ScrollTop v-if="user" />
   </div>
 </template>
 

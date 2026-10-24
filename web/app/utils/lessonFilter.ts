@@ -1,4 +1,5 @@
 import type { LessonSummary } from "~/utils/course"
+import { fold } from "./text"
 
 // Filters for lesson lists. A course outline is bounded by the curriculum and already loaded whole,
 // so these run in the browser (useLessonFilter); lists that grow with users are filtered in the database instead.
@@ -10,9 +11,6 @@ export const LESSON_KIND = labels("lessonFilter.kind", LESSON_KINDS)
 /** Who made the lesson: shipped with the course, made by a teacher in the editor, or by the signed-in user. */
 export const LESSON_AUTHORS = ["builtin", "teacher", "mine"] as const
 export const LESSON_AUTHOR = labels("lessonFilter.author", LESSON_AUTHORS)
-
-/** Lower case without Vietnamese accents, so "luyen de" finds "Luyện đề". */
-export const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[đĐ]/g, "d").toLowerCase()
 
 export function lessonKind(l: Pick<LessonSummary, "label">): LessonKind {
   const label = fold(l.label).trim()

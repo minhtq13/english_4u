@@ -1,5 +1,7 @@
 import DOMPurify from "dompurify"
 import type { Enums, Tables, Views } from "~/types/database.types"
+import { currentLang, labels, tr } from "./i18n"
+import { SECTION_KINDS, kindOf, type StoredItem } from "./sectionKinds"
 
 // Lesson content lives in Supabase (phases → lessons → lesson_sections → section_items).
 // The types below are the shape the lesson components work with; toLesson() maps database rows into it.
@@ -92,13 +94,17 @@ export interface Answer {
   chosen?: number[]
 }
 
-export interface Score { ok: number; done: number; total: number }
+// A type alias (not an interface) so it passes straight to $t() as named parameters.
+export type Score = { ok: number; done: number; total: number }
 
-type ItemRow = Tables<"section_items">
-type SectionRow = Tables<"lesson_sections"> & { section_items: ItemRow[] }
+// The columns a lesson is built from: database rows, or a draft in the editor shaped like them (draftToLesson).
+type ItemRow = Pick<Tables<"section_items">, "section_id" | "position"> & StoredItem
+type SectionFields = Pick<Tables<"lesson_sections">,
+  "id" | "type" | "position" | "title" | "time_label" | "hint" | "body" | "placeholder" | "score_key" | "short_input">
+type SectionRow = SectionFields & { section_items: ItemRow[] }
 /** Result of `lessons` selected with `lesson_sections(*), phases(course_id)`. */
-export type LessonRow = Tables<"lessons"> & {
-  lesson_sections: Tables<"lesson_sections">[]
+export type LessonRow = Pick<Tables<"lessons">, "id" | "label" | "phase_id" | "title" | "description" | "heading" | "subtitle"> & {
+  lesson_sections: SectionFields[]
   phases: Pick<Tables<"phases">, "course_id"> | null
 }
 
@@ -125,28 +131,16 @@ function toSection(s: SectionRow): Section {
     case "cards":
       return { ...base, type: "cards", items: items.map(i => [safe(i.prompt ?? ""), safe(i.back ?? "")] as [string, string]) }
     case "mcq":
+      return { ...base, type: "mcq", key, passage: safeOpt(s.body), items: items.map((i, k) => SECTION_KINDS.mcq.item(i, k + 1)) }
     case "error":
-      return {
-        ...base, type: s.type, key, ...(s.type === "mcq" ? { passage: safeOpt(s.body) } : {}),
-        items: items.map((i, k) => ({
-          n: k + 1, q: safe(i.prompt ?? ""), opts: i.options ?? [], a: (i.correct_option ?? 0) - 1, why: safeOpt(i.explanation), tag: opt(i.tag),
-        })),
-      }
+      return { ...base, type: "error", key, items: items.map((i, k) => SECTION_KINDS.error.item(i, k + 1)) }
     case "match":
-      return {
-        ...base, type: "match", key, choices: items[0]?.options ?? [],
-        items: items.map((i, k) => ({ n: k + 1, q: safe(i.prompt ?? ""), a: i.back ?? "", why: safeOpt(i.explanation), tag: opt(i.tag) })),
-      }
+      // lesson_items() serves every right side of the section, shuffled, in each item's options.
+      return { ...base, type: "match", key, choices: items[0]?.options ?? [], items: items.map((i, k) => SECTION_KINDS.match.item(i, k + 1)) }
     case "typed":
-      return {
-        ...base, type: "typed", key, short: s.short_input, passage: safeOpt(s.body),
-        items: items.map((i, k) => ({ n: k + 1, q: safe(i.prompt ?? ""), ans: i.answers ?? [], why: safeOpt(i.explanation), tag: opt(i.tag) })),
-      }
+      return { ...base, type: "typed", key, short: s.short_input, passage: safeOpt(s.body), items: items.map((i, k) => SECTION_KINDS.typed.item(i, k + 1)) }
     case "order":
-      return {
-        ...base, type: "order", key,
-        items: items.map((i, k) => ({ n: k + 1, words: (i.words ?? []).map(w => w.trim()), prompt: opt(i.prompt), ans: i.answers ?? [], why: safeOpt(i.explanation), tag: opt(i.tag) })),
-      }
+      return { ...base, type: "order", key, items: items.map((i, k) => SECTION_KINDS.order.item(i, k + 1)) }
   }
 }
 
@@ -218,22 +212,7 @@ export function gradeLocal(lesson: Lesson, responses: Record<string, Response>):
     s.items.forEach((it, i) => {
       const qid = qidOf(s.key, it, i)
       const given = responses[qid]?.given
-      if (!given) return
-      const tag = it.tag || ""
-      if (s.type === "mcq" || s.type === "error") {
-        const m = it as McqItem
-        const correct = m.opts[m.a] ?? ""
-        out[qid] = { ok: given === correct, q: s.type === "mcq" ? stripTags(m.q) : m.opts.join(" "), given, correct, tag }
-      } else if (s.type === "match") {
-        const m = it as MatchItem
-        out[qid] = { ok: norm(given) === norm(m.a), q: stripTags(m.q), given, correct: m.a, tag }
-      } else if (s.type === "typed") {
-        const t = it as TypedItem
-        out[qid] = { ok: t.ans.map(norm).includes(norm(given)), q: stripTags(t.q), given, correct: t.ans[0] ?? "", tag }
-      } else {
-        const o = it as OrderItem
-        out[qid] = { ok: o.ans.map(norm).includes(norm(given)), q: o.prompt || tr("lesson.orderDefault"), given, correct: o.ans[0] ?? "", tag }
-      }
+      if (given) out[qid] = { ...kindOf(s.type).grade(it, given), given, tag: it.tag || "" }
     })
   }
   return out
@@ -265,11 +244,6 @@ export const ERROR_CATEGORIES: Record<Enums<"error_category">, string> =
 export const ERROR_STATUS: Record<Enums<"error_status">, string> = labels("errorStatus", ["open", "improving", "fixed"])
 export const ATTEMPT_STATUS: Record<Enums<"attempt_status">, string> = labels("attemptStatus", ["in_progress", "submitted", "graded"])
 
-/** How a student may use a lesson given to their class (mirrors private.can_work_lesson in the database). */
-export type LessonAccess = "open" | "closed" | "locked"
-export const accessOf = (s: { for_all: boolean; closed: boolean; due_at?: string | null }, picked: boolean): LessonAccess =>
-  s.closed || isPastDue(s.due_at) ? "closed" : s.for_all || picked ? "open" : "locked"
-
 /** The deadline has passed (the lesson closes itself within a minute; work stops at once). */
 export const isPastDue = (due: string | null | undefined, now = Date.now()) => !!due && Date.parse(due) <= now
 
@@ -282,10 +256,6 @@ export function timeLeft(due: string | null | undefined, now = Date.now()) {
   if (min < 48 * 60) return tr("time.hoursLeft", { n: Math.floor(min / 60) })
   return tr("time.daysLeft", { n: Math.floor(min / 1440) })
 }
-
-/** Percent of correct answers from summed ok/done counts; null when nothing was answered. */
-export const accuracyOf = (ok: number | null | undefined, done: number | null | undefined) =>
-  done ? Math.round(((ok ?? 0) / done) * 100) : null
 
 /** Inclusive row range for a 0-based page, for PostgREST `.range()`. */
 export const pageRange = (page: number, size: number) => [page * size, page * size + size - 1] as const

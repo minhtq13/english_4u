@@ -1,5 +1,8 @@
 import type { Enums, Json, Tables } from "~/types/database.types"
-import type { Lesson, Section } from "~/utils/course"
+import type { Lesson } from "./course"
+import { shuffled, stripTags, toLesson } from "./course"
+import { tr } from "./i18n"
+import { SECTION_KINDS, isScoredType, type StoredItem } from "./sectionKinds"
 
 // The lesson editor works on a draft: plain strings for every input, turned into the
 // save_lesson() payload on save. List fields are typed as one line each: typed answers are
@@ -183,30 +186,20 @@ export function sectionsFromStructure(spec: unknown): DraftSection[] {
 type SectionRow = Tables<"lesson_sections"> & { section_items: Tables<"section_items">[] }
 const byPosition = (a: { position: number }, b: { position: number }) => a.position - b.position
 
-type ItemFields = Pick<Tables<"section_items">, "prompt" | "back" | "options" | "correct_option" | "answers" | "words" | "explanation" | "tag">
-
 /** A stored question (section_items row or question_bank row) of a section type as an editable draft item. */
-export const itemToDraft = (i: { [K in keyof ItemFields]?: ItemFields[K] | null }, type?: SectionType | null): DraftItem => ({
+export const itemToDraft = (i: StoredItem, type?: SectionType | null): DraftItem => emptyItem({
   prompt: i.prompt ?? "",
   back: i.back ?? "",
-  options: i.options?.length && type !== "error" && type !== "match" ? [...i.options] : ["", "", ""],
-  correct: i.correct_option ?? 1,
-  answers: (i.answers ?? []).join(" | "),
-  // Error chunks are stored in options; the editor types them like order chunks.
-  words: (type === "error" ? i.options ?? [] : i.words ?? []).join(" / "),
   explanation: i.explanation ?? "",
   tag: i.tag ?? "",
+  ...(isScoredType(type) ? SECTION_KINDS[type].draft(i) : {}),
 })
 
-type StoredItem = { type: SectionType | null } & { [K in keyof ItemFields]?: ItemFields[K] | null }
+type TypedStoredItem = { type: SectionType | null } & StoredItem
 /** A stored question in one line, for lists (question bank, review sheets). */
-export const questionText = (r: StoredItem) =>
-  r.type === "order" ? (r.words ?? []).join(" / ") : r.type === "error" ? (r.options ?? []).join(" ") : stripTags(r.prompt ?? "")
+export const questionText = (r: TypedStoredItem) => (isScoredType(r.type) ? SECTION_KINDS[r.type].question(r) : stripTags(r.prompt ?? ""))
 /** A stored question's answer key in one line. */
-export const answerText = (r: StoredItem) =>
-  r.type === "mcq" || r.type === "error" ? (r.options ?? [])[(r.correct_option ?? 1) - 1] ?? ""
-    : r.type === "order" ? (r.words ?? []).join(" ")
-      : r.type === "match" ? r.back ?? "" : (r.answers ?? []).join(" / ")
+export const answerText = (r: TypedStoredItem) => (isScoredType(r.type) ? SECTION_KINDS[r.type].answer(r) : r.back ?? "")
 
 /** Sections of an existing lesson as a draft; without `withContent` only the structure is kept. */
 export function sectionsFromRows(rows: SectionRow[], withContent: boolean): DraftSection[] {
@@ -224,8 +217,6 @@ export function sectionsFromRows(rows: SectionRow[], withContent: boolean): Draf
   })
 }
 
-export const splitList = (text: string, sep: string) => text.split(sep).map(x => x.trim()).filter(Boolean)
-
 /** Problems that would make the lesson unusable, in the current language, in section order. */
 export function validateDraft(d: LessonDraft): string[] {
   const errors: string[] = []
@@ -239,24 +230,7 @@ export function validateDraft(d: LessonDraft): string[] {
     s.items.forEach((it, ii) => {
       const q = tr("draftCheck.whereItem", { where, n: ii + 1 })
       if (s.type === "cards" && (!it.prompt.trim() || !it.back.trim())) at("cardSides", q)
-      if (s.type === "mcq") {
-        const opts = it.options.map(o => o.trim())
-        if (!it.prompt.trim()) at("noPrompt", q)
-        if (opts.filter(Boolean).length < 2) at("twoOptions", q)
-        if (!opts[it.correct - 1]) at("noCorrect", q)
-      }
-      if (s.type === "typed") {
-        if (!it.prompt.trim()) at("noPrompt", q)
-        if (!splitList(it.answers, "|").length) at("noAnswer", q)
-      }
-      if (s.type === "order" && splitList(it.words, "/").length < 2) at("twoChunks", q)
-      if (s.type === "match" && (!it.prompt.trim() || !it.back.trim())) at("matchSides", q)
-      if (s.type === "error") {
-        const chunks = splitList(it.words, "/")
-        if (chunks.length < 2) at("twoChunks", q)
-        else if (!chunks[it.correct - 1]) at("noWrongChunk", q)
-        if (new Set(chunks).size < chunks.length) at("dupChunks", q)
-      }
+      if (isScoredType(s.type)) SECTION_KINDS[s.type].problems(it).forEach(key => at(key, q))
     })
   })
   return errors
@@ -274,8 +248,8 @@ function scoreKeys(sections: DraftSection[]): (string | null)[] {
   })
 }
 
-/** The save_lesson() payload. */
-export function draftPayload(d: LessonDraft, meta: { id: string; phaseId: number }): Json {
+/** The lesson save_lesson() stores from a draft. */
+function lessonPayload(d: LessonDraft, meta: { id: string; phaseId: number }) {
   const keys = scoreKeys(d.sections)
   const label = d.label.trim()
   const title = d.title.trim()
@@ -301,81 +275,45 @@ export function draftPayload(d: LessonDraft, meta: { id: string; phaseId: number
   }
 }
 
-function itemPayload(type: SectionType, it: DraftItem) {
-  const base = { explanation: it.explanation.trim(), tag: it.tag.trim() }
-  switch (type) {
-    case "cards":
-      return { prompt: it.prompt.trim(), back: it.back.trim() }
-    case "mcq": {
-      // Blank options are dropped; the right answer's index follows its option.
-      const kept = it.options.map((o, i) => ({ o: o.trim(), right: i === it.correct - 1 })).filter(x => x.o)
-      return { ...base, prompt: it.prompt.trim(), options: kept.map(x => x.o), correct_option: kept.findIndex(x => x.right) + 1 }
-    }
-    case "typed":
-      return { ...base, prompt: it.prompt.trim(), answers: splitList(it.answers, "|") }
-    case "match":
-      return { ...base, prompt: it.prompt.trim(), back: it.back.trim() }
-    case "error":
-      return { ...base, options: splitList(it.words, "/"), correct_option: it.correct }
-    default:
-      return { ...base, prompt: it.prompt.trim(), words: splitList(it.words, "/"), answers: splitList(it.answers, "|") }
-  }
+/** The save_lesson() payload. */
+export const draftPayload = (d: LessonDraft, meta: { id: string; phaseId: number }) => lessonPayload(d, meta) as unknown as Json
+
+function itemPayload(type: SectionType, it: DraftItem): StoredItem {
+  if (type === "cards") return { prompt: it.prompt.trim(), back: it.back.trim() }
+  return { ...(isScoredType(type) ? SECTION_KINDS[type].payload(it) : {}), explanation: it.explanation.trim(), tag: it.tag.trim() }
 }
 
 /**
- * The draft as a Lesson, for previewing in the editor without saving. Mirrors what save_lesson() stores
- * and toLesson() reads back (same score keys, same answer key), so the preview grades like the real lesson.
+ * What lesson_items() serves a teacher for one section's stored questions: order chunks shuffled, with the
+ * right sentence first among the accepted answers; every right side of a match section, shuffled, in options.
+ */
+function served<T extends StoredItem>(type: SectionType, items: T[]): T[] {
+  if (type === "order") return items.map(i => ({ ...i, words: shuffled(i.words ?? []), answers: [(i.words ?? []).join(" "), ...(i.answers ?? [])] }))
+  if (type === "match") {
+    const choices = shuffled(items.map(i => i.back ?? ""))
+    return items.map(i => ({ ...i, options: choices }))
+  }
+  return items
+}
+
+/**
+ * The draft as a Lesson, for previewing in the editor without saving: what save_lesson() would store, served
+ * as lesson_items() serves it with the answer key, read by toLesson() like any saved lesson. So the preview
+ * shows and grades exactly like the real lesson.
  */
 export function draftToLesson(d: LessonDraft, meta: { id: string; courseId: string; phase: number }): Lesson {
-  const keys = scoreKeys(d.sections)
-  const label = d.label.trim() || tr("draftCheck.newLesson")
-  const title = d.title.trim() || tr("draftCheck.untitled")
-  const sections: Section[] = d.sections.map((s, i): Section => {
-    const base = { title: s.title.trim() || SECTION_TYPES[s.type].label, time: s.time.trim() || undefined, hint: s.hint ? safeHtml(s.hint) : undefined }
-    const why = (it: DraftItem) => (it.explanation ? safeHtml(it.explanation) : undefined)
-    const tag = (it: DraftItem) => it.tag.trim() || undefined
-    switch (s.type) {
-      case "explain":
-        return { ...base, type: "explain", html: safeHtml(s.body) }
-      case "writing":
-        return { ...base, type: "writing", placeholder: s.placeholder || undefined }
-      case "cards":
-        return { ...base, type: "cards", items: s.items.map(it => [safeHtml(it.prompt), safeHtml(it.back)] as [string, string]) }
-      case "error":
-        return {
-          ...base, type: "error", key: keys[i]!,
-          items: s.items.map(it => ({ q: "", opts: splitList(it.words, "/"), a: it.correct - 1, why: why(it), tag: tag(it) })),
-        }
-      case "match":
-        return {
-          ...base, type: "match", key: keys[i]!, choices: shuffled(s.items.map(it => it.back.trim())),
-          items: s.items.map(it => ({ q: safeHtml(it.prompt), a: it.back.trim(), why: why(it), tag: tag(it) })),
-        }
-      case "mcq":
-        return {
-          ...base, type: "mcq", key: keys[i]!, passage: s.body ? safeHtml(s.body) : undefined,
-          items: s.items.map((it) => {
-            const p = itemPayload("mcq", it) as { options: string[]; correct_option: number }
-            return { q: safeHtml(it.prompt), opts: p.options, a: p.correct_option - 1, why: why(it), tag: tag(it) }
-          }),
-        }
-      case "typed":
-        return {
-          ...base, type: "typed", key: keys[i]!, short: s.short, passage: s.body ? safeHtml(s.body) : undefined,
-          items: s.items.map(it => ({ q: safeHtml(it.prompt), ans: splitList(it.answers, "|"), why: why(it), tag: tag(it) })),
-        }
-      case "order":
-        return {
-          ...base, type: "order", key: keys[i]!,
-          items: s.items.map((it) => {
-            const words = splitList(it.words, "/")
-            return { words: shuffled(words), prompt: it.prompt.trim() || undefined, ans: [words.join(" "), ...splitList(it.answers, "|")], why: why(it), tag: tag(it) }
-          }),
-        }
-    }
-  })
+  const p = lessonPayload(d, { id: meta.id, phaseId: meta.phase })
+  const sections = p.sections.map((s, i) => ({
+    id: `draft-${i}`, position: i, type: s.type, title: s.title, time_label: s.time_label, hint: s.hint,
+    body: s.body, placeholder: s.placeholder, score_key: s.score_key || null, short_input: s.short_input,
+  }))
+  const items = p.sections.flatMap((s, i) => served(s.type, s.items.map((it, k) => ({ ...it, section_id: `draft-${i}`, position: k }))))
+  const lesson = toLesson({ ...p, lesson_sections: sections, phases: { course_id: meta.courseId } }, items)
+  // An unfinished draft still reads well: placeholders for what is not typed yet.
+  const label = p.label || tr("draftCheck.newLesson")
+  const title = p.title || tr("draftCheck.untitled")
   return {
-    id: meta.id, label, courseId: meta.courseId, phase: meta.phase, title, desc: d.description,
-    heading: `${label} - ${title}`, sub: d.subtitle, sections,
+    ...lesson, label, title, heading: `${label} - ${title}`,
+    sections: lesson.sections.map((s, i) => ({ ...s, title: s.title || SECTION_TYPES[d.sections[i]!.type].label })),
   }
 }

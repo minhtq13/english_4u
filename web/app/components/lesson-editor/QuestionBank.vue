@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Database, Views } from "~/types/database.types"
+import type { BankRow as Row } from "~/composables/useQuestionBank"
 import type { DraftItem, SectionType } from "~/utils/lessonDraft"
 
 // Pick questions of one type from earlier lessons (question_bank view: what the teacher may see with
@@ -7,40 +7,18 @@ import type { DraftItem, SectionType } from "~/utils/lessonDraft"
 const props = defineProps<{ type: SectionType; courseId: string }>()
 const emit = defineEmits<{ pick: [items: DraftItem[]]; close: [] }>()
 
-const client = useSupabaseClient<Database>()
 const { listCourses } = useCourse()
 
-type Row = Views<"question_bank">
 const courses = shallowRef<{ id: string; name: string }[]>([])
 const course = ref(props.courseId)
 const search = ref("")
 const tag = ref("")
-const rows = shallowRef<Row[]>([])
-const total = ref(0)
-const page = ref(0)
-const PAGE = 15
 const picked = ref(new Map<string, Row>())
 
-async function load() {
-  const [from, to] = pageRange(page.value, PAGE)
-  let q = client.from("question_bank").select("*", { count: "exact" }).eq("type", props.type)
-  if (course.value) q = q.eq("course_id", course.value)
-  const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
-  if (term) q = q.or(`prompt.ilike.*${term}*,explanation.ilike.*${term}*`)
-  if (tag.value.trim()) q = q.ilike("tag", `%${tag.value.trim().replace(/[%_\\]/g, "")}%`)
-  const { data, count } = await q.order("lesson_id").range(from, to)
-  rows.value = data ?? []
-  total.value = count ?? 0
-}
+const bank = useQuestionBank({ course, type: toRef(props, "type"), search, tag })
 onMounted(async () => {
   courses.value = (await listCourses()).map(c => ({ id: c.id, name: c.name }))
-  await load()
-})
-watch(page, load)
-let timer: ReturnType<typeof setTimeout> | undefined
-watch([course, search, tag], () => {
-  clearTimeout(timer)
-  timer = setTimeout(() => (page.value === 0 ? load() : (page.value = 0)), 300)
+  await bank.load()
 })
 
 function toggle(r: Row) {
@@ -49,8 +27,6 @@ function toggle(r: Row) {
   else next.set(r.id ?? "", r)
   picked.value = next
 }
-const answerOf = answerText
-const questionOf = questionText
 
 function add() {
   emit("pick", [...picked.value.values()].map(r => itemToDraft(r, r.type)))
@@ -80,19 +56,20 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey))
           <input v-model="search" type="search" :placeholder="$t('bank.search')">
           <input v-model="tag" type="search" class="tag" :placeholder="$t('bank.tag')">
         </div>
-        <p v-if="!rows.length" class="muted small">{{ $t("bank.none") }}</p>
-        <label v-for="r in rows" :key="r.id ?? ''" class="q-row" :class="{ on: picked.has(r.id ?? '') }">
+        <p v-if="bank.error" class="fb no">{{ bank.error }}</p>
+        <p v-else-if="!bank.rows.length" class="muted small">{{ $t("bank.none") }}</p>
+        <label v-for="r in bank.rows" :key="r.id ?? ''" class="q-row" :class="{ on: picked.has(r.id ?? '') }">
           <input type="checkbox" :checked="picked.has(r.id ?? '')" @change="toggle(r)">
           <span class="q-text">
-            <span>{{ questionOf(r) }}</span>
+            <span>{{ questionText(r) }}</span>
             <small class="muted">
-              → <b>{{ stripTags(answerOf(r)) }}</b>
+              → <b>{{ stripTags(answerText(r)) }}</b>
               <template v-if="r.tag"> · [{{ r.tag }}]</template>
               · {{ r.lesson_label }} - {{ r.lesson_title }}
             </small>
           </span>
         </label>
-        <Pager v-model:page="page" :page-size="PAGE" :total="total" />
+        <Pager v-model:page="bank.page" :page-size="bank.pageSize" :total="bank.total" />
       </div>
     </div>
   </div>

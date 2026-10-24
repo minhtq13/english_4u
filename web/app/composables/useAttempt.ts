@@ -62,7 +62,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
       state.writing = data.writing
       state.status = data.status
       if (data.status !== "in_progress") {
-        state.score = data.score as unknown as Score
+        state.score = toScore(data.score)
         await loadResults()
       }
     }
@@ -139,7 +139,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
     const { data, error } = await client.rpc("submit_attempt", { lesson: lesson.id })
     if (error) return error.message
     state.status = data.status
-    state.score = data.score as unknown as Score
+    state.score = toScore(data.score)
     await loadResults()
     return null
   }

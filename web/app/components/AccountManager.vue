@@ -15,15 +15,13 @@ const { t } = useI18n()
 /** Role-specific wording lives under accounts.student.* / accounts.teacher.*. */
 const rt = (key: string, params: Record<string, unknown> = {}) => t(`accounts.${props.role}.${key}`, params)
 
-type Person = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "username" | "active" | "class_id" | "created_at">
+type Person = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "username" | "active" | "class_id" | "created_at"> & {
+  /** For teachers: the names of the classes they teach. */
+  teaches?: string[]
+}
 type ClassRow = Pick<Tables<"classes">, "id" | "name">
 
 const classes = shallowRef<ClassRow[]>([])
-const people = shallowRef<Person[]>([])
-const teaches = shallowRef<Record<string, string[]>>({})
-const total = ref(0)
-const page = ref(0)
-const PAGE = 25
 const search = ref("")
 const classFilter = ref("")
 /** "" = everyone, "active" / "locked" = profiles.active */
@@ -36,11 +34,7 @@ const busy = ref<string | null>(null)
 
 const className = (id: string | null) => classes.value.find(c => c.id === id)?.name ?? "-"
 
-// Filters change quickly: only the answer to the latest request is shown, a slower older one is dropped.
-let latest = 0
-async function loadPage() {
-  const mine = ++latest
-  const [from, to] = pageRange(page.value, PAGE)
+const people = useServerList<Person>(async ([from, to]) => {
   // Teachers are filtered by a class they teach: the inner join keeps only teachers with that class_teachers row.
   const byTaughtClass = !isStudents && !!classFilter.value
   let q = client.from("profiles")
@@ -52,35 +46,26 @@ async function loadPage() {
   if (isStudents && classFilter.value) q = classFilter.value === "none" ? q.is("class_id", null) : q.eq("class_id", classFilter.value)
   if (byTaughtClass) q = q.eq("class_teachers.class_id", classFilter.value)
   if (statusFilter.value) q = q.eq("active", statusFilter.value === "active")
-  // Characters with a meaning in PostgREST filters are dropped from the search text.
-  const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
-  if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`)
-  const { data, count } = await q.range(from, to)
-  if (mine !== latest) return
-  people.value = (data ?? []) as unknown as Person[]
-  total.value = count ?? 0
-  if (!isStudents && people.value.length) {
-    const { data: ct } = await client.from("class_teachers").select("teacher_id, classes(name)").in("teacher_id", people.value.map(p => p.id))
-    const map: Record<string, string[]> = {}
-    for (const r of (ct ?? []) as { teacher_id: string; classes: { name: string } | null }[]) {
-      map[r.teacher_id] = [...(map[r.teacher_id] ?? []), r.classes?.name ?? "?"]
-    }
-    teaches.value = map
+  const term = filterTerm(search.value)
+  if (term) q = q.or(personSearch(term))
+  const { data, count, error: e } = await q.range(from, to)
+  const rows = (data ?? []) as unknown as Person[]
+  if (isStudents || !rows.length) return { data: rows, count, error: e }
+  // The classes each teacher of this page teaches, read with the page so both arrive together.
+  const { data: ct } = await client.from("class_teachers").select("teacher_id, classes(name)").in("teacher_id", rows.map(p => p.id))
+  const names: Record<string, string[]> = {}
+  for (const r of (ct ?? []) as { teacher_id: string; classes: { name: string } | null }[]) {
+    names[r.teacher_id] = [...(names[r.teacher_id] ?? []), r.classes?.name ?? "?"]
   }
-}
+  return { data: rows.map(p => ({ ...p, teaches: names[p.id] ?? [] })), count, error: e }
+}, { pageSize: 25, filters: [search, classFilter, statusFilter, sortBy] })
 
 onMounted(async () => {
   const { data } = await client.from("classes").select("id, name").order("name")
   classes.value = data ?? []
   if (isStudents && !isAdmin.value && classes.value.length === 1) newClass.value = classes.value[0]!.id
-  await loadPage()
+  await people.load()
   loaded.value = true
-})
-watch(page, loadPage)
-let timer: ReturnType<typeof setTimeout> | undefined
-watch([search, classFilter, statusFilter, sortBy], () => {
-  clearTimeout(timer)
-  timer = setTimeout(() => (page.value === 0 ? loadPage() : (page.value = 0)), 300)
 })
 
 async function run(key: string, action: () => Promise<{ error: string | null }>, ok: string) {
@@ -91,7 +76,7 @@ async function run(key: string, action: () => Promise<{ error: string | null }>,
   if (e) error.value = e
   else {
     message.value = ok
-    await loadPage()
+    await people.load()
   }
   return !e
 }
@@ -139,7 +124,7 @@ async function createAll() {
   message.value = t("accounts.created", { ok, total: drafts.value.length })
   drafts.value = drafts.value.filter((_, i) => !created.value[i]?.ok)
   if (!drafts.value.length) namesText.value = ""
-  await loadPage()
+  await people.load()
 }
 
 const createdText = computed(() =>
@@ -192,7 +177,7 @@ async function moveClass(p: Person, classId: string) {
   if (e) error.value = t("accounts.moveFailed", { msg: errorText(e.message) })
   else {
     message.value = t("classPage.moved", { name: name(p), cls: className(classId || null) })
-    await loadPage()
+    await people.load()
   }
 }
 </script>
@@ -284,7 +269,7 @@ async function moveClass(p: Person, classId: string) {
         <option value="newest">{{ $t("accounts.sortNewest") }}</option>
         <option value="name">{{ $t("accounts.sortName") }}</option>
       </select>
-      <span class="small muted">{{ $t("accounts.found", { n: total }) }}</span>
+      <span class="small muted">{{ $t("accounts.found", { n: people.total }) }}</span>
     </div>
 
     <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
@@ -297,7 +282,7 @@ async function moveClass(p: Person, classId: string) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="p in people" :key="p.id" :class="{ inactive: !p.active }">
+          <tr v-for="p in people.rows" :key="p.id" :class="{ inactive: !p.active }">
             <td>
               <template v-if="editing === p.id">
                 <input v-model="editName" type="text" :placeholder="$t('accounts.fullName')">
@@ -321,7 +306,7 @@ async function moveClass(p: Person, classId: string) {
                   <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
                 </select>
               </template>
-              <span v-else class="small">{{ (teaches[p.id] ?? []).join(", ") || "-" }}</span>
+              <span v-else class="small">{{ (p.teaches ?? []).join(", ") || "-" }}</span>
             </td>
             <td><span class="badge" :class="p.active ? 'done' : 'open'">{{ p.active ? $t("accounts.active") : $t("accounts.inactive") }}</span></td>
             <td class="actions">
@@ -343,8 +328,9 @@ async function moveClass(p: Person, classId: string) {
           </tr>
         </tbody>
       </table>
-      <p v-if="!people.length" class="muted small">{{ search || classFilter || statusFilter ? $t("usersPage.none") : rt("none") }}</p>
-      <Pager v-model:page="page" :page-size="PAGE" :total="total" />
+      <p v-if="people.error" class="fb no">{{ people.error }}</p>
+      <p v-else-if="!people.rows.length" class="muted small">{{ search || classFilter || statusFilter ? $t("usersPage.none") : rt("none") }}</p>
+      <Pager v-model:page="people.page" :page-size="people.pageSize" :total="people.total" />
     </div>
   </div>
 </template>

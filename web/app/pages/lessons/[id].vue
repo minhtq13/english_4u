@@ -75,6 +75,8 @@ const dueText = computed(() => (dueAt.value ? timeLeft(dueAt.value, now.value) :
 
 // Teachers and admins assign the lesson to classes right from the preview.
 const assign = useAssignments()
+/** The popup of where each student stands with this lesson, in the classes that have it. */
+const progressOpen = ref(false)
 onMounted(() => { if (attempt.preview && !noContent) assign.load(loaded.courseId, [loaded.id]) })
 
 /** Explanations and answers arrive with the lesson once results are out. */
@@ -139,6 +141,10 @@ const next = nextId ? course.byId[nextId] : null
         <div class="assign-head">
           <b>{{ $t("lessonPage.giveToClass") }}</b>
           <span class="row">
+            <button
+              v-if="assign.classesOf(loaded.id).length" type="button" class="btn small" :title="$t('lessonPage.progressTitle')"
+              @click="progressOpen = true"
+            >📋 {{ $t("classPage.lessonProgress.open") }}</button>
             <NuxtLink :to="`/teacher/print/${loaded.id}`" class="btn small ghost">🖨 {{ $t("lessonPage.print") }}</NuxtLink>
             <NuxtLink :to="`/teacher/print/${loaded.id}?key=1`" class="btn small ghost">{{ $t("lessonPage.printKey") }}</NuxtLink>
           </span>
@@ -148,6 +154,11 @@ const next = nextId ? course.byId[nextId] : null
         <p v-if="assign.error.value" class="fb no">{{ assign.error.value }}</p>
       </div>
     </template>
+
+    <LessonProgressDialog
+      v-if="progressOpen" :lesson-id="loaded.id" :lesson-name="`${loaded.label} - ${loaded.title}`" :classes="assign.classesOf(loaded.id)"
+      @close="progressOpen = false"
+    />
 
     <div v-if="noContent" class="card">
       <h2>{{ $t(`lessonPage.unavailable.${access}.title`) }}</h2>

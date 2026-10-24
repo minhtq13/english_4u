@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Database, Enums, Tables } from "~/types/database.types"
-import type { Answer, Lesson, Response, Score } from "~/utils/course"
+import type { Answer, Lesson, Response } from "~/utils/course"
 
 // Remount per attempt, so "next" in the grading queue loads the following student's work.
 definePageMeta({ roles: ["teacher"], key: route => route.fullPath })
@@ -20,7 +20,7 @@ const lesson = shallowRef<Lesson | null>(null)
 /** Graded answers (from submit_attempt); null while the attempt is still in progress. */
 const answers = shallowRef<Record<string, Answer> | null>(null)
 const responses = computed(() => (attempt.value?.answers ?? {}) as unknown as Record<string, Response>)
-const score = computed(() => attempt.value?.score as unknown as Score | undefined)
+const score = computed(() => (attempt.value ? toScore(attempt.value.score) : undefined))
 const student = computed(() => attempt.value?.profiles)
 
 async function load() {
@@ -69,17 +69,13 @@ const queueClass = typeof route.query.class === "string" ? route.query.class : "
 const inQueue = !!(queueLesson && queueClass)
 const waitingIds = ref<string[]>([])
 const queueDone = ref(false)
+const queue = useGradingQueue()
 async function loadQueue() {
-  if (!inQueue) return
-  const { data } = await client.from("attempts")
-    .select("id, submitted_at, profiles!inner(class_id)")
-    .eq("lesson_id", queueLesson).eq("status", "submitted").eq("profiles.class_id", queueClass)
-    .order("submitted_at", { ascending: true })
-  waitingIds.value = (data ?? []).map(r => r.id)
+  if (inQueue) waitingIds.value = await queue.waiting(queueLesson, queueClass)
 }
 onMounted(loadQueue)
 const queuePos = computed(() => waitingIds.value.indexOf(attemptId) + 1)
-const queueLink = (id: string) => `/teacher/attempts/${id}?queue=${encodeURIComponent(queueLesson)}&class=${queueClass}`
+const queueLink = (id: string) => queue.link(id, queueLesson, queueClass)
 
 /** After grading this one: the oldest still waiting (this one is no longer in the list). */
 async function goNext() {
@@ -127,13 +123,10 @@ async function allowRedo() {
   }
   redoArmed.value = false
   acting.value = true
-  const id = attempt.value.id
-  const del = await client.from("attempt_results").delete().eq("attempt_id", id)
-  const upd = del.error ? del : await client.from("attempts").update({ status: "in_progress", score: {} }).eq("id", id)
+  // One transaction: the graded results go and the attempt reopens together.
+  const { error } = await client.rpc("allow_redo", { target: attempt.value.id })
   acting.value = false
-  actionMsg.value = upd.error
-    ? t("attemptPage.redoFailed", { msg: errorText(upd.error.message) })
-    : t("attemptPage.redone")
+  actionMsg.value = error ? t("attemptPage.redoFailed", { msg: errorText(error.message) }) : t("attemptPage.redone")
   await load()
 }
 

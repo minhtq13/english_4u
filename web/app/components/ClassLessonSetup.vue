@@ -44,40 +44,15 @@ const scoredTotal = computed(() => info.value?.sections.reduce((n, s) => n + (s.
 const typeLabel = (type: string) => SECTION_TYPES[type as keyof typeof SECTION_TYPES]?.label ?? type
 
 // ---- how to give it ----
-const due = ref("")
-const forAll = ref(true)
-const picked = ref<string[]>([])
-const showResults = ref(false)
-const shuffle = ref(false)
+const form = reactive(emptyGiveForm())
 const problem = ref("")
 // A message about the previous try goes away as soon as the choice changes.
-watch([due, forAll, picked], () => { problem.value = "" })
-
-/** datetime-local value (local time) for `days` from now at 21:00. */
-function inDays(days: number) {
-  const d = new Date(Date.now() + days * 864e5)
-  d.setHours(21, 0, 0, 0)
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-}
-const quick = computed(() => [
-  { label: t("classPage.setup.tomorrow"), days: 1 },
-  { label: t("classPage.setup.days3"), days: 3 },
-  { label: t("classPage.setup.week"), days: 7 },
-])
-const allPicked = computed(() => props.students.length > 0 && picked.value.length === props.students.length)
+watch(() => [form.due, form.forAll, form.studentIds.length], () => { problem.value = "" })
 
 function give() {
-  const dueAt = due.value ? new Date(due.value).toISOString() : null
-  if (dueAt && isPastDue(dueAt)) {
-    problem.value = t("classPage.dueInPast")
-    return
-  }
-  if (!forAll.value && !picked.value.length) {
-    problem.value = t("classPage.setup.pickSome")
-    return
-  }
-  problem.value = ""
-  emit("give", { dueAt, forAll: forAll.value, studentIds: forAll.value ? [] : picked.value, showResults: showResults.value, shuffle: shuffle.value })
+  const key = giveProblem(form)
+  problem.value = key ? t(`classPage.${key}`) : ""
+  if (!key) emit("give", settingsOf(form))
 }
 </script>
 
@@ -115,48 +90,7 @@ function give() {
     <section class="block">
       <h4>{{ $t("classPage.setup.title", { name: className }) }}</h4>
 
-      <div class="field">
-        <label :for="`due-${lessonId}`"><b>{{ $t("classPage.setup.due") }}</b> <span class="muted small">{{ $t("sectionEd.optional") }}</span></label>
-        <div class="row">
-          <input :id="`due-${lessonId}`" v-model="due" type="datetime-local">
-          <button v-for="q in quick" :key="q.days" type="button" class="btn small ghost" @click="due = inDays(q.days)">{{ q.label }}</button>
-          <button v-if="due" type="button" class="btn small ghost" @click="due = ''">{{ $t("classPage.dueClear") }}</button>
-        </div>
-        <p class="hint">{{ $t("classPage.setup.dueHint") }}</p>
-      </div>
-
-      <div class="field">
-        <b>{{ $t("classPage.setup.who") }}</b>
-        <div class="row">
-          <label class="toggle"><input v-model="forAll" type="radio" :value="true"> {{ $t("classPage.whoAll") }}</label>
-          <label class="toggle"><input v-model="forAll" type="radio" :value="false"> {{ $t("classPage.whoSome") }}</label>
-        </div>
-        <template v-if="!forAll">
-          <p v-if="!students.length" class="muted small">{{ $t("classPage.noStudents") }}</p>
-          <template v-else>
-            <div class="row picks">
-              <label v-for="st in students" :key="st.id" class="pick" :class="{ on: picked.includes(st.id) }">
-                <input v-model="picked" type="checkbox" :value="st.id"> {{ st.name }}
-              </label>
-            </div>
-            <p class="row small">
-              <button type="button" class="link" @click="picked = allPicked ? [] : students.map(s => s.id)">
-                {{ allPicked ? $t("editor.selectNone") : $t("editor.selectAll") }}
-              </button>
-              <span class="muted">{{ $t("classPage.someStudents", { n: picked.length, total: students.length }) }}</span>
-            </p>
-            <p class="hint">{{ $t("classPage.whoHint") }}</p>
-          </template>
-        </template>
-      </div>
-
-      <div class="field">
-        <b>{{ $t("classPage.setup.options") }}</b>
-        <label class="toggle"><input v-model="showResults" type="checkbox"> {{ $t("classPage.showResults") }}</label>
-        <p class="hint indent">{{ $t("classPage.setup.showResultsHint") }}</p>
-        <label class="toggle" :title="$t('classPage.shuffleTitle')"><input v-model="shuffle" type="checkbox"> {{ $t("classPage.shuffle") }}</label>
-        <p class="hint indent">{{ $t("classPage.shuffleTitle") }}</p>
-      </div>
+      <GiveSettingsForm :form="form" :students="students" :uid="lessonId" />
 
       <p v-if="problem" class="fb no" role="alert">{{ problem }}</p>
       <div class="row actions">
@@ -181,18 +115,6 @@ function give() {
 .chip-class.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .links { gap: 6px; }
 .links .btn { padding: 3px 10px; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field input[type=datetime-local] { flex: 0 0 auto; width: auto; min-width: 12.5rem; padding: 4px 8px; }
-.field .row { gap: 6px 10px; }
-.field .btn { padding: 2px 10px; }
-.toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: .92rem; }
-.hint { color: var(--muted); font-size: .85rem; margin: 0; }
-.hint.indent { margin-left: 24px; }
-.picks { gap: 6px; }
-.pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); cursor: pointer; font-size: .88rem; }
-.pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
-.link:hover { text-decoration: underline; }
 .actions { margin-top: 4px; }
 @media (max-width: 760px) { .setup { grid-template-columns: 1fr; } }
 </style>

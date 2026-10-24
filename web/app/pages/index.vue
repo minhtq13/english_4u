@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Database, Tables } from "~/types/database.types"
+import type { ClassLessonSetting } from "~/utils/attemptOutcome"
 import type { Course, Score } from "~/utils/course"
 
 definePageMeta({ roles: ["student"] })
@@ -15,8 +16,7 @@ if (role.value && role.value !== "student") await navigateTo(homeFor(role.value)
 
 const course = shallowRef<Course | null>(null)
 /** Lessons given to the class → their settings; `mine` = lessons opened to this student by name. */
-type Setting = Pick<Tables<"class_lessons">, "show_results" | "for_all" | "closed" | "due_at">
-const unlocked = shallowRef<Map<string, Setting>>(new Map())
+const unlocked = shallowRef<Map<string, ClassLessonSetting>>(new Map())
 const mine = shallowRef<Set<string>>(new Set())
 useHead({ title: () => t("roadmap.pageTitle", { name: myClass.value?.name ?? "" }) })
 
@@ -33,13 +33,13 @@ onMounted(async () => {
   try {
     const [outline, opened, picked, { data: rows }, { count }] = await Promise.all([
       load(cls.course_id),
-      client.from("class_lessons").select("lesson_id, show_results, for_all, closed, due_at").eq("class_id", cls.id),
+      client.from("class_lessons").select("lesson_id, show_results, for_all, closed, due_at, shuffle").eq("class_id", cls.id),
       client.from("class_lesson_students").select("lesson_id").eq("class_id", cls.id).eq("student_id", me),
       client.from("attempts").select("lesson_id, answers, score, status, updated_at").eq("user_id", me),
       client.from("error_log").select("id", { count: "exact", head: true }).eq("user_id", me).neq("status", "fixed"),
     ])
     course.value = outline
-    unlocked.value = new Map((opened.data ?? []).map(r => [r.lesson_id, { show_results: r.show_results, for_all: r.for_all, closed: r.closed, due_at: r.due_at }]))
+    unlocked.value = new Map((opened.data ?? []).map(({ lesson_id, ...setting }) => [lesson_id, setting]))
     mine.value = new Set((picked.data ?? []).map(r => r.lesson_id))
     attempts.value = Object.fromEntries((rows ?? []).map(r => [r.lesson_id, r]))
     openErrors.value = count ?? 0
@@ -55,11 +55,10 @@ const access = (id: string) => accessOf(unlocked.value.get(id)!, mine.value.has(
 const canEnter = (id: string) => access(id) === "open" || !!attempts.value[id]
 const openOrder = computed(() => (course.value?.order ?? []).filter(isOpen))
 const totalOf = (id: string) => course.value?.byId[id]?.total ?? 0
-/** The score, only once the student may see it (graded, or submitted when results show right away). */
+/** The score, only once the student may see it. */
 const scoreOfRow = (id: string) => {
   const row = attempts.value[id]
-  const released = row?.status === "graded" || (row?.status === "submitted" && unlocked.value.get(id)?.show_results)
-  return released ? (row.score as unknown as Score) : undefined
+  return row ? attemptOutcome(row, "student", unlocked.value.get(id)?.show_results).score : null
 }
 
 function badge(id: string) {
@@ -81,9 +80,8 @@ const isFinished = (id: string) => !!attempts.value[id] && attempts.value[id]!.s
 const completed = computed(() => openOrder.value.filter(isFinished).length)
 
 const accuracy = computed(() => {
-  const scores = Object.keys(attempts.value).map(scoreOfRow).filter((s): s is Score => !!s && s.done > 0)
-  const done = scores.reduce((n, s) => n + s.done, 0)
-  return done ? Math.round((scores.reduce((n, s) => n + s.ok, 0) / done) * 100) : null
+  const scores = Object.keys(attempts.value).map(scoreOfRow).filter((s): s is Score => !!s)
+  return percentOf(scores.reduce((n, s) => n + s.ok, 0), scores.reduce((n, s) => n + s.done, 0))
 })
 
 // What to do next: the open, unsubmitted lesson with the nearest deadline; otherwise the most recently
@@ -102,7 +100,7 @@ const nextLesson = computed(() => {
 <template>
   <div>
     <h1>{{ $t("roadmap.title", { name: myClass?.name }) }}</h1>
-    <p class="sub">{{ myClass?.courses?.name }} · {{ $t("roadmap.intro") }}</p>
+    <p class="sub">{{ localName(myClass?.courses?.name) }} · {{ $t("roadmap.intro") }}</p>
 
     <p v-if="error" class="fb no">{{ error }}</p>
 

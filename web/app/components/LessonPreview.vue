@@ -1,26 +1,21 @@
 <script setup lang="ts">
-import type { Lesson, Response } from "~/utils/course"
+import type { Lesson } from "~/utils/course"
 
 // The editor's preview: the lesson (or one section) exactly as students see it, in a dialog.
 // "Làm như học sinh" hides right/wrong until "Chấm thử"; "Hiện đáp án" shows the key at once.
+// Answers are a preview attempt (graded in the browser, never saved), as on the lesson page for teachers.
 const props = defineProps<{ lesson: Lesson; title: string }>()
 const emit = defineEmits<{ close: [] }>()
 
-const responses = ref<Record<string, Response>>({})
+const attempt = useAttempt(props.lesson, { preview: true })
+const responses = computed(() => attempt.state.responses)
 const showKey = ref(false)
 const checked = ref(false)
 const round = ref(0)
-const results = computed(() => (showKey.value || checked.value ? gradeLocal(props.lesson, responses.value) : null))
-const score = computed(() => scoreOf(results.value ?? {}, lessonTotal(props.lesson)))
+const results = computed(() => (showKey.value || checked.value ? attempt.results.value : null))
 
-function respond(qid: string, r: Response | null) {
-  const next = { ...responses.value }
-  if (r) next[qid] = r
-  else delete next[qid]
-  responses.value = next
-}
 function reset() {
-  responses.value = {}
+  attempt.state.responses = {}
   checked.value = false
   round.value++
 }
@@ -59,10 +54,10 @@ onBeforeUnmount(() => {
           <p v-if="s.hint" class="hint" v-html="s.hint" />
           <div v-if="s.type === 'explain'" class="explain" v-html="s.html" />
           <LessonCardsSection v-else-if="s.type === 'cards'" :items="s.items" />
-          <LessonQuestions v-else-if="isScored(s)" :section="s" :responses="responses" :results="results" :show-key="showKey" @respond="respond" />
+          <LessonQuestions v-else-if="isScored(s)" :section="s" :responses="responses" :results="results" :show-key="showKey" @respond="attempt.respond" />
           <textarea v-else-if="s.type === 'writing'" :placeholder="s.placeholder" />
         </section>
-        <p v-if="results && lessonTotal(lesson)" class="fb ok">{{ $t("preview.score", { ok: score.ok, total: score.total }) }}</p>
+        <p v-if="results && lessonTotal(lesson)" class="fb ok">{{ $t("preview.score", { ok: attempt.score.value.ok, total: attempt.total }) }}</p>
       </div>
     </div>
   </div>

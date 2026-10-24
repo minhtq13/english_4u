@@ -628,6 +628,8 @@ export type Database = {
           waiting: number | null
           ok: number | null
           done: number | null
+          /** Attempts of the class's students, in progress or not: any one blocks taking the lesson back. */
+          started: number | null
         }
         Relationships: []
       }
@@ -676,6 +678,10 @@ export type Database = {
       release_class_results: {
         Args: { target_class: string; target_lesson: string }
         Returns: number
+      }
+      allow_redo: {
+        Args: { target: string }
+        Returns: undefined
       }
       wrong_questions: {
         Args: { target_class: string; target_lessons: string[]; target_student?: string }

@@ -30,14 +30,12 @@ onMounted(async () => {
     totals.attemptsWeek = week.count ?? 0
     totals.active = sum("active")
     totals.waiting = sum("waiting")
-    totals.accuracy = accuracyOf(sum("ok"), sum("done"))
+    totals.accuracy = percentOf(sum("ok"), sum("done"))
   } catch (e) {
     error.value = t("dashboard.loadFailed", { msg: (e as Error).message })
   }
   loaded.value = true
 })
-
-const pct = (part: number | null, whole: number | null) => (whole ? Math.round(((part ?? 0) / whole) * 100) : null)
 </script>
 
 <template>
@@ -88,12 +86,12 @@ const pct = (part: number | null, whole: number | null) => (whole ? Math.round((
               <td class="n">{{ c.attempts }}</td>
               <td>
                 <StatBar
-                  :value="pct(c.completed, c.attempts)"
+                  :value="percentOf(c.completed, c.attempts)"
                   :text="`${c.completed}/${c.attempts}`"
                   :title="$t('dashboard.completedTitle', { n: c.completed, total: c.attempts })"
                 />
               </td>
-              <td><StatBar :value="accuracyOf(c.ok, c.done)" /></td>
+              <td><StatBar :value="percentOf(c.ok, c.done)" /></td>
               <td class="n">
                 <NuxtLink v-if="c.waiting" :to="`/teacher/grading`" class="badge submitted">{{ c.waiting }}</NuxtLink>
                 <span v-else class="muted">0</span>

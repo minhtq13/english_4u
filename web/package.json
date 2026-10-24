@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run"
   },
   "dependencies": {
     "@nuxtjs/i18n": "10.6.0",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "typescript": "6.0.3",
+    "vitest": "5.0.3",
     "vue-tsc": "3.3.12"
   },
   "engines": {

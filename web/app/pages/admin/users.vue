@@ -9,7 +9,6 @@ const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 
 type Person = Pick<Tables<"profiles">, "id" | "full_name" | "email" | "username" | "role" | "class_id" | "created_at">
-const people = shallowRef<Person[]>([])
 const classes = shallowRef<Pick<Tables<"classes">, "id" | "name">[]>([])
 const counts = reactive({ student: 0, teacher: 0, admin: 0 })
 const loaded = ref(false)
@@ -21,30 +20,18 @@ const roleFilter = ref<"" | Enums<"app_role">>("")
 const classFilter = ref("")
 const statusFilter = ref<"" | "active" | "locked">("")
 
-// Search, role filter and paging all run in the database; only one page of people is fetched.
-const PAGE = 25
-const page = ref(0)
-const total = ref(0)
-
-// Filters change quickly: only the answer to the latest request is shown, a slower older one is dropped.
-let latest = 0
-async function loadPage() {
-  const mine = ++latest
-  const [from, to] = pageRange(page.value, PAGE)
+// Search, filters and paging all run in the database; only one page of people is fetched.
+const people = useServerList<Person>(([from, to]) => {
   let q = client.from("profiles")
     .select("id, full_name, email, username, role, class_id, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
   if (roleFilter.value) q = q.eq("role", roleFilter.value)
   if (classFilter.value) q = classFilter.value === "none" ? q.is("class_id", null) : q.eq("class_id", classFilter.value)
   if (statusFilter.value) q = q.eq("active", statusFilter.value === "active")
-  // Characters with a meaning in PostgREST filters are dropped from the search text.
-  const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
-  if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`)
-  const { data, count } = await q.range(from, to)
-  if (mine !== latest) return
-  people.value = data ?? []
-  total.value = count ?? 0
-}
+  const term = filterTerm(search.value)
+  if (term) q = q.or(personSearch(term))
+  return q.range(from, to)
+}, { pageSize: 25, filters: [search, roleFilter, classFilter, statusFilter] })
 
 async function loadCounts() {
   const roles = ["student", "teacher", "admin"] as const
@@ -54,22 +41,12 @@ async function loadCounts() {
 }
 
 async function load() {
-  await Promise.all([loadPage(), loadCounts()])
+  await Promise.all([people.load(), loadCounts()])
   loaded.value = true
 }
 onMounted(async () => {
   const [c] = await Promise.all([client.from("classes").select("id, name").order("name"), load()])
   classes.value = c.data ?? []
-})
-
-watch(page, loadPage)
-let searchTimer: ReturnType<typeof setTimeout> | undefined
-watch([search, roleFilter, classFilter, statusFilter], () => {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    if (page.value === 0) loadPage()
-    else page.value = 0
-  }, 300)
 })
 
 async function update(p: Person, patch: Partial<Tables<"profiles">>, ok: string) {
@@ -119,7 +96,7 @@ function setClass(p: Person, classId: string) {
         <option value="active">{{ $t("accounts.active") }}</option>
         <option value="locked">{{ $t("accounts.inactive") }}</option>
       </select>
-      <span class="small muted">{{ $t("accounts.found", { n: total }) }}</span>
+      <span class="small muted">{{ $t("accounts.found", { n: people.total }) }}</span>
     </div>
 
     <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
@@ -132,7 +109,7 @@ function setClass(p: Person, classId: string) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="p in people" :key="p.id">
+          <tr v-for="p in people.rows" :key="p.id">
             <td>
               <b>{{ p.full_name || p.email }}</b><span v-if="p.id === user?.sub" class="small muted"> ({{ $t("usersPage.you") }})</span>
               <br><span class="small muted">{{ loginOf(p) }}</span>
@@ -169,8 +146,9 @@ function setClass(p: Person, classId: string) {
           </tr>
         </tbody>
       </table>
-      <p v-if="!people.length" class="muted small">{{ $t("usersPage.none") }}</p>
-      <Pager v-model:page="page" :page-size="PAGE" :total="total" />
+      <p v-if="people.error" class="fb no">{{ people.error }}</p>
+      <p v-else-if="!people.rows.length" class="muted small">{{ $t("usersPage.none") }}</p>
+      <Pager v-model:page="people.page" :page-size="people.pageSize" :total="people.total" />
     </div>
   </div>
 </template>

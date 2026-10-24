@@ -38,12 +38,12 @@ export function useAssignments() {
     const on = assigned.value.has(k)
     busy.value = k
     error.value = ""
-    const { error: e } = on
-      ? await client.from("class_lessons").delete().eq("class_id", classId).eq("lesson_id", lessonId)
-      : await client.from("class_lessons").insert({ class_id: classId, lesson_id: lessonId, unlocked_by: user.value?.sub })
+    const failure = on
+      ? await takeBackLesson(client, classId, lessonId)
+      : (await giveLesson(client, classId, lessonId, {}, user.value?.sub)).error
     busy.value = null
-    if (e) {
-      error.value = tr("common.notChanged", { msg: errorText(e.message) })
+    if (failure) {
+      error.value = failure
       return
     }
     const next = new Set(assigned.value)

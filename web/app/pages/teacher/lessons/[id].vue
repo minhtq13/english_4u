@@ -31,17 +31,19 @@ const hasAttempts = ref(false)
 const canEdit = ref(true)
 
 const fromClass = typeof route.query.class === "string" ? route.query.class : ""
-const reviewDraft = useState<{ classId: string; studentId: string; title: string; sections: DraftSection[] } | null>("review-draft", () => null)
-/** A review made for one student is given to that student only. */
-const reviewStudent = ref("")
+const handoff = useLessonHandoff()
 const courseId = ref("")
 const phaseId = ref<number | null>(null)
-/** Classes to assign the new lesson to right after saving. */
-const assignTo = ref<string[]>(fromClass ? [fromClass] : [])
+/** Giving the lesson to classes (deadline, who, results at submit, shuffle) when it is saved. */
+const giving = useLessonGiving()
+if (!editId && fromClass) giving.want(fromClass)
 // Teachers create lessons in the grades they teach; admins in any grade.
 const courseChoices = computed(() =>
   isAdmin.value ? courses.value : courses.value.filter(k => classes.value.some(c => c.course_id === k.id)))
 const gradeClasses = computed(() => classes.value.filter(c => c.course_id === courseId.value))
+watch(gradeClasses, list => giving.setClasses(list), { immediate: true })
+/** The lesson's id once it is saved, so saving again after a failure to give it to a class updates it instead of making another. */
+const savedId = ref(editId)
 
 const draft = reactive<LessonDraft>({ label: "", title: "", description: "", subtitle: "", sections: STANDARD_STRUCTURE() })
 
@@ -57,6 +59,14 @@ function go(next: "setup" | "content") {
   window.scrollTo({ top: 0, behavior: "smooth" })
 }
 
+/** The last step is the card at the end of the content stage: open that stage and scroll to it. */
+async function goGive() {
+  if (!canContinue.value) return
+  stage.value = "content"
+  await nextTick()
+  document.getElementById("giving")?.scrollIntoView({ behavior: "smooth", block: "start" })
+}
+
 onMounted(async () => {
   try {
     const [c, k] = await Promise.all([
@@ -65,12 +75,18 @@ onMounted(async () => {
     ])
     classes.value = c.data ?? []
     courses.value = k
-    if (editId) await loadExisting(editId)
-    else if (route.query.from === "review" && reviewDraft.value?.classId === fromClass) {
-      // A review worksheet built from wrong answers (/teacher/review/<class>).
-      Object.assign(draft, { label: t("editor.reviewLabel"), title: reviewDraft.value.title, sections: reviewDraft.value.sections })
-      reviewStudent.value = reviewDraft.value.studentId
-      reviewDraft.value = null
+    if (editId) {
+      await loadExisting(editId)
+      await giving.loadGiven(editId, gradeClasses.value.map(c => c.id))
+    }
+    else if (handoff.value && route.query.from === handoff.value.from) {
+      // A lesson built elsewhere: a review sheet from wrong answers, or questions picked in the bank.
+      const h = handoff.value
+      Object.assign(draft, { label: h.label, title: h.title, sections: h.sections })
+      courseId.value = h.courseId
+      // A review made for one student is given to that student only.
+      if (h.studentId && h.classId === fromClass) giving.want(fromClass, h.studentId)
+      handoff.value = null
       stage.value = "content"
     }
     else courseId.value = classes.value.find(x => x.id === fromClass)?.course_id
@@ -108,7 +124,6 @@ const templates = shallowRef<{ id: string; label: string; title: string }[]>([])
 watch(courseId, async (id) => {
   phases.value = []
   templates.value = []
-  assignTo.value = assignTo.value.filter(cid => classes.value.some(c => c.id === cid && c.course_id === id))
   if (!id) return
   const [p, outline] = await Promise.all([
     client.from("phases").select("id, name, position").eq("course_id", id).order("position"),
@@ -148,10 +163,11 @@ async function save() {
   problems.value = validateDraft(draft)
   if (!courseId.value) problems.value.unshift(t("editor.pickGrade"))
   else if (!phaseId.value) problems.value.unshift(t("editor.pickPhase"))
+  problems.value.push(...giving.problems())
   if (problems.value.length) return
   saving.value = true
   // New lessons get the next free id of the grade (6.101, 6.102, …) from the database.
-  const next = editId ? { data: editId, error: null } : await client.rpc("next_lesson_id", { course: courseId.value })
+  const next = savedId.value ? { data: savedId.value, error: null } : await client.rpc("next_lesson_id", { course: courseId.value })
   const id = next.data
   if (!id) {
     saving.value = false
@@ -166,12 +182,14 @@ async function save() {
     message.value = t("common.notSaved", { msg: errorText(e.message) })
     return
   }
-  if (!editId && assignTo.value.length) {
-    await client.from("class_lessons").insert(assignTo.value.map(cid => ({ class_id: cid, lesson_id: id, unlocked_by: user.value?.sub })))
-    if (reviewStudent.value && assignTo.value.includes(fromClass)) {
-      await client.from("class_lessons").update({ for_all: false }).eq("class_id", fromClass).eq("lesson_id", id)
-      await client.from("class_lesson_students").insert({ class_id: fromClass, lesson_id: id, student_id: reviewStudent.value })
-    }
+  savedId.value = id
+  const failures = await giving.apply(id)
+  if (failures.length) {
+    // The lesson is saved; saving again retries only what failed.
+    saving.value = false
+    message.value = t("giveForm.notGiven", { list: failures.join("; ") })
+    await loadOutline(courseId.value, true)
+    return
   }
   saving.value = false
   await loadOutline(courseId.value, true)
@@ -233,6 +251,11 @@ async function removeLesson() {
             <span class="dot">3</span>{{ $t("editor.stepContent") }}
           </button>
         </li>
+        <li>
+          <button type="button" :disabled="!canContinue" @click="goGive">
+            <span class="dot">4</span>{{ $t("editor.stepGive") }}
+          </button>
+        </li>
       </ol>
 
       <template v-if="stage === 'setup'">
@@ -252,15 +275,6 @@ async function removeLesson() {
               </select>
             </label>
           </div>
-          <div v-if="!editId && gradeClasses.length" class="assign">
-            <span class="small muted">{{ $t("editor.assignNow") }}</span>
-            <div class="row">
-              <label v-for="c in gradeClasses" :key="c.id" class="chip-check" :class="{ on: assignTo.includes(c.id) }">
-                <input v-model="assignTo" type="checkbox" :value="c.id"> {{ c.name }}
-              </label>
-            </div>
-          </div>
-          <p v-else-if="editId" class="hint">{{ $t("editor.assignLater") }}</p>
         </section>
 
         <LessonEditorStructure v-model="draft.sections" :lessons="templates" />
@@ -302,6 +316,8 @@ async function removeLesson() {
         <div class="card">
           <LessonEditorAddSection @add="draft.sections.push($event)" />
         </div>
+
+        <LessonEditorGiving :giving="giving" :editing="!!editId" />
       </template>
 
       <template v-if="stage === 'content'">
@@ -334,10 +350,6 @@ async function removeLesson() {
 /* Label and its hint share one line, so neighbouring inputs start at the same height. */
 .stack label .lab { display: block; }
 .span2 { grid-column: span 2; }
-.assign { display: flex; flex-direction: column; gap: 6px; }
-.stack label.chip-check { flex-direction: row; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--line);
-  border-radius: 999px; background: var(--bg); cursor: pointer; font-weight: 500; }
-.stack label.chip-check.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .steps { list-style: none; margin: 0 0 16px; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; }
 .steps li { flex: 1 1 150px; }
 .steps button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;

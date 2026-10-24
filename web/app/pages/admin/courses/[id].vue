@@ -31,7 +31,7 @@ onMounted(async () => {
     lessons.value = l.data ?? []
     classes.value = (k.data ?? []) as Views<"class_overview">[]
     errorStats.value = (e.data ?? []) as Views<"course_error_stats">[]
-    await loadStudents()
+    await students.load()
   } catch (e) {
     error.value = t("dashboard.loadFailed", { msg: (e as Error).message })
   }
@@ -39,12 +39,10 @@ onMounted(async () => {
 })
 useHead({ title: computed(() => `${t("gradeStats.title", { name: localName(course.value?.name ?? "") })} - Grammar`) })
 
-const pct = (part: number | null, whole: number | null) => (whole ? Math.round(((part ?? 0) / whole) * 100) : null)
-
 const tiles = computed(() => ({
   students: summary.value?.students ?? 0,
   active: summary.value?.active ?? 0,
-  accuracy: accuracyOf(summary.value?.ok, summary.value?.done),
+  accuracy: percentOf(summary.value?.ok, summary.value?.done),
   waiting: summary.value?.waiting ?? 0,
 }))
 
@@ -67,22 +65,14 @@ const maxErrors = computed(() => Math.max(1, ...errorRows.value.map(r => r.total
 const lessonCount = computed(() => lessons.value.length)
 
 // ---- students: one page at a time, most recently active first ----
-const PAGE = 20
-const page = ref(0)
-const students = shallowRef<Views<"student_progress">[]>([])
-const studentTotal = ref(0)
-async function loadStudents() {
-  const [from, to] = pageRange(page.value, PAGE)
+const students = useServerList<Views<"student_progress">>(async ([from, to]) => {
   const { data, count, error: e } = await client.from("student_progress")
     .select("user_id, full_name, email, class_name, submitted, waiting, ok, done, last_activity, open_errors", { count: "exact" })
     .eq("course_id", courseId)
     .order("last_activity", { ascending: false, nullsFirst: false })
     .range(from, to)
-  if (e) throw e
-  students.value = (data ?? []) as Views<"student_progress">[]
-  studentTotal.value = count ?? 0
-}
-watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).message }))
+  return { data: data as Views<"student_progress">[] | null, count, error: e }
+}, { pageSize: 20 })
 </script>
 
 <template>
@@ -114,7 +104,7 @@ watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).messa
               <tr v-for="r in classes" :key="r.class_id ?? ''">
                 <td><NuxtLink :to="`/teacher/classes/${r.class_id}`"><b>{{ r.name }}</b></NuxtLink></td>
                 <td class="n">{{ r.students }}</td>
-                <td><StatBar :value="accuracyOf(r.ok, r.done)" /></td>
+                <td><StatBar :value="percentOf(r.ok, r.done)" /></td>
                 <td class="n">{{ r.waiting }}</td>
               </tr>
             </tbody>
@@ -145,7 +135,7 @@ watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).messa
                 <td class="n">{{ l.learners }}</td>
                 <td>
                   <StatBar
-                    :value="pct(l.completed ?? 0, tiles.students)"
+                    :value="percentOf(l.completed ?? 0, tiles.students)"
                     :text="`${l.completed ?? 0}/${tiles.students}`"
                   />
                 </td>
@@ -179,7 +169,8 @@ watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).messa
 
       <section class="card">
         <h2>{{ $t("nav.students") }}</h2>
-        <p v-if="!studentTotal" class="muted small">{{ $t("gradeStats.noStudents") }}</p>
+        <p v-if="students.error" class="fb no">{{ students.error }}</p>
+        <p v-else-if="!students.total" class="muted small">{{ $t("gradeStats.noStudents") }}</p>
         <div v-else class="table-wrap">
           <table class="stats-table">
             <thead>
@@ -194,18 +185,18 @@ watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).messa
               </tr>
             </thead>
             <tbody>
-              <tr v-for="s in students" :key="s.user_id ?? ''">
+              <tr v-for="s in students.rows" :key="s.user_id ?? ''">
                 <td>
                   <NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink>
                 </td>
                 <td>{{ s.class_name }}</td>
                 <td>
                   <StatBar
-                    :value="pct(s.submitted, lessonCount)"
+                    :value="percentOf(s.submitted, lessonCount)"
                     :text="`${s.submitted}/${lessonCount}`"
                   />
                 </td>
-                <td><StatBar :value="accuracyOf(s.ok, s.done)" /></td>
+                <td><StatBar :value="percentOf(s.ok, s.done)" /></td>
                 <td class="n">{{ s.waiting }}</td>
                 <td class="n">{{ s.open_errors }}</td>
                 <td class="small muted">{{ s.last_activity ? formatDate(s.last_activity) : $t("classPage.neverActive") }}</td>
@@ -213,7 +204,7 @@ watch(page, () => loadStudents().catch((e) => { error.value = (e as Error).messa
             </tbody>
           </table>
         </div>
-        <Pager v-model:page="page" :page-size="PAGE" :total="studentTotal" />
+        <Pager v-model:page="students.page" :page-size="students.pageSize" :total="students.total" />
       </section>
     </template>
   </div>

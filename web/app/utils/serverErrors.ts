@@ -1,3 +1,5 @@
+import { currentLang } from "./i18n"
+
 // The database (raise exception …) and the manage-accounts edge function answer in Vietnamese. In English
 // the UI shows these through errorText(), which recognises every known message (by pattern, so parts like
 // usernames carry over) and falls back to the original text for anything else (e.g. network errors).
@@ -5,6 +7,7 @@ const EN: [RegExp, string][] = [
   [/^Bài chưa được giao cho lớp này/, "This lesson has not been given to this class"],
   [/^Bài cần có tên/, "The lesson needs a title"],
   [/^Bài cần ít nhất một phần/, "The lesson needs at least one section"],
+  [/^Bài này chưa nộp, học sinh vẫn đang làm/, "This work is not submitted yet; the student is still working on it"],
   [/^Bài này đang khoá/, "This lesson is locked"],
   [/^Bài này đã đóng hoặc chưa mở cho bạn/, "This lesson is closed or not open to you"],
   [/^Bài đã có học sinh làm nên không sửa được câu hỏi/, "Students have already done this lesson, so its questions can no longer be changed. Create a new lesson instead."],
@@ -15,6 +18,7 @@ const EN: [RegExp, string][] = [
   [/^Bạn không có quyền đổi vai trò hoặc email/, "You may not change roles or emails"],
   [/^Bạn đã ở trong một lớp/, "You are already in a class. Ask your teacher if you need to change class."],
   [/^Chỉ giáo viên của lớp mới chấm được bài/, "Only the class's teacher can grade this"],
+  [/^Không tìm thấy bài làm, hoặc bạn không quản lý học sinh này/, "Work not found, or you do not manage this student"],
   [/^Chỉ giáo viên của lớp mới trả kết quả được/, "Only the class's teacher can release results"],
   [/^Chỉ giáo viên của lớp mới đóng \/ mở bài được/, "Only the class's teacher can close or reopen lessons"],
   [/^Chỉ học sinh mới cần nhập mã lớp/, "Only students need a class code"],

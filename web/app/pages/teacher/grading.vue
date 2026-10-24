@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Database, Tables } from "~/types/database.types"
-import type { Score } from "~/utils/course"
 
 definePageMeta({ roles: ["teacher"] })
 const { t } = useI18n()
@@ -32,37 +31,21 @@ const lessonOptions = shallowRef<{ id: string; name: string }[]>([])
 const PAGE = 15
 const COLUMNS = "id, lesson_id, score, status, submitted_at, updated_at, profiles!inner(full_name, email, class_id), lessons(title, label)"
 
-function listQuery(waiting: boolean, page: number) {
-  const [from, to] = pageRange(page, PAGE)
+/** Submitted work waiting for a grade (oldest first), or everything else (most recent first). */
+const list = (waiting: boolean) => useServerList<AttemptRow>(async ([from, to]) => {
   let q = client.from("attempts").select(COLUMNS, { count: "exact" })
   q = waiting
     ? q.eq("status", "submitted").order("submitted_at", { ascending: true })
     : q.neq("status", "submitted").order("updated_at", { ascending: false })
   if (classFilter.value) q = q.eq("profiles.class_id", classFilter.value)
   if (lessonFilter.value) q = q.eq("lesson_id", lessonFilter.value)
-  // Characters with a meaning in PostgREST filters are dropped from the search text.
-  const term = studentSearch.value.trim().replace(/[,()*%\\]/g, " ").trim()
-  if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`, { referencedTable: "profiles" })
-  return q.range(from, to)
-}
-
-function useList(waiting: boolean) {
-  const rows = shallowRef<AttemptRow[]>([])
-  const total = ref(0)
-  const page = ref(0)
-  let latest = 0 // only the answer to the latest request is shown when filters change quickly
-  async function load() {
-    const mine = ++latest
-    const { data, count } = await listQuery(waiting, page.value)
-    if (mine !== latest) return
-    rows.value = (data ?? []) as unknown as AttemptRow[]
-    total.value = count ?? 0
-  }
-  watch(page, load)
-  return reactive({ rows, total, page, load })
-}
-const waiting = useList(true)
-const recent = useList(false)
+  const term = filterTerm(studentSearch.value)
+  if (term) q = q.or(personSearch(term), { referencedTable: "profiles" })
+  const { data, count, error } = await q.range(from, to)
+  return { data: data as unknown as AttemptRow[] | null, count, error }
+}, { pageSize: PAGE, filters: [classFilter, lessonFilter, studentSearch] })
+const waiting = list(true)
+const recent = list(false)
 
 // ---- "Chấm lần lượt": lessons with submitted work per class, graded one after another ----
 type QueueRow = { class_id: string; lesson_id: string; waiting: number; label: string }
@@ -78,14 +61,7 @@ async function loadQueues() {
   const name = new Map((ls ?? []).map(l => [l.id, `${l.label} - ${l.title}`]))
   queues.value = rows.map(r => ({ ...r, label: name.get(r.lesson_id) ?? r.lesson_id }))
 }
-async function startQueue(r: QueueRow) {
-  const { data } = await client.from("attempts")
-    .select("id, profiles!inner(class_id)")
-    .eq("lesson_id", r.lesson_id).eq("status", "submitted").eq("profiles.class_id", r.class_id)
-    .order("submitted_at", { ascending: true }).limit(1)
-  const first = data?.[0]?.id
-  if (first) await navigateTo(`/teacher/attempts/${first}?queue=${encodeURIComponent(r.lesson_id)}&class=${r.class_id}`)
-}
+const queue = useGradingQueue()
 
 /** The lessons given to the chosen class (or to all my classes), for the lesson filter. */
 async function loadLessonOptions() {
@@ -98,27 +74,21 @@ async function loadLessonOptions() {
   if (lessonFilter.value && !lessonOptions.value.some(l => l.id === lessonFilter.value)) lessonFilter.value = ""
 }
 
-async function reload() {
-  waiting.page = 0
-  recent.page = 0
-  await Promise.all([waiting.load(), recent.load(), loadQueues()])
-}
-watch(classFilter, () => Promise.all([reload(), loadLessonOptions()]))
-watch(lessonFilter, reload)
-let searchTimer: ReturnType<typeof setTimeout> | undefined
-watch(studentSearch, () => {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(reload, 300)
-})
+// The two lists follow every filter themselves; the queues and the lesson choices follow class and lesson.
+watch(classFilter, () => Promise.all([loadQueues(), loadLessonOptions()]))
+watch(lessonFilter, loadQueues)
 
 onMounted(async () => {
-  const [c] = await Promise.all([client.from("classes").select("id, name").order("name"), reload(), loadLessonOptions()])
+  const [c] = await Promise.all([
+    client.from("classes").select("id, name").order("name"),
+    waiting.load(), recent.load(), loadQueues(), loadLessonOptions(),
+  ])
   classes.value = c.data ?? []
   loaded.value = true
 })
 
 const name = (p: { full_name: string | null; email: string } | null) => p?.full_name || p?.email || t("common.student")
-const score = (row: AttemptRow) => row.score as unknown as Score
+const outcome = (a: AttemptRow) => attemptOutcome(a, "teacher")
 const className = (id: string | null | undefined) => classes.value.find(c => c.id === id)?.name ?? "-"
 const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a.lessons?.title ?? ""}`
 </script>
@@ -159,17 +129,18 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
         <p class="hint">{{ $t("grading.queueHint") }}</p>
         <div v-for="q in queues" :key="`${q.class_id}-${q.lesson_id}`" class="list-row">
           <span><b>{{ $t("nav.classBadge", { name: className(q.class_id) }) }} · {{ q.label }}</b><small>{{ $t("grading.waitingCount", { n: q.waiting }) }}</small></span>
-          <button class="btn small primary" @click="startQueue(q)">{{ $t("classPage.queue") }} →</button>
+          <button class="btn small primary" @click="queue.start(q.lesson_id, q.class_id)">{{ $t("classPage.queue") }} →</button>
         </div>
       </section>
 
       <section class="card">
         <h2>{{ $t("grading.waiting", { n: waiting.total }) }}</h2>
-        <p v-if="!waiting.total" class="muted small">{{ $t("grading.noneWaiting") }}</p>
+        <p v-if="waiting.error" class="fb no">{{ waiting.error }}</p>
+        <p v-else-if="!waiting.total" class="muted small">{{ $t("grading.noneWaiting") }}</p>
         <NuxtLink v-for="a in waiting.rows" :key="a.id" :to="`/teacher/attempts/${a.id}`" class="list-row">
           <span>
             <b>{{ name(a.profiles) }} · {{ lessonLabel(a) }}</b>
-            <small>{{ $t("nav.classBadge", { name: className(a.profiles?.class_id) }) }} · {{ $t("progress.correct", { ok: score(a).ok ?? 0, total: score(a).total ?? score(a).done ?? 0 }) }} · {{ $t("grading.submittedAt", { date: formatDate(a.submitted_at) }) }}</small>
+            <small>{{ $t("nav.classBadge", { name: className(a.profiles?.class_id) }) }} · {{ $t("progress.correct", toScore(a.score)) }} · {{ $t("grading.submittedAt", { date: formatDate(a.submitted_at) }) }}</small>
           </span>
           <span class="badge submitted">{{ $t("grading.grade") }}</span>
         </NuxtLink>
@@ -178,13 +149,14 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
 
       <section class="card">
         <h2>{{ $t("grading.recent") }}</h2>
-        <p v-if="!recent.total" class="muted small">{{ $t("grading.noRecent") }}</p>
+        <p v-if="recent.error" class="fb no">{{ recent.error }}</p>
+        <p v-else-if="!recent.total" class="muted small">{{ $t("grading.noRecent") }}</p>
         <NuxtLink v-for="a in recent.rows" :key="a.id" :to="`/teacher/attempts/${a.id}`" class="list-row">
           <span>
             <b>{{ name(a.profiles) }} · {{ lessonLabel(a) }}</b>
-            <small>{{ $t("nav.classBadge", { name: className(a.profiles?.class_id) }) }}<template v-if="a.status !== 'in_progress'"> · {{ $t("progress.correct", { ok: score(a).ok ?? 0, total: score(a).total ?? score(a).done ?? 0 }) }}</template> · {{ formatDate(a.updated_at) }}</small>
+            <small>{{ $t("nav.classBadge", { name: className(a.profiles?.class_id) }) }}<template v-if="outcome(a).score"> · {{ $t("progress.correct", outcome(a).score!) }}</template> · {{ formatDate(a.updated_at) }}</small>
           </span>
-          <span class="badge" :class="a.status">{{ ATTEMPT_STATUS[a.status] }}</span>
+          <span class="badge" :class="a.status">{{ outcome(a).label }}</span>
         </NuxtLink>
         <Pager v-model:page="recent.page" :page-size="PAGE" :total="recent.total" />
       </section>

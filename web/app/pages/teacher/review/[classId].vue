@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Database, Tables, Views } from "~/types/database.types"
 import type { Course } from "~/utils/course"
-import type { DraftSection } from "~/utils/lessonDraft"
 
 // Build a review worksheet from the questions a class (or one student) got wrong in chosen lessons.
 // The picked questions open in the lesson editor as a new lesson, to check, save and give to the class.
@@ -71,24 +70,20 @@ function toggle(id: string) {
 }
 
 const lessonLabel = (id: string) => outline.value?.byId[id]?.label ?? id
-const questionOf = questionText
-const answerOf = answerText
 
 // The review lesson draft travels to the editor through shared state.
-const reviewDraft = useState<{ classId: string; studentId: string; title: string; sections: DraftSection[] } | null>("review-draft", () => null)
-const sectionTitle = (type: string) => t(`reviewPage.section.${type}`)
+const handoff = useLessonHandoff()
 async function build() {
   const chosen = rows.value.filter(r => picked.value.has(r.item_id))
-  const sections = (["mcq", "typed", "order", "match", "error"] as const)
-    .map(type => ({ type, items: chosen.filter(r => r.type === type) }))
-    .filter(g => g.items.length)
-    .map(g => emptySection(g.type, { title: sectionTitle(g.type), items: g.items.map(r => itemToDraft(r, r.type)), short: g.type === "typed" }))
   const who = students.value.find(s => s.user_id === student.value)
-  reviewDraft.value = {
+  handoff.value = {
+    from: "review",
     classId,
     studentId: student.value,
+    courseId: cls.value!.course_id,
+    label: t("editor.reviewLabel"),
     title: who ? t("reviewPage.titleStudent", { name: who.full_name || who.username }) : t("reviewPage.titleClass", { name: cls.value?.name }),
-    sections,
+    sections: sectionsFromQuestions(chosen, type => t(`reviewPage.section.${type}`)),
   }
   await navigateTo(`/teacher/lessons/new?class=${classId}&from=review`)
 }
@@ -133,9 +128,9 @@ async function build() {
         <label v-for="r in rows" :key="r.item_id" class="q-row" :class="{ on: picked.has(r.item_id) }">
           <input type="checkbox" :checked="picked.has(r.item_id)" @change="toggle(r.item_id)">
           <span class="q-text">
-            <span><span class="badge">{{ SECTION_TYPES[r.type].label }}</span> {{ questionOf(r) }}</span>
+            <span><span class="badge">{{ SECTION_TYPES[r.type].label }}</span> {{ questionText(r) }}</span>
             <small class="muted">
-              → <b>{{ stripTags(answerOf(r)) }}</b> · <b class="bad">{{ r.wrong }}/{{ r.answered }}</b> {{ $t("reviewPage.gotWrong") }}
+              → <b>{{ stripTags(answerText(r)) }}</b> · <b class="bad">{{ r.wrong }}/{{ r.answered }}</b> {{ $t("reviewPage.gotWrong") }}
               · {{ lessonLabel(r.lesson_id) }} {{ r.qid }}<template v-if="r.tag"> · [{{ r.tag }}]</template>
             </small>
           </span>
