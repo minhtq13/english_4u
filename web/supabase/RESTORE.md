@@ -48,8 +48,39 @@ Dùng `/opt/homebrew/opt/libpq/bin/pg_restore` (17.x) hoặc chạy trong contai
 
 ## 3A. Mất một phần, project còn sống
 
-**Đừng ghi đè** database đang chạy. Khôi phục backup vào chỗ riêng (project Supabase tạm, hoặc Docker như `backup-test.sh`),
-lấy đúng các dòng bị mất rồi chèn lại bằng SQL. Chỉ khôi phục đè lên khi gần như mất hết.
+**Đừng ghi đè** database đang chạy. Khôi phục backup vào một database riêng (project Supabase tạm, hoặc Docker như `backup-test.sh`,
+làm như mục 3B nhưng vào `$SCRATCH`), rồi chỉ nạp lại đúng những bảng bị mất. Quy trình dưới đây đã diễn tập (xoá nhầm toàn bộ
+bài làm và lớp học rồi khôi phục: mọi chỉ số khớp trước khi xoá). Ba điều diễn tập cho thấy, đừng bỏ qua:
+
+1. **Nạp theo thứ tự cha trước con**, từng bảng một lệnh `pg_restore -t` riêng. Gộp nhiều `-t` vào một lệnh sẽ nạp sai thứ tự và bị
+   khoá ngoại từ chối (giao dịch tự huỷ, không đổi gì).
+2. **Tắt trigger của chính các bảng đó trong lúc nạp.** Không tắt thì lệnh vẫn "thành công" nhưng trigger `attempts_guard_status`
+   ghi đè `submitted_at` của mọi bài làm thành giờ hiện tại. Đừng dùng `session_replication_role`: Supabase không cho role `postgres` đặt nó.
+3. **Cột bị đặt NULL khi xoá bảng cha** phải sửa lại bằng tay: xoá `classes` làm `profiles.class_id` thành NULL; xoá `lessons` làm
+   `error_log.lesson_id` và `lessons.created_by` thành NULL. Lấy giá trị đúng từ database tạm.
+
+Thứ tự cha trước con của các bảng app: `courses, phases, classes, profiles, lessons, lesson_sections, section_items, class_teachers,
+class_lessons, class_lesson_students, attempts, attempt_results, feedback, error_log, comment_templates, lesson_structures, admin_emails`.
+
+Ví dụ khi mất `classes`, `attempts` và các bảng con của chúng (`URL` là database đang chạy, `public.dump` đã giải nén):
+
+```bash
+TABLES="classes attempts attempt_results feedback class_teachers class_lessons class_lesson_students"
+for t in $TABLES; do psql "$URL" -c "alter table public.$t disable trigger user"; done
+for t in $TABLES; do pg_restore --single-transaction --data-only --no-owner -t "$t" -d "$URL" public.dump || break; done
+for t in $TABLES; do psql "$URL" -c "alter table public.$t enable trigger user"; done
+
+# học sinh bị mất lớp: lấy lại từ database tạm ($SCRATCH)
+psql "$SCRATCH" -c "\copy (select id, class_id from public.profiles where class_id is not null) to 'profile-classes.csv' csv"
+psql "$URL" <<'SQL'
+create temp table pc (id uuid, class_id uuid);
+\copy pc from 'profile-classes.csv' csv
+update public.profiles p set class_id = pc.class_id from pc where p.id = pc.id and p.class_id is null;
+SQL
+```
+
+Nạp xong, đối chiếu số dòng với `$SCRATCH`, và so cột `submitted_at` của vài bài làm. Chỉ nạp được vào bảng đang **trống** phần bị mất
+(còn dòng cũ thì lỗi trùng khoá và giao dịch của bảng đó tự huỷ).
 
 ## 3B. Mất cả project
 
@@ -84,6 +115,18 @@ lấy đúng các dòng bị mất rồi chèn lại bằng SQL. Chỉ khôi ph�
    - Deploy lại edge function `manage-accounts` (mã ở `web/supabase/functions/`, tắt verify JWT).
    - GitHub: cập nhật secret `SUPABASE_DB_URL` sang project mới để backup tiếp tục chạy.
 6. Kiểm tra: số dòng các bảng so với lúc bình thường, rồi đăng nhập thử một tài khoản giáo viên và một học sinh.
+
+## Đã diễn tập
+
+Trên một bản sao trong Docker (Postgres 17 kiểu Supabase), từ một backup mới dump ra đúng lệnh của workflow:
+
+| Kịch bản | Cách khôi phục | Thời gian | Kết quả |
+|---|---|---|---|
+| A. Xoá nhầm toàn bộ bài làm và lớp | mục 3A | ~10 giây | 61/61 chỉ số khớp trước khi xoá |
+| B. Mất sạch database | mục 3B | ~7 giây | 61/61 chỉ số khớp và giống production thật |
+
+Thời gian trên là cục bộ với database nhỏ (14 MB); trên Supabase thật sẽ lâu hơn do mạng. Chưa thử trên project Supabase mới thật,
+và chưa thử bước tạo lại job `pg_cron` (bản sao không có `pg_cron`).
 
 ## Không nằm trong backup
 

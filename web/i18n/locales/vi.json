@@ -637,7 +637,10 @@
     "submittedAt": "nộp {date}",
     "grade": "Chấm bài",
     "recent": "Hoạt động gần đây",
-    "noRecent": "Chưa có hoạt động."
+    "noRecent": "Chưa có hoạt động.",
+    "lesson": "Bài",
+    "allLessons": "Mọi bài",
+    "searchStudent": "Tên hoặc tên đăng nhập…"
   },
   "coursesPage": {
     "pageTitle": "Bài học - Grammar",
@@ -702,7 +705,8 @@
     "openErrors": "lỗi chưa sửa",
     "errorLog": "Nhật ký lỗi",
     "work": "Bài làm",
-    "noWork": "Chưa làm bài nào."
+    "noWork": "Chưa làm bài nào.",
+    "joined": "tham gia {date}"
   },
   "reviewPage": {
     "pageTitle": "Tạo phiếu ôn - Grammar",
@@ -847,7 +851,14 @@
       "search": "Tìm giáo viên theo tên hoặc tên đăng nhập",
       "classCol": "Dạy lớp",
       "none": "Chưa có giáo viên nào."
-    }
+    },
+    "anyStatus": "Mọi trạng thái",
+    "anyTaughtClass": "Mọi lớp",
+    "teaches": "Dạy lớp {name}",
+    "sort": "Sắp xếp",
+    "sortNewest": "Mới tạo trước",
+    "sortName": "Theo tên A→Z",
+    "found": "{n} người"
   },
   "presets": {
     "pronunciation": {
@@ -891,6 +902,35 @@
     "error": {
       "label": "Tìm lỗi sai",
       "hint": "Chọn phần gạch chân A, B, C hoặc D bị sai trong mỗi câu."
+    }
+  },
+  "lessonFilter": {
+    "search": "Tìm theo tên bài, nhãn…",
+    "allKinds": "Mọi loại bài",
+    "allPhases": "Mọi học kỳ",
+    "allAuthors": "Mọi người soạn",
+    "allStatuses": "Mọi trạng thái",
+    "clear": "Bỏ lọc",
+    "count": "{n} bài",
+    "none": "Không có bài nào khớp bộ lọc.",
+    "kind": {
+      "lesson": "Bài học (Unit)",
+      "practice": "Luyện đề",
+      "homework": "Bài tập về nhà",
+      "test": "Kiểm tra",
+      "other": "Loại khác"
+    },
+    "author": {
+      "builtin": "Bài có sẵn",
+      "teacher": "Giáo viên soạn",
+      "mine": "Do tôi soạn"
+    },
+    "status": {
+      "given": "Đã giao cho lớp",
+      "notGiven": "Chưa giao",
+      "open": "Đang mở",
+      "closed": "Đã đóng / hết hạn",
+      "waiting": "Có bài chờ chấm"
     }
   }
 }

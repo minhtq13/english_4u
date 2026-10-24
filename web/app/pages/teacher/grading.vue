@@ -23,6 +23,11 @@ const classFilter = computed({
   set: (v: string) => router.replace({ query: v ? { class: v } : {} }),
 })
 
+// Lesson and student filters (in the database, like the class filter).
+const lessonFilter = ref("")
+const studentSearch = ref("")
+const lessonOptions = shallowRef<{ id: string; name: string }[]>([])
+
 // Both lists are fetched one page at a time; RLS limits teachers to their own students.
 const PAGE = 15
 const COLUMNS = "id, lesson_id, score, status, submitted_at, updated_at, profiles!inner(full_name, email, class_id), lessons(title, label)"
@@ -34,6 +39,10 @@ function listQuery(waiting: boolean, page: number) {
     ? q.eq("status", "submitted").order("submitted_at", { ascending: true })
     : q.neq("status", "submitted").order("updated_at", { ascending: false })
   if (classFilter.value) q = q.eq("profiles.class_id", classFilter.value)
+  if (lessonFilter.value) q = q.eq("lesson_id", lessonFilter.value)
+  // Characters with a meaning in PostgREST filters are dropped from the search text.
+  const term = studentSearch.value.trim().replace(/[,()*%\\]/g, " ").trim()
+  if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`, { referencedTable: "profiles" })
   return q.range(from, to)
 }
 
@@ -41,8 +50,11 @@ function useList(waiting: boolean) {
   const rows = shallowRef<AttemptRow[]>([])
   const total = ref(0)
   const page = ref(0)
+  let latest = 0 // only the answer to the latest request is shown when filters change quickly
   async function load() {
+    const mine = ++latest
     const { data, count } = await listQuery(waiting, page.value)
+    if (mine !== latest) return
     rows.value = (data ?? []) as unknown as AttemptRow[]
     total.value = count ?? 0
   }
@@ -58,6 +70,7 @@ const queues = shallowRef<QueueRow[]>([])
 async function loadQueues() {
   let q = client.from("class_lesson_stats").select("class_id, lesson_id, waiting").gt("waiting", 0)
   if (classFilter.value) q = q.eq("class_id", classFilter.value)
+  if (lessonFilter.value) q = q.eq("lesson_id", lessonFilter.value)
   const { data } = await q
   const rows = (data ?? []) as { class_id: string; lesson_id: string; waiting: number }[]
   const ids = [...new Set(rows.map(r => r.lesson_id))]
@@ -74,15 +87,32 @@ async function startQueue(r: QueueRow) {
   if (first) await navigateTo(`/teacher/attempts/${first}?queue=${encodeURIComponent(r.lesson_id)}&class=${r.class_id}`)
 }
 
+/** The lessons given to the chosen class (or to all my classes), for the lesson filter. */
+async function loadLessonOptions() {
+  let q = client.from("class_lesson_stats").select("lesson_id")
+  if (classFilter.value) q = q.eq("class_id", classFilter.value)
+  const { data } = await q
+  const ids = [...new Set(((data ?? []) as { lesson_id: string | null }[]).map(r => r.lesson_id ?? "").filter(Boolean))]
+  const { data: ls } = ids.length ? await client.from("lessons").select("id, label, title, position").in("id", ids).order("position") : { data: [] }
+  lessonOptions.value = (ls ?? []).map(l => ({ id: l.id, name: `${l.label} - ${l.title}` }))
+  if (lessonFilter.value && !lessonOptions.value.some(l => l.id === lessonFilter.value)) lessonFilter.value = ""
+}
+
 async function reload() {
   waiting.page = 0
   recent.page = 0
   await Promise.all([waiting.load(), recent.load(), loadQueues()])
 }
-watch(classFilter, reload)
+watch(classFilter, () => Promise.all([reload(), loadLessonOptions()]))
+watch(lessonFilter, reload)
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(studentSearch, () => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(reload, 300)
+})
 
 onMounted(async () => {
-  const [c] = await Promise.all([client.from("classes").select("id, name").order("name"), reload()])
+  const [c] = await Promise.all([client.from("classes").select("id, name").order("name"), reload(), loadLessonOptions()])
   classes.value = c.data ?? []
   loaded.value = true
 })
@@ -100,13 +130,26 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
         <h1>{{ $t("nav.grading") }}</h1>
         <p class="sub">{{ $t("grading.intro") }}</p>
       </div>
-      <label class="filter">
-        <span class="small muted">{{ $t("common.class") }}</span>
-        <select id="grading-class" v-model="classFilter">
-          <option value="">{{ $t("grading.allMine") }}</option>
-          <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
-        </select>
-      </label>
+      <div class="filters">
+        <label class="filter">
+          <span class="small muted">{{ $t("common.class") }}</span>
+          <select id="grading-class" v-model="classFilter">
+            <option value="">{{ $t("grading.allMine") }}</option>
+            <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span class="small muted">{{ $t("grading.lesson") }}</span>
+          <select id="grading-lesson" v-model="lessonFilter">
+            <option value="">{{ $t("grading.allLessons") }}</option>
+            <option v-for="l in lessonOptions" :key="l.id" :value="l.id">{{ l.name }}</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span class="small muted">{{ $t("common.student") }}</span>
+          <input id="grading-student" v-model="studentSearch" type="search" :placeholder="$t('grading.searchStudent')">
+        </label>
+      </div>
     </div>
 
     <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
@@ -151,6 +194,8 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
 
 <style scoped>
 .head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.filter { display: flex; flex-direction: column; gap: 2px; margin-bottom: 16px; }
-.filter select { width: auto; min-width: 200px; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; margin-bottom: 16px; }
+.filter { display: flex; flex-direction: column; gap: 2px; }
+.filter select { width: auto; min-width: 180px; max-width: 280px; }
+.filter input { min-width: 180px; }
 </style>

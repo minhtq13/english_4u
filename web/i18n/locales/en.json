@@ -637,7 +637,10 @@
     "submittedAt": "submitted {date}",
     "grade": "Grade",
     "recent": "Recent activity",
-    "noRecent": "No activity yet."
+    "noRecent": "No activity yet.",
+    "lesson": "Lesson",
+    "allLessons": "All lessons",
+    "searchStudent": "Name or username…"
   },
   "coursesPage": {
     "pageTitle": "Lessons - Grammar",
@@ -702,7 +705,8 @@
     "openErrors": "open mistakes",
     "errorLog": "Mistake log",
     "work": "Work",
-    "noWork": "No lessons done yet."
+    "noWork": "No lessons done yet.",
+    "joined": "joined {date}"
   },
   "reviewPage": {
     "pageTitle": "Review sheet - Grammar",
@@ -847,7 +851,14 @@
       "search": "Search teachers by name or username",
       "classCol": "Teaches",
       "none": "No teachers yet."
-    }
+    },
+    "anyStatus": "Any status",
+    "anyTaughtClass": "Any class",
+    "teaches": "Teaches {name}",
+    "sort": "Sort",
+    "sortNewest": "Newest first",
+    "sortName": "Name A→Z",
+    "found": "{n} people"
   },
   "presets": {
     "pronunciation": {
@@ -891,6 +902,35 @@
     "error": {
       "label": "Find the mistake",
       "hint": "Choose the underlined part A, B, C or D that is wrong in each sentence."
+    }
+  },
+  "lessonFilter": {
+    "search": "Search by lesson name or label…",
+    "allKinds": "All kinds",
+    "allPhases": "All terms",
+    "allAuthors": "Anyone",
+    "allStatuses": "Any status",
+    "clear": "Clear filters",
+    "count": "{n} lessons",
+    "none": "No lesson matches the filters.",
+    "kind": {
+      "lesson": "Lesson (Unit)",
+      "practice": "Practice test",
+      "homework": "Homework",
+      "test": "Test",
+      "other": "Other"
+    },
+    "author": {
+      "builtin": "Built-in",
+      "teacher": "Made by teachers",
+      "mine": "Made by me"
+    },
+    "status": {
+      "given": "Given to the class",
+      "notGiven": "Not given",
+      "open": "Open",
+      "closed": "Closed / past due",
+      "waiting": "Work to grade"
     }
   }
 }

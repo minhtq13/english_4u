@@ -295,6 +295,23 @@ const { isAdmin } = useProfile()
 const canEditLesson = (l: { createdBy: string | null }) => isAdmin.value || (!!l.createdBy && l.createdBy === user.value?.sub)
 const pct = (part: number, whole: number) => (whole ? Math.round((part / whole) * 100) : null)
 
+// Lesson list: search, kind, term, author and how the lesson stands in this class, paged in the browser.
+const LESSON_STATUSES = ["given", "notGiven", "open", "closed", "waiting"] as const
+const lessonStatuses = computed(() => LESSON_STATUSES.map(key => ({ key, label: t(`lessonFilter.status.${key}`) })))
+const lessonFilter = useLessonFilter(outline, {
+  match: (l, status) => {
+    const st = unlocked.value.get(l.id)
+    switch (status) {
+      case "given": return !!st
+      case "notGiven": return !st
+      case "open": return !!st && !st.closed && !isPastDue(st.due_at)
+      case "closed": return !!st && (st.closed || isPastDue(st.due_at))
+      case "waiting": return lessonStats(l.id).waiting > 0
+      default: return true
+    }
+  },
+})
+
 const lessonStats = (id: string) => {
   const r = lessonRows.value[id]
   return { done: r?.submitted ?? 0, accuracy: accuracyOf(r?.ok, r?.done), waiting: r?.waiting ?? 0 }
@@ -365,8 +382,10 @@ async function copyCode() {
           </ul>
         </details>
         <p v-if="!lessonIds.length" class="muted small">{{ $t("classPage.noLessons") }}</p>
+        <LessonFilters v-else :filter="lessonFilter" :phases="outline?.phases ?? []" :statuses="lessonStatuses" />
+        <p v-if="lessonIds.length && !lessonFilter.total" class="muted small">{{ $t("lessonFilter.none") }}</p>
 
-        <template v-for="phase in outline?.phases ?? []" :key="phase.id">
+        <template v-for="phase in lessonFilter.groups" :key="phase.id">
           <h3 v-if="phase.lessons.length" class="phase">{{ localName(phase.name) }}</h3>
           <div v-for="l in phase.lessons" :key="l.id" class="lesson" :class="{ given: unlocked.has(l.id) }">
             <div class="lesson-top">
@@ -479,6 +498,7 @@ async function copyCode() {
             </template>
           </div>
         </template>
+        <Pager v-model:page="lessonFilter.page" :page-size="lessonFilter.pageSize" :total="lessonFilter.total" />
       </section>
 
       <section v-if="missingByLesson.length" class="card">

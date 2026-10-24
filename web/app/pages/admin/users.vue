@@ -18,22 +18,30 @@ const failure = ref("")
 const busy = ref<string | null>(null)
 const search = ref("")
 const roleFilter = ref<"" | Enums<"app_role">>("")
+const classFilter = ref("")
+const statusFilter = ref<"" | "active" | "locked">("")
 
 // Search, role filter and paging all run in the database; only one page of people is fetched.
 const PAGE = 25
 const page = ref(0)
 const total = ref(0)
 
+// Filters change quickly: only the answer to the latest request is shown, a slower older one is dropped.
+let latest = 0
 async function loadPage() {
+  const mine = ++latest
   const [from, to] = pageRange(page.value, PAGE)
   let q = client.from("profiles")
     .select("id, full_name, email, username, role, class_id, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
   if (roleFilter.value) q = q.eq("role", roleFilter.value)
+  if (classFilter.value) q = classFilter.value === "none" ? q.is("class_id", null) : q.eq("class_id", classFilter.value)
+  if (statusFilter.value) q = q.eq("active", statusFilter.value === "active")
   // Characters with a meaning in PostgREST filters are dropped from the search text.
   const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
   if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`)
   const { data, count } = await q.range(from, to)
+  if (mine !== latest) return
   people.value = data ?? []
   total.value = count ?? 0
 }
@@ -56,7 +64,7 @@ onMounted(async () => {
 
 watch(page, loadPage)
 let searchTimer: ReturnType<typeof setTimeout> | undefined
-watch([search, roleFilter], () => {
+watch([search, roleFilter, classFilter, statusFilter], () => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
     if (page.value === 0) loadPage()
@@ -101,6 +109,17 @@ function setClass(p: Person, classId: string) {
         <option value="">{{ $t("usersPage.allRoles") }}</option>
         <option v-for="(label, key) in ROLE_LABEL" :key="key" :value="key">{{ label }}</option>
       </select>
+      <select id="user-class-filter" v-model="classFilter" :aria-label="$t('common.allClasses')">
+        <option value="">{{ $t("common.allClasses") }}</option>
+        <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
+        <option value="none">{{ $t("usersPage.noClass") }}</option>
+      </select>
+      <select id="user-status-filter" v-model="statusFilter" :aria-label="$t('accounts.status')">
+        <option value="">{{ $t("accounts.anyStatus") }}</option>
+        <option value="active">{{ $t("accounts.active") }}</option>
+        <option value="locked">{{ $t("accounts.inactive") }}</option>
+      </select>
+      <span class="small muted">{{ $t("accounts.found", { n: total }) }}</span>
     </div>
 
     <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>

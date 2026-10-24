@@ -26,6 +26,9 @@ const page = ref(0)
 const PAGE = 25
 const search = ref("")
 const classFilter = ref("")
+/** "" = everyone, "active" / "locked" = profiles.active */
+const statusFilter = ref<"" | "active" | "locked">("")
+const sortBy = ref<"newest" | "name">("newest")
 const loaded = ref(false)
 const message = ref("")
 const error = ref("")
@@ -33,18 +36,28 @@ const busy = ref<string | null>(null)
 
 const className = (id: string | null) => classes.value.find(c => c.id === id)?.name ?? "-"
 
+// Filters change quickly: only the answer to the latest request is shown, a slower older one is dropped.
+let latest = 0
 async function loadPage() {
+  const mine = ++latest
   const [from, to] = pageRange(page.value, PAGE)
+  // Teachers are filtered by a class they teach: the inner join keeps only teachers with that class_teachers row.
+  const byTaughtClass = !isStudents && !!classFilter.value
   let q = client.from("profiles")
-    .select("id, full_name, email, username, active, class_id, created_at", { count: "exact" })
+    .select(`id, full_name, email, username, active, class_id, created_at${byTaughtClass ? ", class_teachers!inner(class_id)" : ""}`, { count: "exact" })
     .eq("role", props.role)
-    .order("created_at", { ascending: false })
+  q = sortBy.value === "name"
+    ? q.order("full_name", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false })
+    : q.order("created_at", { ascending: false })
   if (isStudents && classFilter.value) q = classFilter.value === "none" ? q.is("class_id", null) : q.eq("class_id", classFilter.value)
+  if (byTaughtClass) q = q.eq("class_teachers.class_id", classFilter.value)
+  if (statusFilter.value) q = q.eq("active", statusFilter.value === "active")
   // Characters with a meaning in PostgREST filters are dropped from the search text.
   const term = search.value.trim().replace(/[,()*%\\]/g, " ").trim()
   if (term) q = q.or(`full_name.ilike.*${term}*,username.ilike.*${term}*,email.ilike.*${term}*`)
   const { data, count } = await q.range(from, to)
-  people.value = data ?? []
+  if (mine !== latest) return
+  people.value = (data ?? []) as unknown as Person[]
   total.value = count ?? 0
   if (!isStudents && people.value.length) {
     const { data: ct } = await client.from("class_teachers").select("teacher_id, classes(name)").in("teacher_id", people.value.map(p => p.id))
@@ -65,7 +78,7 @@ onMounted(async () => {
 })
 watch(page, loadPage)
 let timer: ReturnType<typeof setTimeout> | undefined
-watch([search, classFilter], () => {
+watch([search, classFilter, statusFilter, sortBy], () => {
   clearTimeout(timer)
   timer = setTimeout(() => (page.value === 0 ? loadPage() : (page.value = 0)), 300)
 })
@@ -257,11 +270,21 @@ async function moveClass(p: Person, classId: string) {
 
     <div class="row filters">
       <input v-model="search" type="search" :placeholder="rt('search')">
-      <select v-if="isStudents" v-model="classFilter">
-        <option value="">{{ $t("common.allClasses") }}</option>
-        <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
-        <option v-if="isAdmin" value="none">{{ $t("usersPage.noClass") }}</option>
+      <select v-model="classFilter" :aria-label="$t('common.allClasses')">
+        <option value="">{{ isStudents ? $t("common.allClasses") : $t("accounts.anyTaughtClass") }}</option>
+        <option v-for="c in classes" :key="c.id" :value="c.id">{{ isStudents ? c.name : $t("accounts.teaches", { name: c.name }) }}</option>
+        <option v-if="isStudents && isAdmin" value="none">{{ $t("usersPage.noClass") }}</option>
       </select>
+      <select v-model="statusFilter" :aria-label="$t('accounts.status')">
+        <option value="">{{ $t("accounts.anyStatus") }}</option>
+        <option value="active">{{ $t("accounts.active") }}</option>
+        <option value="locked">{{ $t("accounts.inactive") }}</option>
+      </select>
+      <select v-model="sortBy" :aria-label="$t('accounts.sort')">
+        <option value="newest">{{ $t("accounts.sortNewest") }}</option>
+        <option value="name">{{ $t("accounts.sortName") }}</option>
+      </select>
+      <span class="small muted">{{ $t("accounts.found", { n: total }) }}</span>
     </div>
 
     <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
@@ -320,7 +343,7 @@ async function moveClass(p: Person, classId: string) {
           </tr>
         </tbody>
       </table>
-      <p v-if="!people.length" class="muted small">{{ search || classFilter ? $t("usersPage.none") : rt("none") }}</p>
+      <p v-if="!people.length" class="muted small">{{ search || classFilter || statusFilter ? $t("usersPage.none") : rt("none") }}</p>
       <Pager v-model:page="page" :page-size="PAGE" :total="total" />
     </div>
   </div>

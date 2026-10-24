@@ -44,6 +44,12 @@ async function removeLesson(l: { id: string; label: string; title: string }) {
   deleting.value = ""
 }
 const assignedTo = (id: string) => assign.classesOf(id).map(c => c.name)
+
+// Search, kind, term, author and "given to one of my classes", paged in the browser (the outline is loaded whole).
+const lessonFilter = useLessonFilter(outline, {
+  match: (l, status) => (status === "given") === assign.classesOf(l.id).length > 0,
+})
+const statuses = computed(() => (["given", "notGiven"] as const).map(key => ({ key, label: tr(`lessonFilter.status.${key}`) })))
 </script>
 
 <template>
@@ -62,7 +68,9 @@ const assignedTo = (id: string) => assign.classesOf(id).map(c => c.name)
     <p v-if="assign.error.value" class="fb no">{{ assign.error.value }}</p>
     <p v-if="deleteMsg" class="fb" :class="deleteMsg.ok ? 'ok' : 'no'" role="status">{{ deleteMsg.text }}</p>
     <p v-if="!outline.order.length" class="card muted">{{ $t("classPage.noLessons") }}</p>
-    <section v-for="phase in outline.phases" :key="phase.id" class="card">
+    <LessonFilters v-else :filter="lessonFilter" :phases="outline.phases" :statuses="statuses" />
+    <p v-if="outline.order.length && !lessonFilter.total" class="card muted">{{ $t("lessonFilter.none") }}</p>
+    <section v-for="phase in lessonFilter.groups" :key="phase.id" class="card">
       <h2>{{ localName(phase.name) }}</h2>
       <div v-for="l in phase.lessons" :key="l.id" class="lesson-row">
         <div class="info">
@@ -93,6 +101,7 @@ const assignedTo = (id: string) => assign.classesOf(id).map(c => c.name)
         </div>
       </div>
     </section>
+    <Pager v-model:page="lessonFilter.page" :page-size="lessonFilter.pageSize" :total="lessonFilter.total" />
   </div>
 </template>
 
