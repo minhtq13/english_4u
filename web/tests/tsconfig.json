@@ -1,0 +1,7 @@
+{
+  // The tests sit outside the Nuxt projects, so this gives them the app's settings (the `~` alias, DOM types).
+  "extends": "../.nuxt/tsconfig.app.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["../vitest.config.ts", "./**/*.ts", "../app/**/*", "../.nuxt/nuxt.d.ts"],
+  "exclude": ["../node_modules"]
+}

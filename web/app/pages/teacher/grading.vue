@@ -122,7 +122,7 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
       </div>
     </div>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <template v-else>
       <section v-if="queues.length" class="card">
         <h2>{{ $t("classPage.queue") }}</h2>

@@ -1,4 +1,5 @@
 import type { LessonSummary } from "~/utils/course"
+import { labels } from "./i18n"
 import { fold } from "./text"
 
 // Filters for lesson lists. A course outline is bounded by the curriculum and already loaded whole,

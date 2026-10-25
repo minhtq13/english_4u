@@ -16,7 +16,10 @@ const pickedIds = shallowRef<ReadonlySet<string>>(new Set())
 const loaded = ref(false)
 const failed = ref(false)
 
+// Switching class in the popup reloads; an answer for a class no longer shown is dropped.
+let latest = 0
 async function load() {
+  const run = ++latest
   loaded.value = false
   const [st, cl, pk] = await Promise.all([
     client.from("student_progress").select("user_id, full_name, username, email").eq("class_id", props.classId).order("full_name"),
@@ -28,6 +31,7 @@ async function load() {
   const at = ids.length
     ? await client.from("attempts").select("id, user_id, status, score, submitted_at, updated_at").eq("lesson_id", props.lessonId).in("user_id", ids)
     : { data: [], error: null }
+  if (run !== latest) return
   failed.value = !!(st.error || cl.error || pk.error || at.error)
   if (!failed.value) {
     students.value = list
@@ -55,7 +59,7 @@ const scoreOf = (r: (typeof rows.value)[number]) => (r.attempt && r.attempt.stat
 
 <template>
   <div class="progress">
-    <p v-if="!loaded" class="small muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" :rows="3" :card="false" />
     <p v-else-if="failed" class="fb no small">{{ $t("classPage.lessonProgress.failed") }}</p>
     <p v-else-if="!students.length" class="small muted">{{ $t("classPage.noStudents") }}</p>
     <template v-else>
@@ -96,13 +100,15 @@ const scoreOf = (r: (typeof rows.value)[number]) => (r.attempt && r.attempt.stat
 .chip:hover { border-color: var(--accent); }
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.item { display: grid; grid-template-columns: minmax(140px, 1.2fr) auto minmax(0, 2fr) auto; align-items: center; gap: 4px 12px;
+.item { display: grid; grid-template-columns: minmax(140px, 1.2fr) 84px minmax(0, 2fr) 76px; align-items: center; gap: 4px 12px;
   padding: 6px 0; border-top: 1px solid var(--line); }
 .item:first-child { border-top: 0; }
 .who { text-decoration: none; min-width: 0; }
+.badge { justify-self: start; }
 .go { white-space: nowrap; justify-self: end; }
 @media (max-width: 640px) {
   .item { grid-template-columns: 1fr auto; }
+  .badge { justify-self: end; }
   .detail { grid-column: 1; }
   .go { grid-column: 2; grid-row: 2; }
 }

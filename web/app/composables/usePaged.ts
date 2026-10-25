@@ -1,4 +1,4 @@
-import type { Ref } from "vue"
+import { computed, reactive, ref, watch, type Ref } from "vue"
 
 /**
  * Pages a list that is already loaded whole (bounded by one person or one class) in the browser, for the Pager.

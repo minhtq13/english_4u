@@ -34,7 +34,7 @@ const moveItem = (i: number, delta: number) => {
     <div class="head">
       <span class="type">{{ index + 1 }}. {{ SECTION_TYPES[s.type].label }}</span>
       <span class="row tools">
-        <button class="btn small" :title="$t('sectionEd.previewTitle')" @click="emit('preview')">👁 {{ $t("sectionEd.preview") }}</button>
+        <button class="btn small" :title="$t('sectionEd.previewTitle')" @click="emit('preview')"><Icon name="eye" /> {{ $t("sectionEd.preview") }}</button>
         <button class="btn ghost small" :disabled="index === 0" :title="$t('sectionEd.up')" @click="emit('move', -1)">↑</button>
         <button class="btn ghost small" :disabled="index === count - 1" :title="$t('sectionEd.down')" @click="emit('move', 1)">↓</button>
         <button class="btn small" :class="removeArmed ? 'danger' : 'ghost'" @click="remove">{{ removeArmed ? $t("sectionEd.removeConfirm") : $t("sectionEd.remove") }}</button>

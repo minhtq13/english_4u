@@ -61,7 +61,7 @@ function give() {
     <section class="block">
       <h4>{{ $t("classPage.setup.info") }}</h4>
       <p v-if="infoError" class="fb no">{{ infoError }}</p>
-      <p v-else-if="!info" class="small muted">{{ $t("common.loading") }}</p>
+      <Skeleton v-else-if="!info" :rows="3" :card="false" />
       <template v-else>
         <p v-if="info.description" class="desc">{{ info.description }}</p>
         <p class="small muted">
@@ -78,7 +78,7 @@ function give() {
       </template>
       <p class="small given-to">
         <b>{{ $t("classPage.setup.givenTo") }}</b>
-        <template v-if="assignedTo.length"><span v-for="n in assignedTo" :key="n" class="chip-class on">✓ {{ n }}</span></template>
+        <template v-if="assignedTo.length"><span v-for="n in assignedTo" :key="n" class="chip-class on"><Icon name="check" /> {{ n }}</span></template>
         <span v-else class="muted">{{ $t("classPage.setup.givenNone") }}</span>
       </p>
       <p class="row links small">

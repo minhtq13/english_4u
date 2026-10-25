@@ -7,8 +7,9 @@
   --font: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
 }
+/* Dark tokens: chosen in ThemeSwitch (data-theme on <html>), or taken from the device while the choice is "system". */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #14171d; --card: #1d2129; --text: #e7e9ee; --muted: #9aa3b2;
     --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
     --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
@@ -16,13 +17,26 @@
     color-scheme: dark;
   }
 }
+:root[data-theme="dark"] {
+  --bg: #14171d; --card: #1d2129; --text: #e7e9ee; --muted: #9aa3b2;
+  --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
+  --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
+  --warn: #f0c060; --warn-soft: #3a3322; --shadow: rgba(0, 0, 0, .4);
+  color-scheme: dark;
+}
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--text); font: 16px/1.6 var(--font); }
 a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* A dialog takes focus itself when it opens (useDialog); the ring belongs on the controls inside it. */
+[role=dialog]:focus { outline: none; }
+.skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px;
+  background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none; }
+.skip-link:focus { top: 8px; }
 img { max-width: 100%; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .container { max-width: 800px; margin: 0 auto; padding: 24px 16px 48px; }
 h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 4px; text-wrap: balance; }
@@ -43,6 +57,23 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); v
 th { color: var(--muted); font-weight: 600; }
 .explain td p, .explain th p { margin: 0; }
 .table-wrap { overflow-x: auto; }
+/* On phones a .stack-table shows each row as a card: the first cell is its title, the others are labelled from
+   their column (data-label), so nothing needs a sideways scroll. */
+@media (max-width: 640px) {
+  .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
+  .stack-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .stack-table tr { border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; margin-bottom: 10px; background: var(--card); }
+  .stack-table td { border: 0; padding: 6px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; white-space: normal; text-align: right; }
+  .stack-table td::before { content: attr(data-label); color: var(--muted); font-size: .85rem; font-weight: 600; text-align: left; }
+  .stack-table td:first-child { display: block; text-align: left; padding-top: 8px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .stack-table td:first-child::before { content: none; }
+  .stack-table td > * { max-width: 100%; }
+  .stack-table td > .meter { width: auto; flex: 1 1 140px; max-width: 240px; }
+  .stack-table td.no-label { justify-content: flex-start; }
+  .stack-table td.no-label::before { content: none; }
+  .card.table-wrap:has(> .stack-table) { background: none; border: 0; padding: 0; }
+}
 .box { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
 .warn { background: var(--warn-soft); border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
 em.g { font-style: normal; font-weight: 700; color: var(--accent); }
@@ -54,7 +85,8 @@ s { color: var(--bad); }
 .opts { display: flex; flex-wrap: wrap; gap: 8px; }
 button { font: inherit; }
 .btn, .opts button, .chip { border: 1px solid var(--line); background: var(--bg); color: var(--text);
-  padding: 6px 14px; border-radius: 8px; cursor: pointer; text-align: left; text-decoration: none; display: inline-block; }
+  padding: 6px 14px; border-radius: 8px; cursor: pointer; text-align: left; text-decoration: none; display: inline-block;
+  touch-action: manipulation; transition: border-color .15s, background-color .15s, color .15s; }
 .btn:hover:not(:disabled), .opts button:hover:not(:disabled), .chip:hover { border-color: var(--accent); }
 .btn:disabled, .opts button:disabled { cursor: default; }
 .btn:disabled { opacity: .6; }

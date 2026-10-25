@@ -3,6 +3,7 @@ import { currentLang } from "./i18n"
 // The database (raise exception …) and the manage-accounts edge function answer in Vietnamese. In English
 // the UI shows these through errorText(), which recognises every known message (by pattern, so parts like
 // usernames carry over) and falls back to the original text for anything else (e.g. network errors).
+// A pattern names the start of a message; the whole message is replaced, so no Vietnamese tail is left over.
 const EN: [RegExp, string][] = [
   [/^Bài chưa được giao cho lớp này/, "This lesson has not been given to this class"],
   [/^Bài cần có tên/, "The lesson needs a title"],
@@ -39,10 +40,15 @@ const EN: [RegExp, string][] = [
   [/^Học sinh lớp này đã làm bài nên không thu hồi được/, "Students of this class have worked on this lesson, so it cannot be taken back. Use \"Close\" to stop taking work."],
   [/^Mã lớp không đúng/, "Wrong class code. Check it with your teacher."],
   [/^Thiếu mã bài/, "Missing lesson id"],
+  [/^Section loại (\S+) không có câu hỏi/, "A $1 section has no questions"],
+  [/^Bạn chỉ được đổi lớp học và tên hiển thị/, "You can only change your class and display name"],
   [/^Tên đăng nhập và trạng thái tài khoản chỉ đổi được/, "Usernames and account status can only be changed on the student management page"],
   [/^correct_option phải từ 1 đến (\d+)/, "The correct option must be between 1 and $1"],
   [/^Lỗi máy chủ, hãy thử lại/, "Server error, please try again"],
   [/^Thao tác không hợp lệ/, "Invalid action"],
+  [/^Yêu cầu không hợp lệ/, "Invalid request"],
+  [/^Vai trò không hợp lệ/, "Invalid role"],
+  [/^Tài khoản của bạn đã bị khoá/, "Your account is locked"],
   [/^Bạn chỉ quản lý được học sinh của lớp mình dạy/, "You can only manage students of the classes you teach"],
   [/^Chỉ admin tạo được tài khoản giáo viên/, "Only admins can create teacher accounts"],
   [/^Chỉ admin và giáo viên mới quản lý tài khoản/, "Only admins and teachers manage accounts"],
@@ -54,7 +60,7 @@ const EN: [RegExp, string][] = [
   [/^Mật khẩu cần ít nhất 6 ký tự/, "The password needs at least 6 characters"],
   [/^Mật khẩu của (\S+) cần ít nhất 6 ký tự/, "The password of $1 needs at least 6 characters"],
   [/^Mỗi lần tạo từ 1 đến 100 tài khoản/, "Create 1 to 100 accounts at a time"],
-  [/^Tên đăng nhập "?([^" ]*)"? không hợp lệ.*/, "Username \"$1\" is invalid: 3–32 characters, lower-case letters without accents, digits, . _ -"],
+  [/^Tên đăng nhập "([^"]*)" không hợp lệ.*/, "Username \"$1\" is invalid: 3–32 characters, lower-case letters without accents, digits, . _ -"],
   [/^Tên đăng nhập không hợp lệ.*/, "Invalid username: 3–32 characters, lower-case letters without accents, digits, . _ -"],
   [/^Tên đăng nhập (\S+) đã có người dùng/, "Username $1 is already taken"],
 ]
@@ -63,6 +69,6 @@ const EN: [RegExp, string][] = [
 export function errorText(message: string | null | undefined): string {
   const msg = message ?? ""
   if (currentLang() !== "en") return msg
-  for (const [re, en] of EN) if (re.test(msg)) return msg.replace(re, en)
+  for (const [re, en] of EN) if (re.test(msg)) return msg.replace(new RegExp(`${re.source}[\\s\\S]*`), en)
   return msg
 }

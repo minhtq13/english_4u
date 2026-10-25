@@ -223,7 +223,7 @@ async function removeLesson() {
       {{ $t("editor.intro") }}
     </p>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="error" class="fb no">{{ error }}</p>
     <div v-else-if="hasAttempts" class="card">
       <h2>{{ $t("editor.hasAttempts") }}</h2>
@@ -241,10 +241,10 @@ async function removeLesson() {
     <template v-else>
       <ol class="steps" :aria-label="$t('editor.steps')">
         <li :class="{ on: stage === 'setup', done: stage === 'content' }">
-          <button type="button" @click="go('setup')"><span class="dot">{{ stage === "content" ? "✓" : 1 }}</span>{{ $t("editor.stepGrade") }}</button>
+          <button type="button" @click="go('setup')"><span class="dot"><Icon v-if="stage === 'content'" name="check" size="14" /><template v-else>1</template></span>{{ $t("editor.stepGrade") }}</button>
         </li>
         <li :class="{ on: stage === 'setup', done: stage === 'content' }">
-          <button type="button" @click="go('setup')"><span class="dot">{{ stage === "content" ? "✓" : 2 }}</span>{{ $t("editor.stepStructure") }}</button>
+          <button type="button" @click="go('setup')"><span class="dot"><Icon v-if="stage === 'content'" name="check" size="14" /><template v-else>2</template></span>{{ $t("editor.stepStructure") }}</button>
         </li>
         <li :class="{ on: stage === 'content' }">
           <button type="button" :disabled="!canContinue" :aria-current="stage === 'content' ? 'step' : undefined" @click="go('content')">
@@ -333,7 +333,7 @@ async function removeLesson() {
         </button>
         <span class="spacer" />
         <NuxtLink v-if="editId" :to="`/lessons/${editId}`" class="btn ghost">{{ $t("editor.openSaved") }}</NuxtLink>
-        <button class="btn" :disabled="!draft.sections.length" @click="previewAll">👁 {{ $t("editor.previewAll") }}</button>
+        <button class="btn" :disabled="!draft.sections.length" @click="previewAll"><Icon name="eye" /> {{ $t("editor.previewAll") }}</button>
         <button class="btn primary" :disabled="saving" @click="save">{{ saving ? $t("common.saving") : $t("editor.save") }}</button>
       </div>
       </template>

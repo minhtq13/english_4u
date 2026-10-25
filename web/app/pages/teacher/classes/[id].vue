@@ -301,7 +301,7 @@ async function copyCode() {
 <template>
   <div>
     <BackLink to="/teacher" :label="$t('nav.myClasses')" />
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="error" class="fb no">{{ error }}</p>
     <p v-else-if="!cls" class="card muted">{{ $t("classPage.notFound") }}</p>
     <template v-else>
@@ -349,13 +349,13 @@ async function copyCode() {
                   v-if="unlocked.has(l.id)" type="button" class="chev" :aria-expanded="isOpen(l.id)" :aria-controls="`lesson-${l.id}`"
                   :aria-label="isOpen(l.id) ? $t('classPage.collapse') : $t('classPage.expand')" :title="isOpen(l.id) ? $t('classPage.collapse') : $t('classPage.expand')"
                   @click="toggleOpen(l.id)"
-                >{{ isOpen(l.id) ? "▾" : "▸" }}</button>
+                ><Icon :name="isOpen(l.id) ? 'chevronDown' : 'chevronRight'" /></button>
                 <NuxtLink :to="`/lessons/${l.id}`"><b>{{ l.label }}</b> - {{ l.title }}</NuxtLink>
                 <span v-if="l.createdBy" class="badge own">{{ $t("classPage.byTeacher") }}</span>
               </div>
               <span class="top-actions">
                 <NuxtLink v-if="canEditLesson(l)" :to="`/teacher/lessons/${l.id}?class=${classId}`" class="btn small ghost edit-btn" :title="$t('classPage.editLessonTitle')">
-                  ✎ {{ $t("classPage.editLesson") }}
+                  <Icon name="pencil" /> {{ $t("classPage.editLesson") }}
                 </NuxtLink>
                 <button v-if="unlocked.has(l.id) && missingCount(l.id)" type="button" class="btn small ghost missing-btn" @click="missingOpen = l.id">
                   {{ $t("classPage.missingBtn", { n: missingCount(l.id) }) }}
@@ -363,7 +363,7 @@ async function copyCode() {
                 <button
                   v-if="!unlocked.has(l.id)" class="btn small" :class="setupOpen === l.id ? 'ghost' : 'primary'"
                   :aria-expanded="setupOpen === l.id" :aria-controls="`setup-${l.id}`" @click="toggleSetup(l.id)"
-                >{{ $t("classPage.give") }} {{ setupOpen === l.id ? "▴" : "▾" }}</button>
+                >{{ $t("classPage.give") }} <Icon :name="setupOpen === l.id ? 'chevronUp' : 'chevronDown'" /></button>
                 <span v-else class="badge" :class="stateOf(l.id) === 'closed' ? '' : 'done'">
                   {{ stateOf(l.id) === "closed" ? $t("classPage.stateClosed") : $t("classPage.stateOpen") }}
                 </span>
@@ -371,7 +371,7 @@ async function copyCode() {
             </div>
             <p v-if="unlocked.has(l.id) && !isOpen(l.id)" class="small muted folded">
               {{ summaryOf(l.id) }}
-              <span v-if="unlocked.get(l.id)!.due_at" :class="{ late: isPastDue(unlocked.get(l.id)!.due_at) }"> · ⏰ {{ formatDate(unlocked.get(l.id)!.due_at) }}</span>
+              <span v-if="unlocked.get(l.id)!.due_at" :class="{ late: isPastDue(unlocked.get(l.id)!.due_at) }"> · <Icon name="clock" /> {{ formatDate(unlocked.get(l.id)!.due_at) }}</span>
             </p>
 
             <ClassLessonSetup
@@ -409,7 +409,7 @@ async function copyCode() {
               </div>
 
               <div>
-                <button type="button" class="btn small" @click="progressOpen = l.id">📋 {{ $t("classPage.lessonProgress.open") }}</button>
+                <button type="button" class="btn small" @click="progressOpen = l.id"><Icon name="clipboard" /> {{ $t("classPage.lessonProgress.open") }}</button>
               </div>
 
               <div class="lesson-controls">
@@ -428,7 +428,7 @@ async function copyCode() {
                     <InfoTip :text="$t('classPage.takeBackBlockedTip', lessonStats(l.id).started)" />
                   </span>
                   <button class="btn ghost small" @click="whoOpen = whoOpen === l.id ? null : l.id">
-                    👥 {{ whoText(l.id) }} {{ whoOpen === l.id ? "▴" : "▾" }}
+                    <Icon name="users" /> {{ whoText(l.id) }} <Icon :name="whoOpen === l.id ? 'chevronUp' : 'chevronDown'" />
                   </button>
                 </span>
 
@@ -441,7 +441,7 @@ async function copyCode() {
                   </template>
                   <template v-else-if="unlocked.get(l.id)!.due_at">
                     <span class="small" :class="{ late: isPastDue(unlocked.get(l.id)!.due_at) }">
-                      ⏰ {{ formatDate(unlocked.get(l.id)!.due_at) }} · {{ timeLeft(unlocked.get(l.id)!.due_at) || $t("classPage.duePassed") }}
+                      <Icon name="clock" /> {{ formatDate(unlocked.get(l.id)!.due_at) }} · {{ timeLeft(unlocked.get(l.id)!.due_at) || $t("classPage.duePassed") }}
                     </span>
                     <button v-if="!unlocked.get(l.id)!.closed" class="link small" @click="editDue(l.id)">{{ $t("common.edit") }}</button>
                   </template>

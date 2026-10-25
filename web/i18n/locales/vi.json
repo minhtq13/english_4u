@@ -1,4 +1,10 @@
 {
+  "theme": {
+    "label": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Theo thiết bị"
+  },
   "lang": {
     "label": "Ngôn ngữ"
   },
@@ -103,6 +109,7 @@
     "save": "Lưu",
     "cancel": "Huỷ",
     "close": "Đóng",
+    "back": "Quay lại",
     "delete": "Xoá",
     "edit": "Sửa",
     "copy": "Copy",
@@ -141,6 +148,7 @@
     "users": "Người dùng",
     "classBadge": "Lớp {name}",
     "openMenu": "Mở menu",
+    "skipToContent": "Bỏ qua, tới nội dung chính",
     "mainMenu": "Menu chính",
     "accountTitle": "Tài khoản · đổi mật khẩu",
     "account": "Tài khoản",
@@ -217,7 +225,7 @@
     "submittedScore": "Đã nộp · {ok}/{total}",
     "submittedWaiting": "Đã nộp · chờ chấm",
     "closed": "Đã đóng",
-    "locked": "🔒 Chưa mở cho bạn",
+    "locked": "Chưa mở cho bạn",
     "inProgress": "Đang làm {n}/{total}",
     "notStarted": "Chưa làm",
     "statSubmitted": "bài được giao đã nộp",
@@ -530,7 +538,7 @@
         "text": "Giáo viên đã ngừng nhận bài này."
       },
       "locked": {
-        "title": "🔒 Bài này chưa mở cho bạn",
+        "title": "Bài này chưa mở cho bạn",
         "text": "Giáo viên chưa mở bài này cho bạn. Hãy hỏi giáo viên nếu bạn cần làm bài."
       },
       "open": {
@@ -579,8 +587,8 @@
     "grade": "Chấm bài lớp này",
     "helpTitle": "Hướng dẫn",
     "help": {
-      "give": "Bài của khối chưa giao cho lớp nào. Bấm <b>Giao cho lớp ▾</b> để xem thông tin bài và chọn hạn nộp, giao cho ai, hiện điểm ngay hay trộn câu, rồi bấm <b>Giao cho lớp</b> trong khung đó: học sinh lớp này mới thấy và làm được.",
-      "who": "Mặc định cả lớp được làm; bấm nút <b>👥</b> để chỉ mở cho một số em.",
+      "give": "Bài của khối chưa giao cho lớp nào. Bấm <b>Giao cho lớp</b> để xem thông tin bài và chọn hạn nộp, giao cho ai, hiện điểm ngay hay trộn câu, rồi bấm <b>Giao cho lớp</b> trong khung đó: học sinh lớp này mới thấy và làm được.",
+      "who": "Mặc định cả lớp được làm; bấm nút <b>Cả lớp</b> để chỉ mở cho một số em.",
       "close": "<b>Đóng bài</b> để ngừng nhận bài: bài đang làm dở được nộp tự động, học sinh vẫn xem lại bài đã nộp.",
       "due": "Đặt <b>hạn nộp</b> để bài tự đóng như vậy khi hết hạn.",
       "back": "<b>Thu hồi</b> chỉ được khi chưa em nào làm.",

@@ -94,7 +94,7 @@ async function build() {
     <BackLink :to="`/teacher/classes/${classId}`" :label="cls ? $t('nav.classBadge', { name: cls.name }) : $t('nav.classes')" />
     <h1>{{ $t("reviewPage.title") }}</h1>
     <p class="sub">{{ $t("reviewPage.intro") }}</p>
-    <p v-if="!cls" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!cls" />
     <template v-else>
       <section class="card stack">
         <h2>1. {{ $t("reviewPage.step1") }}</h2>
@@ -124,7 +124,7 @@ async function build() {
             <button class="btn small ghost" @click="picked = new Set()">{{ $t("editor.selectNone") }}</button>
           </span>
         </div>
-        <p v-if="!rows.length" class="muted">{{ $t("reviewPage.noneWrong") }} 🎉</p>
+        <p v-if="!rows.length" class="muted"><Icon name="checkCircle" /> {{ $t("reviewPage.noneWrong") }}</p>
         <label v-for="r in rows" :key="r.item_id" class="q-row" :class="{ on: picked.has(r.item_id) }">
           <input type="checkbox" :checked="picked.has(r.item_id)" @change="toggle(r.item_id)">
           <span class="q-text">

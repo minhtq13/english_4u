@@ -32,9 +32,9 @@ async function replaceWith(key: string, make: () => DraftSection[] | Promise<Dra
 }
 
 const starters = computed(() => [
-  { key: "standard", icon: "📘", label: t("structure.standard"), desc: t("structure.standardDesc"), make: STANDARD_STRUCTURE },
-  { key: "exam", icon: "📝", label: t("structure.exam"), desc: t("structure.examDesc"), make: EXAM_STRUCTURE },
-  { key: "blank", icon: "➕", label: t("structure.blank"), desc: t("structure.blankDesc"), make: (): DraftSection[] => [] },
+  { key: "standard", icon: "book" as const, label: t("structure.standard"), desc: t("structure.standardDesc"), make: STANDARD_STRUCTURE },
+  { key: "exam", icon: "file" as const, label: t("structure.exam"), desc: t("structure.examDesc"), make: EXAM_STRUCTURE },
+  { key: "blank", icon: "plus" as const, label: t("structure.blank"), desc: t("structure.blankDesc"), make: (): DraftSection[] => [] },
 ])
 
 // ---- saved structures ----
@@ -118,7 +118,7 @@ const countLabel = (s: DraftSection) => t(s.type === "cards" ? "structure.cardsN
         v-for="st in starters" :key="st.key" type="button" class="starter" :class="{ armed: armed === st.key }"
         @click="replaceWith(st.key, st.make)"
       >
-        <span class="icon" aria-hidden="true">{{ st.icon }}</span>
+        <Icon :name="st.icon" class="icon" size="1.3em" />
         <b>{{ armed === st.key ? $t("structure.replaceConfirm") : st.label }}</b>
         <span v-if="armed !== st.key" class="small muted">{{ st.desc }}</span>
       </button>
@@ -180,7 +180,8 @@ const countLabel = (s: DraftSection) => t(s.type === "cards" ? "structure.cardsN
           <button class="btn ghost small" :disabled="i === 0" :title="$t('sectionEd.up')" @click="move(i, -1)">↑</button>
           <button class="btn ghost small" :disabled="i === sections.length - 1" :title="$t('sectionEd.down')" @click="move(i, 1)">↓</button>
           <button class="btn small" :class="armed === `rm:${s.uid}` ? 'danger' : 'ghost'" :title="$t('sectionEd.remove')" @click="removeAt(i)">
-            {{ armed === `rm:${s.uid}` ? $t("sectionEd.removeConfirm") : "✕" }}
+            <template v-if="armed === `rm:${s.uid}`">{{ $t("sectionEd.removeConfirm") }}</template>
+            <Icon v-else name="x" :label="$t('sectionEd.remove')" />
           </button>
         </span>
       </li>

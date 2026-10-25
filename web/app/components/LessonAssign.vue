@@ -31,7 +31,7 @@ function click(classId: string) {
       @click.prevent.stop="click(c.id)"
     >
       <template v-if="armed === c.id">{{ $t("assign.takeBack", { name: c.name }) }}</template>
-      <template v-else>{{ assign.isAssigned(c.id, lessonId) ? "✓ " : "+ " }}{{ c.name }}</template>
+      <template v-else><Icon :name="assign.isAssigned(c.id, lessonId) ? 'check' : 'plus'" /> {{ c.name }}</template>
     </button>
   </span>
 </template>

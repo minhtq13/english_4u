@@ -41,7 +41,7 @@ async function signInWithGoogle() {
 <template>
   <main class="login">
     <div class="card panel">
-      <div class="top"><p class="eyebrow">{{ $t("login.eyebrow") }}</p><LangSwitch /></div>
+      <div class="top"><p class="eyebrow">{{ $t("login.eyebrow") }}</p><span class="prefs"><LangSwitch /><ThemeSwitch /></span></div>
       <h1>{{ $t("login.title") }}</h1>
       <p class="muted">{{ $t("login.intro") }}</p>
 
@@ -65,6 +65,7 @@ async function signInWithGoogle() {
 </template>
 
 <style scoped>
+.prefs { display: flex; align-items: center; gap: 6px; }
 .login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
 .panel { max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 14px; padding: 28px; }
 .panel h1 { margin: 0; }

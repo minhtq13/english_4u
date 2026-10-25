@@ -99,9 +99,9 @@ function setClass(p: Person, classId: string) {
       <span class="small muted">{{ $t("accounts.found", { n: people.total }) }}</span>
     </div>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <div v-else class="card table-wrap">
-      <table class="users">
+      <table class="stack-table users">
         <thead>
           <tr>
             <th>{{ $t("usersPage.user") }}</th><th>{{ $t("account.role") }}</th><th>{{ $t("usersPage.class") }}</th>
@@ -110,11 +110,11 @@ function setClass(p: Person, classId: string) {
         </thead>
         <tbody>
           <tr v-for="p in people.rows" :key="p.id">
-            <td>
+            <td :data-label="$t('usersPage.user')">
               <b>{{ p.full_name || p.email }}</b><span v-if="p.id === user?.sub" class="small muted"> ({{ $t("usersPage.you") }})</span>
               <br><span class="small muted">{{ loginOf(p) }}</span>
             </td>
-            <td>
+            <td :data-label="$t('account.role')">
               <select
                 :id="`role-${p.id}`"
                 :value="p.role"
@@ -125,7 +125,7 @@ function setClass(p: Person, classId: string) {
                 <option v-for="(label, key) in ROLE_LABEL" :key="key" :value="key">{{ label }}</option>
               </select>
             </td>
-            <td>
+            <td :data-label="$t('usersPage.class')">
               <select
                 v-if="p.role === 'student'"
                 :id="`class-${p.id}`"
@@ -138,11 +138,11 @@ function setClass(p: Person, classId: string) {
               </select>
               <span v-else class="muted small">-</span>
             </td>
-            <td class="pw-cell">
+            <td :data-label="$t('login.password')" class="pw-cell">
               <NuxtLink v-if="p.id === user?.sub" to="/account" class="small">{{ $t("usersPage.ownPassword") }}</NuxtLink>
               <SetPasswordButton v-else :user-id="p.id" :name="p.full_name || loginOf(p)" @done="message = $event; failure = ''" @failed="failure = $event; message = ''" />
             </td>
-            <td class="small muted">{{ formatDate(p.created_at) }}</td>
+            <td :data-label="$t('usersPage.joined')" class="small muted">{{ formatDate(p.created_at) }}</td>
           </tr>
         </tbody>
       </table>

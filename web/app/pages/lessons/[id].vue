@@ -144,8 +144,8 @@ const next = nextId ? course.byId[nextId] : null
             <button
               v-if="assign.classesOf(loaded.id).length" type="button" class="btn small" :title="$t('lessonPage.progressTitle')"
               @click="progressOpen = true"
-            >📋 {{ $t("classPage.lessonProgress.open") }}</button>
-            <NuxtLink :to="`/teacher/print/${loaded.id}`" class="btn small ghost">🖨 {{ $t("lessonPage.print") }}</NuxtLink>
+            ><Icon name="clipboard" /> {{ $t("classPage.lessonProgress.open") }}</button>
+            <NuxtLink :to="`/teacher/print/${loaded.id}`" class="btn small ghost"><Icon name="printer" /> {{ $t("lessonPage.print") }}</NuxtLink>
             <NuxtLink :to="`/teacher/print/${loaded.id}?key=1`" class="btn small ghost">{{ $t("lessonPage.printKey") }}</NuxtLink>
           </span>
         </div>
@@ -177,10 +177,10 @@ const next = nextId ? course.byId[nextId] : null
       </div>
     </div>
 
-    <p v-if="!state.loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!state.loaded" />
     <template v-else>
       <p v-if="dueAt && !locked" class="fb wait due-note">
-        ⏰ {{ $t("roadmap.due", { date: formatDate(dueAt) }) }}<template v-if="dueText"> · {{ dueText }}</template>.
+        <Icon name="clock" /> {{ $t("roadmap.due", { date: formatDate(dueAt) }) }}<template v-if="dueText"> · {{ dueText }}</template>.
         {{ $t("lessonPage.dueNote") }}
       </p>
       <div v-if="locked" class="fb" :class="state.released ? 'ok' : 'wait'">

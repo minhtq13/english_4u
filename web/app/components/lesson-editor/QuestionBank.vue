@@ -6,6 +6,8 @@ import type { DraftItem, SectionType } from "~/utils/lessonDraft"
 // answers) and copy them into the section being edited.
 const props = defineProps<{ type: SectionType; courseId: string }>()
 const emit = defineEmits<{ pick: [items: DraftItem[]]; close: [] }>()
+const dialog = ref<HTMLElement | null>(null)
+useDialog(dialog, () => emit("close"))
 
 const { listCourses } = useCourse()
 
@@ -32,19 +34,16 @@ function add() {
   emit("pick", [...picked.value.values()].map(r => itemToDraft(r, r.type)))
 }
 
-const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") emit("close") }
-onMounted(() => document.addEventListener("keydown", onKey))
-onBeforeUnmount(() => document.removeEventListener("keydown", onKey))
 </script>
 
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-label="$t('bank.title')">
+    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-label="$t('bank.title')">
       <header class="bar">
         <b>{{ $t("bank.title") }} · {{ SECTION_TYPES[type].label }}</b>
         <span class="row">
           <button class="btn small primary" :disabled="!picked.size" @click="add">{{ $t("bank.add", { n: picked.size }) }}</button>
-          <button class="btn small" @click="emit('close')">{{ $t("common.close") }} ✕</button>
+          <button class="btn small" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
         </span>
       </header>
       <div class="body">

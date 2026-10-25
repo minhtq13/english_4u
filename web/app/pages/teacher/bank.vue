@@ -79,7 +79,8 @@ async function build() {
 
     <section class="card">
       <p v-if="bank.error" class="fb no">{{ bank.error }}</p>
-      <p v-else-if="!bank.rows.length" class="muted small">{{ bank.loading ? $t("common.loading") : $t("bank.none") }}</p>
+      <Skeleton v-else-if="!bank.rows.length && bank.loading" :rows="4" :card="false" />
+      <p v-else-if="!bank.rows.length" class="muted small">{{ $t("bank.none") }}</p>
       <label v-for="r in bank.rows" :key="r.id ?? ''" class="q-row" :class="{ on: picked.has(r.id ?? '') }">
         <input type="checkbox" :checked="picked.has(r.id ?? '')" @change="toggle(r)">
         <span class="q-text">

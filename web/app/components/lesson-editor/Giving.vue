@@ -33,7 +33,7 @@ const others = (p: ClassPlan) => props.giving.plans.filter(x => x !== p && x.on 
         <span v-if="p.existing" class="badge done">{{ $t("giveForm.given") }}</span>
         <span v-if="p.on && !p.locked" class="small muted summary">{{ summary(p) }}</span>
         <button v-if="p.on && !p.locked" type="button" class="link small" :aria-expanded="p.open" @click="giving.unfold(p)">
-          {{ $t("giveForm.settings") }} {{ p.open ? "▴" : "▾" }}
+          {{ $t("giveForm.settings") }} <Icon :name="p.open ? 'chevronUp' : 'chevronDown'" />
         </button>
       </div>
       <p v-if="p.locked" class="hint">

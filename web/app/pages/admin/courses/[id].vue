@@ -78,7 +78,7 @@ const students = useServerList<Views<"student_progress">>(async ([from, to]) => 
 <template>
   <div>
     <BackLink to="/admin" label="Dashboard" />
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="error" class="fb no">{{ error }}</p>
     <p v-else-if="!course" class="muted">{{ $t("coursesPage.notFound") }}</p>
     <template v-else>

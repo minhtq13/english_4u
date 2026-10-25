@@ -9,6 +9,8 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: "vi" },
+      // The theme chosen in ThemeSwitch (useTheme), applied before the app starts so a dark choice never flashes light.
+      script: [{ innerHTML: "try{var t=document.cookie.match(/(?:^|; )theme=(light|dark)/);if(t)document.documentElement.dataset.theme=t[1]}catch(e){}" }],
       title: "Ngữ pháp tiếng Anh",
       meta: [{ name: "description", content: "Ngữ pháp tiếng Anh THCS lớp 6–9 và lộ trình B1 → B2, 30 phút mỗi ngày." }],
       link: [

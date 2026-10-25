@@ -66,6 +66,7 @@ async function save() {
       <div><span class="muted small">{{ $t("account.login") }}</span><b>{{ profile ? loginOf(profile) : "" }}</b></div>
       <div><span class="muted small">{{ $t("account.role") }}</span><b>{{ role ? ROLE_LABEL[role] : "" }}<template v-if="myClass"> · {{ $t("nav.classBadge", { name: myClass.name }) }}</template></b></div>
       <div><span class="muted small">{{ $t("lang.label") }}</span><LangSwitch /></div>
+      <div><span class="muted small">{{ $t("theme.label") }}</span><ThemeSwitch /></div>
     </section>
 
     <section class="card">

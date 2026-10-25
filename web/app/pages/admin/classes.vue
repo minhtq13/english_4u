@@ -112,7 +112,7 @@ function remove(c: ClassRow) {
       <button class="btn primary" :disabled="busy === 'create' || !newName.trim()">{{ $t("classesPage.create") }}</button>
     </form>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <section v-for="g in byCourse" :key="g.course.id" class="card">
       <h2>{{ localName(g.course.name) }} <span v-if="!g.course.is_published" class="badge">{{ $t("coursesPage.adminOnly") }}</span></h2>
       <p v-if="!g.classes.length" class="muted small">{{ $t("classesPage.none") }}</p>
@@ -131,13 +131,14 @@ function remove(c: ClassRow) {
             {{ nameOf(t.teacher_id) }}
             <button class="x" :title="$t('classesPage.unassignTitle', { name: nameOf(t.teacher_id) })" @click="unassign(c, t.teacher_id)">×</button>
           </span>
+          <!-- Admins are not listed: they can already grade every class. An admin assigned earlier keeps their chip. -->
           <select :id="`assign-${c.id}`" :value="assignPick[c.id] ?? ''" @change="assignPick[c.id] = ($event.target as HTMLSelectElement).value; assign(c)">
             <option value="">{{ $t("classesPage.assign") }}</option>
             <option
-              v-for="t in teachers.filter(t => !c.class_teachers.some(x => x.teacher_id === t.id))"
+              v-for="t in teachers.filter(t => t.role === 'teacher' && !c.class_teachers.some(x => x.teacher_id === t.id))"
               :key="t.id"
               :value="t.id"
-            >{{ t.full_name || t.email }}{{ t.role === "admin" ? " (admin)" : "" }}</option>
+            >{{ t.full_name || t.email }}</option>
           </select>
         </div>
         <div class="cell">

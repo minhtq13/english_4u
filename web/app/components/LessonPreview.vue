@@ -6,6 +6,8 @@ import type { Lesson } from "~/utils/course"
 // Answers are a preview attempt (graded in the browser, never saved), as on the lesson page for teachers.
 const props = defineProps<{ lesson: Lesson; title: string }>()
 const emit = defineEmits<{ close: [] }>()
+const dialog = ref<HTMLElement | null>(null)
+useDialog(dialog, () => emit("close"))
 
 const attempt = useAttempt(props.lesson, { preview: true })
 const responses = computed(() => attempt.state.responses)
@@ -20,27 +22,18 @@ function reset() {
   round.value++
 }
 
-const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") emit("close") }
-onMounted(() => {
-  document.addEventListener("keydown", onKey)
-  document.body.style.overflow = "hidden"
-})
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", onKey)
-  document.body.style.overflow = ""
-})
 </script>
 
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-label="title">
+    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-label="title">
       <header class="bar">
         <b>{{ title }}</b>
         <span class="row tools">
           <label class="row inline small"><input v-model="showKey" type="checkbox"> {{ $t("preview.showKey") }}</label>
           <button v-if="!showKey" class="btn small primary" @click="checked = true">{{ $t("preview.check") }}</button>
           <button class="btn small ghost" @click="reset">{{ $t("preview.reset") }}</button>
-          <button class="btn small" :aria-label="$t('preview.closeLabel')" @click="emit('close')">{{ $t("common.close") }} ✕</button>
+          <button class="btn small" :aria-label="$t('preview.closeLabel')" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
         </span>
       </header>
       <div class="body">

@@ -1,4 +1,10 @@
 {
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Same as device"
+  },
   "lang": {
     "label": "Language"
   },
@@ -103,6 +109,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
+    "back": "Back",
     "delete": "Delete",
     "edit": "Edit",
     "copy": "Copy",
@@ -141,6 +148,7 @@
     "users": "Users",
     "classBadge": "Class {name}",
     "openMenu": "Open menu",
+    "skipToContent": "Skip to main content",
     "mainMenu": "Main menu",
     "accountTitle": "Account · change password",
     "account": "Account",
@@ -217,7 +225,7 @@
     "submittedScore": "Submitted · {ok}/{total}",
     "submittedWaiting": "Submitted · waiting for grading",
     "closed": "Closed",
-    "locked": "🔒 Not open to you yet",
+    "locked": "Not open to you yet",
     "inProgress": "In progress {n}/{total}",
     "notStarted": "Not started",
     "statSubmitted": "given lessons submitted",
@@ -530,7 +538,7 @@
         "text": "Your teacher has stopped taking work for this lesson."
       },
       "locked": {
-        "title": "🔒 This lesson is not open to you",
+        "title": "This lesson is not open to you",
         "text": "Your teacher has not opened this lesson to you. Ask your teacher if you need to do it."
       },
       "open": {
@@ -579,8 +587,8 @@
     "grade": "Grade this class",
     "helpTitle": "How it works",
     "help": {
-      "give": "Lessons of the grade are not given to any class yet. Click <b>Give to class ▾</b> to see what the lesson contains and choose the deadline, who gets it, results at submit and shuffling, then click <b>Give to class</b> in that panel: only then can this class's students see and do it.",
-      "who": "The whole class may do it by default; use <b>👥</b> to open it to some students only.",
+      "give": "Lessons of the grade are not given to any class yet. Click <b>Give to class</b> to see what the lesson contains and choose the deadline, who gets it, results at submit and shuffling, then click <b>Give to class</b> in that panel: only then can this class's students see and do it.",
+      "who": "The whole class may do it by default; use the <b>Whole class</b> button to open it to some students only.",
       "close": "<b>Close</b> stops taking work: answers in progress are submitted automatically and students can still review what they submitted.",
       "due": "Set a <b>deadline</b> to close the lesson like that automatically.",
       "back": "<b>Take back</b> only works while no student has started.",

@@ -221,7 +221,7 @@ async function saveGrade() {
         <NuxtLink to="/teacher/grading" class="btn small ghost">{{ $t("attemptPage.exit") }}</NuxtLink>
       </span>
     </div>
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="!attempt || !lesson" class="muted">{{ $t("attemptPage.notFound") }}</p>
     <template v-else>
       <h1>{{ student?.full_name || student?.email }} · {{ lesson.label }} - {{ lesson.title }}</h1>

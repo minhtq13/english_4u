@@ -10,10 +10,10 @@ const kind = computed(() => (props.result ? (props.result.ok ? "ok" : "no") : pr
 
 <template>
   <div class="fb" :class="kind">
-    <template v-if="kind === 'ok'">✔ {{ $t("feedback.right") }}</template>
+    <template v-if="kind === 'ok'"><Icon name="check" /> {{ $t("feedback.right") }}</template>
     <template v-else-if="kind === 'key'">{{ $t("feedback.answer") }}: <b v-html="answer" /></template>
     <template v-else>
-      {{ result ? `✘ ${$t("feedback.wrong")}` : $t("feedback.blank") }}<template v-if="answer"> {{ $t("feedback.answer") }}: <b v-html="answer" /></template>
+      <template v-if="result"><Icon name="x" /> {{ $t("feedback.wrong") }}</template><template v-else>{{ $t("feedback.blank") }}</template><template v-if="answer"> {{ $t("feedback.answer") }}: <b v-html="answer" /></template>
     </template>
     <span v-if="why" class="why" v-html="why" />
   </div>

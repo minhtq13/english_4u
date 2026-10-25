@@ -11,6 +11,8 @@ defineProps<{
   remindAll: string
 }>()
 const emit = defineEmits<{ close: [] }>()
+const dialog = ref<HTMLElement | null>(null)
+useDialog(dialog, () => emit("close"))
 
 const copied = ref<"one" | "all" | "">("")
 async function copy(text: string, which: "one" | "all") {
@@ -21,28 +23,19 @@ async function copy(text: string, which: "one" | "all") {
   } catch { /* the names stay on screen to copy by hand */ }
 }
 
-const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") emit("close") }
-onMounted(() => {
-  document.addEventListener("keydown", onKey)
-  document.body.style.overflow = "hidden"
-})
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", onKey)
-  document.body.style.overflow = ""
-})
 const titleId = useId()
 </script>
 
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId">
+    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <b :id="titleId">{{ $t("classPage.missingTitle", { lesson }) }}</b>
-        <button class="btn small" @click="emit('close')">{{ $t("common.close") }} ✕</button>
+        <button class="btn small" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
       </header>
       <div class="body">
         <p class="small meta">
-          <span v-if="due" :class="{ late: isPastDue(due) }">⏰ {{ formatDate(due) }}<template v-if="timeLeft(due)"> · {{ timeLeft(due) }}</template></span>
+          <span v-if="due" :class="{ late: isPastDue(due) }"><Icon name="clock" /> {{ formatDate(due) }}<template v-if="timeLeft(due)"> · {{ timeLeft(due) }}</template></span>
           <span class="muted">{{ $t("common.students", people.length) }}</span>
         </p>
         <p v-if="!people.length" class="muted">{{ $t("classPage.missingNone") }}</p>

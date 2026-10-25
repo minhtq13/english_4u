@@ -39,7 +39,7 @@ onMounted(async () => {
     <h1>{{ isAdmin ? $t("teacherHome.allClasses") : $t("nav.myClasses") }}</h1>
     <p class="sub">{{ $t("teacherHome.intro") }}</p>
     <p v-if="error" class="fb no">{{ error }}</p>
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="!classes.length" class="card muted">
       {{ $t("teacherHome.none") }}
     </p>

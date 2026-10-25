@@ -39,7 +39,7 @@ onMounted(async () => {
     <h1>{{ $t("progress.title") }}</h1>
     <p class="sub">{{ $t("progress.intro") }}</p>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <template v-else>
       <section class="card">
         <h2>{{ $t("progress.errors") }}</h2>

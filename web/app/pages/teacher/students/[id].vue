@@ -40,7 +40,7 @@ const accuracy = computed(() => {
 <template>
   <div>
     <BackLink to="/teacher/students" :label="$t('nav.students')" />
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <p v-else-if="!student" class="muted">{{ $t("studentPage.notFound") }}</p>
     <template v-else>
       <h1>{{ student.full_name || student.email }}</h1>

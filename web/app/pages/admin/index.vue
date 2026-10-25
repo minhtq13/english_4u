@@ -60,7 +60,7 @@ onMounted(async () => {
     <section class="card">
       <h2>{{ $t("dashboard.byGrade") }}</h2>
       <p class="hint">{{ $t("dashboard.byGradeHint") }}</p>
-      <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+      <Skeleton v-if="!loaded" :card="false" />
       <div v-else class="table-wrap">
         <table class="course-table">
           <thead>

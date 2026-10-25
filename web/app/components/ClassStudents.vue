@@ -59,7 +59,7 @@ const numbers = (s: StudentRow) => ({ done: s.submitted ?? 0, accuracy: percentO
 
       <p v-if="!paged.total" class="muted small">{{ $t("classPage.studentFilter.noMatch") }}</p>
       <div v-else class="table-wrap">
-        <table class="stats-table">
+        <table class="stack-table stats-table">
           <thead>
             <tr>
               <th>{{ $t("common.student") }}</th><th>{{ $t("classPage.submittedLessons") }}</th><th>{{ $t("classPage.accuracy") }}</th>
@@ -68,12 +68,12 @@ const numbers = (s: StudentRow) => ({ done: s.submitted ?? 0, accuracy: percentO
           </thead>
           <tbody>
             <tr v-for="s in paged.rows" :key="s.user_id ?? ''">
-              <td><NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink><br><span class="small muted">{{ loginOf(s) }}</span></td>
-              <td><StatBar :value="percentOf(numbers(s).done, given)" :text="`${numbers(s).done}/${given}`" /></td>
-              <td><StatBar :value="numbers(s).accuracy" /></td>
-              <td class="n">{{ numbers(s).waiting }}</td>
-              <td class="small muted">{{ numbers(s).last ? formatDate(numbers(s).last) : $t("classPage.neverActive") }}</td>
-              <td>
+              <td :data-label="$t('common.student')"><NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink><br><span class="small muted">{{ loginOf(s) }}</span></td>
+              <td :data-label="$t('classPage.submittedLessons')"><StatBar :value="percentOf(numbers(s).done, given)" :text="`${numbers(s).done}/${given}`" /></td>
+              <td :data-label="$t('classPage.accuracy')"><StatBar :value="numbers(s).accuracy" /></td>
+              <td :data-label="$t('classPage.waiting')" class="n">{{ numbers(s).waiting }}</td>
+              <td :data-label="$t('classPage.lastActive')" class="small muted">{{ numbers(s).last ? formatDate(numbers(s).last) : $t("classPage.neverActive") }}</td>
+              <td :data-label="$t('classPage.moveTo')">
                 <select
                   :id="`move-${s.user_id}`"
                   :disabled="busy === s.user_id || !otherClasses.length"

@@ -272,9 +272,9 @@ async function moveClass(p: Person, classId: string) {
       <span class="small muted">{{ $t("accounts.found", { n: people.total }) }}</span>
     </div>
 
-    <p v-if="!loaded" class="muted">{{ $t("common.loading") }}</p>
+    <Skeleton v-if="!loaded" />
     <div v-else class="card table-wrap">
-      <table class="accounts">
+      <table class="stack-table accounts">
         <thead>
           <tr>
             <th>{{ rt("title") }}</th><th>{{ $t("accounts.login") }}</th>
@@ -283,7 +283,7 @@ async function moveClass(p: Person, classId: string) {
         </thead>
         <tbody>
           <tr v-for="p in people.rows" :key="p.id" :class="{ inactive: !p.active }">
-            <td>
+            <td :data-label="rt('title')">
               <template v-if="editing === p.id">
                 <input v-model="editName" type="text" :placeholder="$t('accounts.fullName')">
               </template>
@@ -292,14 +292,14 @@ async function moveClass(p: Person, classId: string) {
                 <b v-else>{{ name(p) }}</b>
               </template>
             </td>
-            <td>
+            <td :data-label="$t('accounts.login')">
               <input v-if="editing === p.id" v-model="editUsername" type="text" :placeholder="$t('accounts.username')">
               <template v-else>
                 <span>{{ loginOf(p) }}</span>
                 <span v-if="!p.username" class="small muted"> (Google)</span>
               </template>
             </td>
-            <td>
+            <td :data-label="rt('classCol')">
               <template v-if="isStudents">
                 <select :value="p.class_id ?? ''" :disabled="busy === `cls-${p.id}`" @change="moveClass(p, ($event.target as HTMLSelectElement).value)">
                   <option v-if="isAdmin || !p.class_id" value="">{{ $t("usersPage.noClass") }}</option>
@@ -308,8 +308,8 @@ async function moveClass(p: Person, classId: string) {
               </template>
               <span v-else class="small">{{ (p.teaches ?? []).join(", ") || "-" }}</span>
             </td>
-            <td><span class="badge" :class="p.active ? 'done' : 'open'">{{ p.active ? $t("accounts.active") : $t("accounts.inactive") }}</span></td>
-            <td class="actions">
+            <td :data-label="$t('accounts.status')"><span class="badge" :class="p.active ? 'done' : 'open'">{{ p.active ? $t("accounts.active") : $t("accounts.inactive") }}</span></td>
+            <td :data-label="$t('accounts.actions')" class="actions no-label">
               <template v-if="editing === p.id">
                 <button class="btn small primary" :disabled="busy === `edit-${p.id}`" @click="saveEdit(p)">{{ $t("common.save") }}</button>
                 <button class="btn small ghost" @click="editing = null">{{ $t("common.cancel") }}</button>
@@ -351,7 +351,13 @@ async function moveClass(p: Person, classId: string) {
 .accounts input[type=text] { padding: 4px 8px; }
 .accounts a { text-decoration: none; }
 .actions { white-space: nowrap; }
+.actions > * + * { margin-left: 8px; }
 .actions .btn { padding: 2px 10px; }
+@media (max-width: 640px) {
+  .actions { white-space: normal; justify-content: flex-start; gap: 8px; }
+  .actions > * + * { margin-left: 0; }
+  .actions .btn { padding: 6px 12px; }
+}
 .inactive td { opacity: .6; }
 input.bad { border-color: var(--bad); }
 .bad-text { color: var(--bad); font-size: .88rem; }

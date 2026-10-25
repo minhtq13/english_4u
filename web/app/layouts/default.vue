@@ -39,9 +39,17 @@ const activeLink = computed(() =>
     .sort((a, b) => b.length - a.length)[0])
 const isActive = (to: string) => activeLink.value === to
 
-// On small screens the sidebar is a drawer.
+// On small screens the sidebar is a drawer: Escape closes it and gives focus back to the menu button.
 const open = ref(false)
+const menuBtn = ref<HTMLButtonElement | null>(null)
 watch(() => route.fullPath, () => { open.value = false })
+function onKey(e: KeyboardEvent) {
+  if (e.key !== "Escape" || !open.value) return
+  open.value = false
+  menuBtn.value?.focus()
+}
+onMounted(() => document.addEventListener("keydown", onKey))
+onBeforeUnmount(() => document.removeEventListener("keydown", onKey))
 
 async function logout() {
   await client.auth.signOut()
@@ -54,9 +62,10 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
 
 <template>
   <div :class="{ shell: user }">
+    <a href="#main" class="skip-link">{{ $t("nav.skipToContent") }}</a>
     <template v-if="user">
       <header class="mobilebar">
-        <button class="menu-btn" :aria-expanded="open" aria-controls="sidebar" :aria-label="$t('nav.openMenu')" @click="open = !open">
+        <button ref="menuBtn" class="menu-btn" :aria-expanded="open" aria-controls="sidebar" :aria-label="$t('nav.openMenu')" @click="open = !open">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
         </button>
         <NuxtLink :to="homeFor(role)" class="brand">Grammar</NuxtLink>
@@ -87,13 +96,13 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
             </span>
           </NuxtLink>
           <div class="me-actions">
-            <LangSwitch />
+            <span class="prefs"><LangSwitch /><ThemeSwitch /></span>
             <button class="btn ghost small" @click="logout">{{ $t("nav.logout") }}</button>
           </div>
         </div>
       </aside>
     </template>
-    <main class="container" :class="{ wide: /^\/(admin|teacher|courses)/.test($route.path) }">
+    <main id="main" tabindex="-1" class="container" :class="{ wide: /^\/(admin|teacher|courses)/.test($route.path) }">
       <slot />
     </main>
     <ScrollTop v-if="user" />
@@ -101,6 +110,7 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
 </template>
 
 <style scoped>
+#main:focus { outline: none; }
 .brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
 .role { font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
 
@@ -121,7 +131,8 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
 .initial { display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: .9rem; }
 .who-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
 .name { font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.me-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.me-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.prefs { display: flex; align-items: center; gap: 6px; }
 
 .mobilebar { display: none; }
 .backdrop { display: none; }
@@ -132,9 +143,12 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
 @media (max-width: 900px) {
   .mobilebar { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 20;
     background: var(--card); border-bottom: 1px solid var(--line); padding: 8px 16px; }
-  .menu-btn { background: none; border: 0; color: var(--text); padding: 4px; margin-left: -4px; cursor: pointer; display: flex; }
-  .sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: 0 0 24px var(--shadow); }
-  .sidebar.open { transform: none; }
+  .menu-btn { background: none; border: 0; color: var(--text); width: 40px; height: 40px; margin: -4px 0 -4px -10px; border-radius: 8px;
+    cursor: pointer; display: grid; place-items: center; }
+  .menu-btn:hover { background: var(--bg); }
+  /* Hidden off-screen and out of the Tab order while closed; visibility switches after the slide-out ends. */
+  .sidebar { transform: translateX(-100%); visibility: hidden; transition: transform .2s ease, visibility 0s .2s; box-shadow: 0 0 24px var(--shadow); }
+  .sidebar.open { transform: none; visibility: visible; transition: transform .2s ease; }
   .backdrop { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, .35); z-index: 25; }
   .shell .container, .shell .container.wide { margin-left: auto; margin-right: auto; }
 }

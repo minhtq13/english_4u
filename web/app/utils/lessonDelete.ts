@@ -1,3 +1,6 @@
+import { tr } from "./i18n"
+import { errorText } from "./serverErrors"
+
 /**
  * Why a lesson could not be deleted, in the current language. Students' work (attempts reference the lesson with
  * ON DELETE RESTRICT, and the class_lessons guard trigger refuses too) is the usual reason; other messages pass through.

@@ -8,30 +8,23 @@ const props = defineProps<{
   classes: { id: string; name: string }[]
 }>()
 const emit = defineEmits<{ close: [] }>()
+const dialog = ref<HTMLElement | null>(null)
+useDialog(dialog, () => emit("close"))
 
 const current = ref(props.classes[0]?.id ?? "")
 
-const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") emit("close") }
-onMounted(() => {
-  document.addEventListener("keydown", onKey)
-  document.body.style.overflow = "hidden"
-})
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", onKey)
-  document.body.style.overflow = ""
-})
 const titleId = useId()
 </script>
 
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div class="dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId">
+    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <span class="heading">
           <b :id="titleId">{{ $t("classPage.lessonProgress.title") }}</b>
           <span class="small muted">{{ lessonName }}</span>
         </span>
-        <button class="btn small" @click="emit('close')">{{ $t("common.close") }} ✕</button>
+        <button class="btn small" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
       </header>
       <div class="body">
         <div v-if="classes.length > 1" class="row classes" role="group" :aria-label="$t('common.class')">
