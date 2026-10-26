@@ -9,6 +9,17 @@
     },
     "signIn": "Đăng nhập lại"
   },
+  "antiCheat": {
+    "note": "Trong lúc làm bài không sao chép, dán, in hay dịch trang được.",
+    "printNotice": "Không in được bài đang làm. Hãy nộp bài trước.",
+    "blocked": {
+      "copy": "Không sao chép được đề trong lúc làm bài.",
+      "paste": "Không dán được vào câu trả lời. Hãy tự gõ.",
+      "print": "Không in hay lưu trang được trong lúc làm bài.",
+      "menu": "Menu chuột phải bị tắt trong lúc làm bài.",
+      "drag": "Không kéo thả được trong lúc làm bài."
+    }
+  },
   "theme": {
     "label": "Giao diện",
     "light": "Sáng",
@@ -185,7 +196,11 @@
     "google": "Đăng nhập bằng Google",
     "locked": "Tài khoản này đang bị khoá. Hãy hỏi giáo viên.",
     "wrong": "Sai tên đăng nhập hoặc mật khẩu. Nếu quên mật khẩu, hãy nhờ giáo viên đặt lại.",
-    "googleFailed": "Không mở được trang đăng nhập Google: {msg}"
+    "googleFailed": "Không mở được trang đăng nhập Google: {msg}",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "capsLock": "Đang bật Caps Lock",
+    "forgot": "Quên mật khẩu? Hãy nhờ giáo viên đặt lại cho bạn."
   },
   "join": {
     "pageTitle": "Vào lớp - Grammar",

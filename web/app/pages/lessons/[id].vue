@@ -33,6 +33,10 @@ const now = ref(Date.now())
 const attempt = useAttempt(loaded, { preview: !isStudent.value })
 const { state, results, score, total, answered, locked } = attempt
 const feedback = shallowRef<Tables<"feedback">[]>([])
+// While a student works on the lesson, its questions cannot be copied, pasted into, printed or translated (useAntiCheat).
+const content = ref<HTMLElement | null>(null)
+const exam = computed(() => !attempt.preview && state.loaded && !locked.value)
+const { blocked } = useAntiCheat(content, exam)
 
 onMounted(async () => {
   if (isStudent.value && myClass.value) {
@@ -192,7 +196,13 @@ const next = nextId ? course.byId[nextId] : null
       </div>
       <p v-else-if="!attempt.preview" class="hint">
         <span v-html="$t('lessonPage.howTo')" />
+        <br><Icon name="lock" /> {{ $t("antiCheat.note") }}
       </p>
+      <ExamWatermark v-if="exam" />
+      <p v-if="exam" class="print-only">{{ $t("antiCheat.printNotice") }}</p>
+      <p v-if="blocked" class="fb no blocked-note" role="status">{{ $t(`antiCheat.blocked.${blocked}`) }}</p>
+
+      <div ref="content" class="lesson-content">
 
       <section v-for="(s, i) in lesson.sections" :key="`${i}-${withKey}`" class="card">
         <span v-if="s.time" class="time">{{ s.time }}</span>
@@ -206,8 +216,12 @@ const next = nextId ? course.byId[nextId] : null
           :section="s" :responses="state.responses" :results="results" :locked="locked" :show-key="attempt.preview"
           @respond="attempt.respond"
         />
-        <textarea v-else-if="s.type === 'writing'" :id="`writing-${lesson.id}`" v-model="writing" :placeholder="s.placeholder" :disabled="locked" />
+        <textarea
+          v-else-if="s.type === 'writing'" :id="`writing-${lesson.id}`" v-model="writing" :placeholder="s.placeholder" :disabled="locked"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" translate="no" data-gramm="false"
+        />
       </section>
+      </div>
 
       <div class="actions">
         <NuxtLink v-if="next" :to="`/lessons/${next.id}`" class="btn ghost">{{ $t("lessonPage.next", { label: next.label }) }} →</NuxtLink>
@@ -232,6 +246,7 @@ const next = nextId ? course.byId[nextId] : null
 </template>
 
 <style scoped>
+.blocked-note { position: sticky; top: 12px; z-index: 45; margin: 0 0 12px; }
 .actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
 .tags { margin-top: 8px; }
 .assign-card { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; }

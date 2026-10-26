@@ -9,6 +9,17 @@
     },
     "signIn": "Sign in again"
   },
+  "antiCheat": {
+    "note": "While you work, the lesson cannot be copied, pasted into, printed or translated.",
+    "printNotice": "A lesson in progress cannot be printed. Submit it first.",
+    "blocked": {
+      "copy": "The questions cannot be copied while you work.",
+      "paste": "You cannot paste into the answers. Type them yourself.",
+      "print": "The page cannot be printed or saved while you work.",
+      "menu": "The right-click menu is off while you work.",
+      "drag": "Dragging is off while you work."
+    }
+  },
   "theme": {
     "label": "Theme",
     "light": "Light",
@@ -185,7 +196,11 @@
     "google": "Sign in with Google",
     "locked": "This account is locked. Please ask your teacher.",
     "wrong": "Wrong username or password. If you forgot your password, ask your teacher to reset it.",
-    "googleFailed": "Could not open Google sign-in: {msg}"
+    "googleFailed": "Could not open Google sign-in: {msg}",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "capsLock": "Caps Lock is on",
+    "forgot": "Forgot your password? Ask your teacher to reset it."
   },
   "join": {
     "pageTitle": "Join a class - Grammar",

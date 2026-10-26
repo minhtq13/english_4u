@@ -43,6 +43,7 @@ const EN: [RegExp, string][] = [
   [/^Phiên đăng nhập đã kết thúc/, "Your session has ended. Please sign in again."],
   [/^Section loại (\S+) không có câu hỏi/, "A $1 section has no questions"],
   [/^Bạn chỉ được đổi lớp học và tên hiển thị/, "You can only change your class and display name"],
+  [/^Tên đăng nhập chỉ đổi được bằng nút Sửa/, "A username can only be changed with the Edit button on the account management page"],
   [/^Tên đăng nhập và trạng thái tài khoản chỉ đổi được/, "Usernames and account status can only be changed on the student management page"],
   [/^correct_option phải từ 1 đến (\d+)/, "The correct option must be between 1 and $1"],
   [/^Lỗi máy chủ, hãy thử lại/, "Server error, please try again"],

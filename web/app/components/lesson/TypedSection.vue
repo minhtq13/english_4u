@@ -36,8 +36,11 @@ function changed(i: number) {
         :class="{ short }"
         :disabled="locked"
         autocomplete="off"
+        autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
+        translate="no"
+        data-gramm="false"
         @input="changed(i)"
       >
       <AnswerFeedback v-if="results" :show-key="showKey" :result="results[qid(i)]" :why="it.why" :correct="it.ans[0]" />

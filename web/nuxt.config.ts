@@ -29,6 +29,11 @@ export default defineNuxtConfig({
     },
   },
 
+  // Feature flag: the "sign in with Google" button on the login page. Off for now; turn it on with
+  // NUXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true (or here). It only shows or hides the button: the Google provider itself is
+  // switched in Supabase (Authentication → Providers), and `signInWithGoogle` stays in the page.
+  runtimeConfig: { public: { enableGoogleLogin: false } },
+
   // Vietnamese by default, English on request. The choice lives in the "lang" cookie (app/plugins/lang.client.ts);
   // URLs stay the same in both languages. Messages: i18n/locales/*.json.
   i18n: {

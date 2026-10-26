@@ -158,3 +158,13 @@ a.list-row:hover b { color: var(--accent); }
 .scorebar .meta small { color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* A student working on a lesson (useAntiCheat): the questions cannot be selected (nor long-pressed on phones), the
+   answers stay editable, and printing from the browser menu prints a notice instead of the lesson. */
+.exam-mode .lesson-content { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.exam-mode .lesson-content :is(input, textarea) { -webkit-user-select: text; user-select: text; }
+.print-only { display: none; }
+@media print {
+  html.exam-mode body { visibility: hidden; }
+  html.exam-mode .print-only { display: block; visibility: visible; position: fixed; top: 0; left: 0; right: 0; text-align: center; }
+}
