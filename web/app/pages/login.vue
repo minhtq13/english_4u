@@ -83,7 +83,7 @@ async function signInWithGoogle() {
           <label for="login-pass">{{ $t("login.password") }}</label>
           <span class="pass">
             <input
-              id="login-pass" ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password"
+              id="login-pass" ref="passwordInput" v-model="password" :placeholder="$t('login.passwordPlaceholder')" :type="showPassword ? 'text' : 'password'" autocomplete="current-password"
               enterkeyhint="go" :aria-invalid="!!error" :aria-describedby="error ? 'login-error' : undefined" @keydown="onKey" @keyup="onKey" @blur="capsLock = false"
             >
             <button
