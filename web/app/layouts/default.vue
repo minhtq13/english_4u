@@ -7,7 +7,7 @@ const { profile, myClass, role, refresh } = useProfile()
 
 watch(() => user.value?.sub, (id) => { if (id) refresh() }, { immediate: true })
 // One session per account, 10 minutes without activity, locked accounts (see useSessionGuard).
-useSessionGuard()
+const session = useSessionGuard()
 
 interface NavGroup { title: string; links: { to: string; label: string }[] }
 
@@ -108,6 +108,7 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
       <slot />
     </main>
     <ScrollTop v-if="user" />
+    <SessionEndedDialog v-if="session.ended.value" :reason="session.ended.value" @close="session.signInAgain" />
   </div>
 </template>
 

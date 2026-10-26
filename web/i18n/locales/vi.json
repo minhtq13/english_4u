@@ -1,4 +1,14 @@
 {
+  "sessionEnded": {
+    "title": {
+      "replaced": "Tài khoản đã đăng nhập ở nơi khác",
+      "idle": "Phiên đăng nhập đã hết hạn",
+      "locked": "Tài khoản đã bị khoá",
+      "signout": "Bạn đã đăng xuất",
+      "ended": "Phiên đăng nhập đã kết thúc"
+    },
+    "signIn": "Đăng nhập lại"
+  },
   "theme": {
     "label": "Giao diện",
     "light": "Sáng",

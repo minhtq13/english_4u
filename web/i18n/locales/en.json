@@ -1,4 +1,14 @@
 {
+  "sessionEnded": {
+    "title": {
+      "replaced": "Signed in somewhere else",
+      "idle": "Your session has expired",
+      "locked": "This account is locked",
+      "signout": "You have signed out",
+      "ended": "Your session has ended"
+    },
+    "signIn": "Sign in again"
+  },
   "theme": {
     "label": "Theme",
     "light": "Light",

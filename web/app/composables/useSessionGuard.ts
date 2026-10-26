@@ -12,13 +12,15 @@ export type SessionEnd = "replaced" | "idle" | "locked" | "signout" | "ended"
  * Keeps the signed-in session in step with the database: one session per account (signing in elsewhere ends this
  * one), 10 minutes without activity, and locked accounts. Activity (pointer, keys, scroll) is reported through
  * touch_session() at most once a minute; when the database says the session is over, or the 10 minutes pass here,
- * the app signs out on this device and the login page says why. A request refused because the session is over
+ * the app signs out on this device and SessionEndedDialog (default layout) says why. A request refused because the session is over
  * (plugins/session-ended.client.ts) checks at once. Mounted once, in the default layout.
  */
 export function useSessionGuard() {
   const client = useSupabaseClient<Database>()
   const user = useSupabaseUser()
   const { profile, myClass } = useProfile()
+  /** Why the session ended, while the dialog is up. */
+  const ended = useState<SessionEnd | null>("session-ended", () => null)
   let lastActive = Date.now()
   let lastTouch = 0
   let busy = false
@@ -31,12 +33,18 @@ export function useSessionGuard() {
     await client.auth.signOut({ scope: "local" })
     profile.value = null
     myClass.value = null
-    await navigateTo({ path: "/login", query: { ended: reason } })
+    ended.value = reason
     ending = false
   }
 
+  /** The dialog's button: on to the login page. */
+  async function signInAgain() {
+    ended.value = null
+    await navigateTo("/login")
+  }
+
   async function check() {
-    if (!user.value || busy || ending) return
+    if (!user.value || busy || ending || ended.value) return
     busy = true
     try {
       await ask()
@@ -78,4 +86,5 @@ export function useSessionGuard() {
   })
   // A new sign-in starts a fresh 10 minutes.
   watch(() => user.value?.sub, () => { lastActive = Date.now(); lastTouch = 0 })
+  return { ended, signInAgain }
 }
