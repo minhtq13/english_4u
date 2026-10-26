@@ -40,6 +40,7 @@ const EN: [RegExp, string][] = [
   [/^Học sinh lớp này đã làm bài nên không thu hồi được/, "Students of this class have worked on this lesson, so it cannot be taken back. Use \"Close\" to stop taking work."],
   [/^Mã lớp không đúng/, "Wrong class code. Check it with your teacher."],
   [/^Thiếu mã bài/, "Missing lesson id"],
+  [/^Phiên đăng nhập đã kết thúc/, "Your session has ended. Please sign in again."],
   [/^Section loại (\S+) không có câu hỏi/, "A $1 section has no questions"],
   [/^Bạn chỉ được đổi lớp học và tên hiển thị/, "You can only change your class and display name"],
   [/^Tên đăng nhập và trạng thái tài khoản chỉ đổi được/, "Usernames and account status can only be changed on the student management page"],
