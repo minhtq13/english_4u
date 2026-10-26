@@ -144,6 +144,7 @@ Schema nằm trong `supabase/migrations/` (bảng bài học + dữ liệu 16 b�
 | `attempt_results` | Kết quả chấm từng câu của bài đã nộp (ghi bởi `submit_attempt()`). |
 | `feedback` | Nhận xét của giáo viên; thêm nhận xét sẽ chuyển bài sang `graded`. |
 | `error_log` | Lỗi lặp lại của từng học viên (6 nhóm lỗi, trạng thái `open` / `improving` / `fixed`). |
+| `login_log` | Mỗi lần đăng nhập (phiên mới): thời điểm, IP, trình duyệt, lần hoạt động cuối, lúc và lý do kết thúc (`signout`, `replaced` = đăng nhập nơi khác, `idle` = 10 phút không thao tác, `locked`). Trigger trên `auth.sessions` ghi vào; admin xem tất cả, giáo viên xem học sinh lớp mình, mỗi người xem của mình; không ai sửa hay xoá qua API. |
 
 RLS: xem bảng vai trò ở mục "Vai trò, lớp và mở bài". Thêm giáo viên: người đó đăng nhập một lần, rồi admin đổi vai trò ở `/admin/users`.
 Thêm admin: `insert into admin_emails values ('email@...')` trước khi người đó đăng nhập lần đầu.

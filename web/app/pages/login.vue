@@ -12,6 +12,11 @@ const password = ref("")
 
 watch(user, (u) => { if (u) navigateTo("/") }, { immediate: true })
 
+// Why the last session ended, when the app signed out by itself (useSessionGuard).
+const route = useRoute()
+const ENDED = ["replaced", "idle", "locked", "signout", "ended"]
+const ended = computed(() => (typeof route.query.ended === "string" && ENDED.includes(route.query.ended) ? route.query.ended : ""))
+
 // Students (and teachers given an account) sign in with the username and password from their teacher.
 async function signInWithPassword() {
   if (!login.value.trim() || !password.value) return
@@ -44,6 +49,7 @@ async function signInWithGoogle() {
       <div class="top"><p class="eyebrow">{{ $t("login.eyebrow") }}</p><span class="prefs"><LangSwitch /><ThemeSwitch /></span></div>
       <h1>{{ $t("login.title") }}</h1>
       <p class="muted">{{ $t("login.intro") }}</p>
+      <p v-if="ended && !error" class="fb key" role="status">{{ $t(`login.ended.${ended}`) }}</p>
 
       <form class="stack" @submit.prevent="signInWithPassword">
         <label class="field">{{ $t("login.username") }}

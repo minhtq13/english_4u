@@ -155,6 +155,13 @@
     "logout": "Sign out"
   },
   "login": {
+    "ended": {
+      "replaced": "This account just signed in somewhere else, so the session on this device has ended. An account can be used in one place at a time.",
+      "idle": "You were signed out after 10 minutes without activity. Please sign in again.",
+      "locked": "This account has been locked. Ask your teacher.",
+      "signout": "You have signed out.",
+      "ended": "Your session has ended. Please sign in again."
+    },
     "pageTitle": "Sign in - Grammar",
     "eyebrow": "Grades 6 – 9 · B1 → B2 · 30 minutes a day",
     "title": "English grammar",

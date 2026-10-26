@@ -155,6 +155,13 @@
     "logout": "Đăng xuất"
   },
   "login": {
+    "ended": {
+      "replaced": "Tài khoản vừa được đăng nhập ở nơi khác, nên phiên trên máy này đã kết thúc. Mỗi tài khoản chỉ dùng được ở một nơi cùng lúc.",
+      "idle": "Bạn đã được đăng xuất vì 10 phút không thao tác. Hãy đăng nhập lại.",
+      "locked": "Tài khoản đã bị khoá. Hãy hỏi giáo viên của bạn.",
+      "signout": "Bạn đã đăng xuất.",
+      "ended": "Phiên đăng nhập đã kết thúc. Hãy đăng nhập lại."
+    },
     "pageTitle": "Đăng nhập - Grammar",
     "eyebrow": "Lớp 6 – 9 · B1 → B2 · 30 phút mỗi ngày",
     "title": "Ngữ pháp tiếng Anh",

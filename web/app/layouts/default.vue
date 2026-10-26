@@ -6,6 +6,8 @@ const { t } = useI18n()
 const { profile, myClass, role, refresh } = useProfile()
 
 watch(() => user.value?.sub, (id) => { if (id) refresh() }, { immediate: true })
+// One session per account, 10 minutes without activity, locked accounts (see useSessionGuard).
+useSessionGuard()
 
 interface NavGroup { title: string; links: { to: string; label: string }[] }
 

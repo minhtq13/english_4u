@@ -232,6 +232,20 @@ export type Database = {
         Update: { body?: string; created_at?: string; id?: string; teacher_id?: string }
         Relationships: []
       }
+      login_log: {
+        Row: { end_reason: string | null; ended_at: string | null; id: number; ip: unknown; last_seen_at: string; session_id: string | null; signed_in_at: string; user_agent: string | null; user_id: string }
+        Insert: { end_reason?: string | null; ended_at?: string | null; id?: never; ip?: unknown; last_seen_at?: string; session_id?: string | null; signed_in_at?: string; user_agent?: string | null; user_id: string }
+        Update: { end_reason?: string | null; ended_at?: string | null; id?: never; ip?: unknown; last_seen_at?: string; session_id?: string | null; signed_in_at?: string; user_agent?: string | null; user_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "login_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_structures: {
         Row: { created_at: string; id: string; name: string; sections: Json; teacher_id: string }
         Insert: { created_at?: string; id?: string; name: string; sections: Json; teacher_id?: string }
@@ -682,6 +696,10 @@ export type Database = {
       allow_redo: {
         Args: { target: string }
         Returns: undefined
+      }
+      touch_session: {
+        Args: Record<string, never>
+        Returns: string
       }
       wrong_questions: {
         Args: { target_class: string; target_lessons: string[]; target_student?: string }
