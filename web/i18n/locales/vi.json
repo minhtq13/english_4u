@@ -1045,5 +1045,11 @@
       "closed": "Đã đóng / hết hạn",
       "waiting": "Có bài chờ chấm"
     }
+  },
+  "pwa": {
+    "text": "Có phiên bản mới của ứng dụng.",
+    "reload": "Tải lại",
+    "later": "Để sau",
+    "offline": "Bạn đang ngoại tuyến. Hãy kết nối mạng để học và nộp bài."
   }
 }

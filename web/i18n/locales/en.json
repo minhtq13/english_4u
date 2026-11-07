@@ -1045,5 +1045,11 @@
       "closed": "Closed / past due",
       "waiting": "Work to grade"
     }
+  },
+  "pwa": {
+    "text": "A new version of the app is available.",
+    "reload": "Reload",
+    "later": "Later",
+    "offline": "You are offline. Connect to the internet to study and submit work."
   }
 }

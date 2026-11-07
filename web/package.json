@@ -20,6 +20,7 @@
     "@tiptap/pm": "3.31.4",
     "@tiptap/starter-kit": "3.31.4",
     "@tiptap/vue-3": "3.31.4",
+    "@vite-pwa/nuxt": "1.1.1",
     "dompurify": "3.4.16",
     "nuxt": "4.6.0",
     "vue": "3.5.43",

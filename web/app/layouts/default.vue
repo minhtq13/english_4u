@@ -108,6 +108,7 @@ const displayName = computed(() => profile.value?.full_name || (profile.value ? 
       <slot />
     </main>
     <ScrollTop v-if="user" />
+    <PwaUpdate />
     <SessionEndedDialog v-if="session.ended.value" :reason="session.ended.value" @close="session.signInAgain" />
   </div>
 </template>
