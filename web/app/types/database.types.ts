@@ -29,6 +29,7 @@ export type Database = {
           score: Json
           status: Database["public"]["Enums"]["attempt_status"]
           submitted_at: string | null
+          timer_started_at: string
           updated_at: string
           user_id: string
           writing: string
@@ -246,6 +247,36 @@ export type Database = {
           },
         ]
       }
+      study_days: {
+        Row: { day: string; user_id: string }
+        Insert: { day: string; user_id: string }
+        Update: { day?: string; user_id?: string }
+        Relationships: []
+      }
+      notifications: {
+        Row: { created_at: string; dedupe: string | null; id: string; kind: "lesson_given" | "due_soon" | "graded" | "feedback" | "announcement"; link: string | null; params: Json; read_at: string | null; user_id: string }
+        Insert: { created_at?: string; dedupe?: string | null; id?: string; kind: "lesson_given" | "due_soon" | "graded" | "feedback" | "announcement"; link?: string | null; params?: Json; read_at?: string | null; user_id: string }
+        Update: { read_at?: string | null }
+        Relationships: []
+      }
+      class_announcements: {
+        Row: { author_id: string; body: string; class_id: string; created_at: string; id: string }
+        Insert: { author_id?: string; body: string; class_id: string; created_at?: string; id?: string }
+        Update: { author_id?: string; body?: string; class_id?: string; created_at?: string; id?: string }
+        Relationships: []
+      }
+      card_reviews: {
+        Row: { box: number; card: string; due_on: string; updated_at: string; user_id: string }
+        Insert: { box?: number; card: string; due_on?: string; updated_at?: string; user_id?: string }
+        Update: { box?: number; card?: string; due_on?: string; updated_at?: string; user_id?: string }
+        Relationships: []
+      }
+      audit_log: {
+        Row: { action: string; actor: string | null; at: string; detail: Json; id: number; target: string | null }
+        Insert: { action: string; actor?: string | null; at?: string; detail?: Json; id?: never; target?: string | null }
+        Update: { action?: string; actor?: string | null; at?: string; detail?: Json; id?: never; target?: string | null }
+        Relationships: []
+      }
       lesson_structures: {
         Row: { created_at: string; id: string; name: string; sections: Json; teacher_id: string }
         Insert: { created_at?: string; id?: string; name: string; sections: Json; teacher_id?: string }
@@ -259,9 +290,9 @@ export type Database = {
         Relationships: []
       }
       class_lessons: {
-        Row: { class_id: string; closed: boolean; due_at: string | null; for_all: boolean; shuffle: boolean; lesson_id: string; show_results: boolean; unlocked_at: string; unlocked_by: string | null }
-        Insert: { class_id: string; closed?: boolean; due_at?: string | null; for_all?: boolean; shuffle?: boolean; lesson_id: string; show_results?: boolean; unlocked_at?: string; unlocked_by?: string | null }
-        Update: { class_id?: string; closed?: boolean; due_at?: string | null; for_all?: boolean; shuffle?: boolean; lesson_id?: string; show_results?: boolean; unlocked_at?: string; unlocked_by?: string | null }
+        Row: { class_id: string; closed: boolean; due_at: string | null; for_all: boolean; shuffle: boolean; time_limit_min: number | null; lesson_id: string; show_results: boolean; unlocked_at: string; unlocked_by: string | null }
+        Insert: { class_id: string; closed?: boolean; due_at?: string | null; for_all?: boolean; shuffle?: boolean; time_limit_min?: number | null; lesson_id: string; show_results?: boolean; unlocked_at?: string; unlocked_by?: string | null }
+        Update: { class_id?: string; closed?: boolean; due_at?: string | null; for_all?: boolean; shuffle?: boolean; time_limit_min?: number | null; lesson_id?: string; show_results?: boolean; unlocked_at?: string; unlocked_by?: string | null }
         Relationships: [
           {
             foreignKeyName: "class_lessons_class_id_fkey"
@@ -700,6 +731,14 @@ export type Database = {
       touch_session: {
         Args: Record<string, never>
         Returns: string
+      }
+      question_analysis: {
+        Args: { target_class: string; target_lesson: string }
+        Returns: { qid: string; q: string | null; answered: number; ok: number; wrong: Json }[]
+      }
+      promote_class: {
+        Args: { source_class: string; target_class: string }
+        Returns: number
       }
       wrong_questions: {
         Args: { target_class: string; target_lessons: string[]; target_student?: string }

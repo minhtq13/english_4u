@@ -100,6 +100,8 @@ const nextLesson = computed(() => {
   <div>
     <h1>{{ $t("roadmap.title", { name: myClass?.name }) }}</h1>
     <p class="sub">{{ localName(myClass?.courses?.name) }} · {{ $t("roadmap.intro") }}</p>
+    <ClassAnnouncements v-if="myClass" :class-id="myClass.id" />
+    <StreakCard />
 
     <p v-if="error" class="fb no">{{ error }}</p>
 
@@ -118,7 +120,7 @@ const nextLesson = computed(() => {
       <p class="muted small">{{ nextLesson.desc }}</p>
       <NuxtLink :to="`/lessons/${nextLesson.id}`" class="btn primary">{{ $t("roadmap.open") }}</NuxtLink>
     </div>
-    <p v-else-if="loaded && course && !openOrder.length" class="card muted">{{ $t("roadmap.empty", { name: myClass?.name }) }}</p>
+    <EmptyState v-else-if="loaded && course && !openOrder.length" icon="book" :title="$t('roadmap.emptyTitle')" :text="$t('roadmap.empty', { name: myClass?.name })" />
 
     <Skeleton v-if="!loaded" />
     <!-- Only lessons assigned to the class reach the student (RLS), so every listed lesson is open. -->

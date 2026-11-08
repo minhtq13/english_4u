@@ -118,3 +118,32 @@ describe("updateGivenLesson", () => {
     expect(calls).toHaveLength(1)
   })
 })
+
+import { limitOf } from "~/utils/classLesson"
+
+describe("time limit", () => {
+  it("reads whole minutes from 1 to 300, anything else is none", () => {
+    expect([limitOf("15"), limitOf(" 45 "), limitOf("300")]).toEqual([15, 45, 300])
+    expect([limitOf(""), limitOf("0"), limitOf("301"), limitOf("1.5"), limitOf("abc")]).toEqual([null, null, null, null, null])
+  })
+  it("is part of the settings, and round-trips through the form", () => {
+    expect(settingsOf(form({ limit: "20" })).timeLimit).toBe(20)
+    expect(settingsOf(form()).timeLimit).toBeNull()
+    expect(formOf({ due_at: null, for_all: true, show_results: false, shuffle: false, time_limit_min: 30 }).limit).toBe("30")
+    expect(formOf({ due_at: null, for_all: true, show_results: false, shuffle: false, time_limit_min: null }).limit).toBe("")
+  })
+  it("a changed limit counts as a change, and a bad one is refused", () => {
+    expect(formChanged(form(), form({ limit: "10" }))).toBe(true)
+    expect(formChanged(form({ limit: "10" }), form({ limit: " 10 " }))).toBe(false)
+    expect(giveProblem(form({ limit: "0" }))).toBe("setup.limitBad")
+    expect(giveProblem(form({ limit: "10" }))).toBeNull()
+  })
+})
+
+describe("time limit typed in a field", () => {
+  it("copes with a number where a string is expected (a number input hands back numbers)", () => {
+    expect(limitOf(25 as unknown as string)).toBe(25)
+    expect(giveProblem(form({ limit: 0 as unknown as string }))).toBe("setup.limitBad")
+    expect(formChanged(form({ limit: "10" }), form({ limit: 10 as unknown as string }))).toBe(false)
+  })
+})

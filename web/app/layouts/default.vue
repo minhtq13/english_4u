@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { IconName } from "~/components/Icon.vue"
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const route = useRoute()
@@ -9,12 +10,16 @@ watch(() => user.value?.sub, (id) => { if (id) refresh() }, { immediate: true })
 // One session per account, 10 minutes without activity, locked accounts (see useSessionGuard).
 const session = useSessionGuard()
 
-interface NavGroup { title: string; links: { to: string; label: string }[] }
+interface NavGroup { title: string; links: { to: string; label: string; icon: IconName }[] }
+const ICONS: Record<string, IconName> = {
+  roadmap: "home", review: "clock", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file",
+  dashboard: "chart", classes: "users", teachers: "users", users: "user", logins: "clock", audit: "clipboard",
+}
 
 // Each role only sees the menu for its own work; admins see everything.
 const groups = computed<NavGroup[]>(() => {
-  const link = (to: string, key: string) => ({ to, label: t(`nav.${key}`) })
-  const student = { title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/progress", "progress")] }
+  const link = (to: string, key: string) => ({ to, label: t(`nav.${key}`), icon: ICONS[key] ?? "file" })
+  const student = { title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/review", "review"), link("/progress", "progress")] }
   const teacher = {
     title: t("nav.groupTeach"),
     links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading"),
@@ -22,12 +27,14 @@ const groups = computed<NavGroup[]>(() => {
   }
   const admin = {
     title: t("nav.groupAdmin"),
-    links: [link("/admin", "dashboard"), link("/admin/classes", "classes"), link("/admin/teachers", "teachers"), link("/admin/users", "users")],
+    links: [link("/admin", "dashboard"), link("/admin/classes", "classes"), link("/admin/teachers", "teachers"), link("/admin/users", "users"),
+      link("/admin/logins", "logins"), link("/admin/audit", "audit")],
   }
   if (role.value === "admin") return [admin, teacher]
   if (role.value === "teacher") return [teacher]
   return profile.value?.class_id ? [student] : []
 })
+const { forLink } = useNavBadges(role)
 const badge = computed(() => {
   if (role.value === "student") return myClass.value ? t("nav.classBadge", { name: myClass.value.name }) : ""
   return role.value ? ROLE_LABEL[role.value] : ""
@@ -72,6 +79,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
         </button>
         <NuxtLink :to="homeFor(role)" class="brand">Grammar</NuxtLink>
         <span v-if="badge" class="role">{{ badge }}</span>
+        <NotificationBell v-if="role === 'student' && myClass" class="bell-mobile" />
       </header>
       <div v-if="open" class="backdrop" @click="open = false" />
 
@@ -79,12 +87,15 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
         <div class="side-head">
           <NuxtLink :to="homeFor(role)" class="brand">Grammar</NuxtLink>
           <span v-if="badge" class="role">{{ badge }}</span>
+          <NotificationBell v-if="role === 'student' && myClass" class="bell-side" />
         </div>
         <nav class="side-nav" :aria-label="$t('nav.mainMenu')">
           <div v-for="g in groups" :key="g.title" class="group">
             <div class="group-title">{{ g.title }}</div>
             <NuxtLink v-for="l in g.links" :key="l.to" :to="l.to" class="nav-link" :class="{ active: isActive(l.to) }">
-              {{ l.label }}
+              <Icon :name="l.icon" size="18" />
+              <span class="label">{{ l.label }}</span>
+              <span v-if="forLink(l.to)" class="count" :aria-label="$t(l.to === '/review' ? 'nav.dueCount' : 'nav.waitingCount', forLink(l.to))">{{ forLink(l.to) }}</span>
             </NuxtLink>
           </div>
         </nav>
@@ -108,6 +119,8 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
       <slot />
     </main>
     <ScrollTop v-if="user" />
+    <StudentTabs v-if="user && role === 'student' && myClass" />
+    <ToastHost />
     <PwaUpdate />
     <SessionEndedDialog v-if="session.ended.value" :reason="session.ended.value" @close="session.signInAgain" />
   </div>
@@ -124,8 +137,10 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
 .side-nav { flex: 1; overflow-y: auto; padding: 4px 10px; }
 .group + .group { margin-top: 14px; }
 .group-title { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; }
-.nav-link { display: block; padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; }
 .nav-link:hover { background: var(--bg); }
+.nav-link .label { flex: 1; min-width: 0; }
+.nav-link .count { background: var(--warn); color: var(--card); border-radius: 999px; font-size: .72rem; font-weight: 700; padding: 1px 8px; font-variant-numeric: tabular-nums; }
 .nav-link.active { background: var(--accent-soft); color: var(--accent); }
 
 .me { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 14px; border-top: 1px solid var(--line); }
@@ -139,12 +154,15 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
 .prefs { display: flex; align-items: center; gap: 6px; }
 
 .mobilebar { display: none; }
+.bell-mobile { margin-left: auto; }
 .backdrop { display: none; }
 .shell .container { margin-left: max(232px, calc(232px + (100vw - 232px - 800px) / 2)); margin-right: auto; }
 .shell .container.wide { max-width: 1180px; margin-left: max(232px, calc(232px + (100vw - 232px - 1180px) / 2)); }
 .container.wide { max-width: 1180px; }
 
+@media (min-width: 901px) { .bell-mobile { display: none; } }
 @media (max-width: 900px) {
+  .bell-side { display: none; }
   .mobilebar { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 20;
     background: var(--card); border-bottom: 1px solid var(--line); padding: 8px 16px; }
   .menu-btn { background: none; border: 0; color: var(--text); width: 40px; height: 40px; margin: -4px 0 -4px -10px; border-radius: 8px;

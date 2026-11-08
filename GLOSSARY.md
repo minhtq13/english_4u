@@ -18,5 +18,9 @@ Domain terms of english_4u, as the code names them. UI wording is Vietnamese; th
 - **Question bank** (ngân hàng câu hỏi): every auto-graded question the reader may see with answers, across lessons; picked questions become a new lesson.
 - **Take back** (thu hồi): remove a class lesson; only while no student of the class has opened it (any attempt, submitted or not).
 - **Server list**: a list that grows with users or time, read one page at a time with its filters applied in the database.
+- **Streak** (chuỗi ngày học): days in a row on which a student saved or submitted work (`study_days`, Vietnam calendar); a day not yet studied keeps the streak alive if yesterday counted.
+- **Time limit** (giới hạn thời gian): minutes a class gives for a lesson, counted by the database from the student's first save; when it runs out the work is submitted by itself.
+- **Practice** (luyện lại câu sai): the questions a student got wrong, redone after the results are out; graded in the browser, never saved.
+- **Review** (ôn tập): flashcards due again by Leitner boxes (`card_reviews`).
 - **Person name**: how a learner or teacher is shown in lists and messages: full name, else username, else a real email (`personName()`).
 - **Class workspace**: what a teacher does with the lessons of one class on its page (give, take back, close, settings, deadline, who may work, release) together with the numbers each change moves (`useClassWorkspace()`).

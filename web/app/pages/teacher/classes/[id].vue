@@ -27,7 +27,8 @@ const queue = useGradingQueue()
 const otherClasses = shallowRef<Pick<Tables<"classes">, "id" | "name">[]>([])
 const loaded = ref(false)
 const error = ref("")
-const message = ref("")
+// The outcome of moving a student shows as a toast.
+const toast = useToast()
 
 onMounted(async () => {
   try {
@@ -135,14 +136,13 @@ const lessonFilter = useLessonFilter(outline, {
 async function moveStudent(s: ClassStudentRow, target: string) {
   if (!target) return
   busy.value = s.user_id
-  message.value = ""
   const { error: e } = await client.from("profiles").update({ class_id: target }).eq("id", s.user_id ?? "")
   busy.value = null
   if (e) {
-    message.value = t("classPage.moveFailed", { name: personName(s), msg: errorText(e.message) })
+    toast.error(t("classPage.moveFailed", { name: personName(s), msg: errorText(e.message) }))
     return
   }
-  message.value = t("classPage.moved", { name: personName(s), cls: otherClasses.value.find(c => c.id === target)?.name })
+  toast.ok(t("classPage.moved", { name: personName(s), cls: otherClasses.value.find(c => c.id === target)?.name }))
   await loadStudents()
 }
 
@@ -175,13 +175,15 @@ async function copyCode() {
           <button class="btn small" @click="copyCode">{{ copied ? $t("common.copied") : $t("common.copy") }}</button>
         </div>
       </div>
-      <p v-if="message" class="fb ok">{{ message }}</p>
+      <ClassAnnouncements :class-id="cls.id" can-post />
 
       <section class="card">
         <div class="section-head">
           <h2>{{ $t("nav.lessons") }}</h2>
           <span class="row">
             <NuxtLink :to="`/teacher/lessons/new?class=${cls.id}`" class="btn primary small">{{ $t("classPage.newLesson") }}</NuxtLink>
+            <NuxtLink :to="`/teacher/gradebook/${cls.id}`" class="btn small">{{ $t("gradebook.open") }}</NuxtLink>
+            <NuxtLink :to="`/teacher/analysis/${cls.id}`" class="btn small">{{ $t("analysis.open") }}</NuxtLink>
             <NuxtLink :to="`/teacher/review/${cls.id}`" class="btn small">{{ $t("classPage.review") }}</NuxtLink>
             <NuxtLink :to="`/teacher/grading?class=${cls.id}`" class="btn ghost small">{{ $t("classPage.grade") }} →</NuxtLink>
           </span>

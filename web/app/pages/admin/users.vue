@@ -14,6 +14,10 @@ const counts = reactive({ student: 0, teacher: 0, admin: 0 })
 const loaded = ref(false)
 const message = ref("")
 const failure = ref("")
+// Outcomes of an action show as toasts (useToast) instead of a line at the top of a long list.
+const toast = useToast()
+watch(message, v => { if (v) toast.ok(v) })
+watch(failure, v => { if (v) toast.error(v) })
 const busy = ref<string | null>(null)
 const search = ref("")
 const roleFilter = ref<"" | Enums<"app_role">>("")
@@ -51,10 +55,11 @@ onMounted(async () => {
 
 async function update(p: Person, patch: Partial<Tables<"profiles">>, ok: string) {
   busy.value = p.id
-  message.value = ""
+  message.value = failure.value = ""
   const { error } = await client.from("profiles").update(patch).eq("id", p.id)
   busy.value = null
-  message.value = error ? t("usersPage.updateFailed", { name: personName(p), msg: errorText(error.message) }) : ok
+  if (error) failure.value = t("usersPage.updateFailed", { name: personName(p), msg: errorText(error.message) })
+  else message.value = ok
   if (!error) await load()
 }
 
@@ -77,8 +82,6 @@ function setClass(p: Person, classId: string) {
     <p class="sub">
       {{ $t("usersPage.counts", { s: counts.student, t: counts.teacher, a: counts.admin }) }} {{ $t("usersPage.intro") }}
     </p>
-    <p v-if="message" class="fb ok">{{ message }}</p>
-    <p v-if="failure" class="fb no">{{ failure }}</p>
 
     <div class="row filters">
       <input id="user-search" v-model="search" type="search" :placeholder="$t('usersPage.search')">

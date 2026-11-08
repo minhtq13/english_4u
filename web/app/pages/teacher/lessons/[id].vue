@@ -79,6 +79,14 @@ onMounted(async () => {
       await loadExisting(editId)
       await giving.loadGiven(editId, gradeClasses.value.map(c => c.id))
     }
+    else if (typeof route.query.copy === "string") {
+      // A copy of an existing lesson: the same grade, term and questions, saved as a new lesson of this teacher's.
+      await loadExisting(route.query.copy)
+      Object.assign(draft, { label: "", title: t("editor.copyTitle", { title: draft.title }) })
+      hasAttempts.value = false
+      canEdit.value = true
+      stage.value = "content"
+    }
     else if (handoff.value && route.query.from === handoff.value.from) {
       // A lesson built elsewhere: a review sheet from wrong answers, or questions picked in the bank.
       const h = handoff.value

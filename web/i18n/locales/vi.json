@@ -173,12 +173,18 @@
     "mainMenu": "Menu chính",
     "accountTitle": "Tài khoản · đổi mật khẩu",
     "account": "Tài khoản",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "waitingCount": "{n} bài chờ chấm",
+    "notifications": "Thông báo",
+    "review": "Ôn tập",
+    "dueCount": "{n} thẻ cần ôn",
+    "audit": "Nhật ký thao tác",
+    "logins": "Lịch sử đăng nhập"
   },
   "login": {
     "ended": {
       "replaced": "Tài khoản vừa được đăng nhập ở nơi khác, nên phiên trên máy này đã kết thúc. Mỗi tài khoản chỉ dùng được ở một nơi cùng lúc.",
-      "idle": "Bạn đã được đăng xuất vì 10 phút không thao tác. Hãy đăng nhập lại.",
+      "idle": "Bạn đã bị đăng xuất vì 10 phút không thao tác. Hãy đăng nhập lại.",
       "locked": "Tài khoản đã bị khoá. Hãy hỏi giáo viên của bạn.",
       "signout": "Bạn đã đăng xuất.",
       "ended": "Phiên đăng nhập đã kết thúc. Hãy đăng nhập lại."
@@ -224,7 +230,8 @@
     "seeRoadmap": "Xem lộ trình của bạn",
     "correct": "{ok}/{total} câu đúng",
     "comment": "Nhận xét",
-    "submitted": "Đã nộp"
+    "submitted": "Đã nộp",
+    "noneHint": "Làm bài ở Lộ trình, điểm và lỗi của bạn sẽ hiện ở đây."
   },
   "account": {
     "pageTitle": "Tài khoản - Grammar",
@@ -267,7 +274,8 @@
     "next": "Học tiếp",
     "due": "Hạn nộp {date}",
     "open": "Vào bài học",
-    "empty": "Chưa có bài nào được giao cho lớp {name}. Giáo viên sẽ giao bài khi bắt đầu học."
+    "empty": "Chưa có bài nào được giao cho lớp {name}. Giáo viên sẽ giao bài khi bắt đầu học.",
+    "emptyTitle": "Chưa có bài nào được giao"
   },
   "errors": {
     "none": "Chưa có lỗi nào được ghi lại.",
@@ -287,7 +295,16 @@
     "blank": "{n} bỏ trống",
     "allRight": "Đúng hết",
     "notSubmitted": "Học sinh chưa nộp: đây là các câu đang làm dở, chưa chấm.",
-    "correct": "{ok}/{total} đúng"
+    "correct": "{ok}/{total} đúng",
+    "title": "Ôn tập hôm nay",
+    "pageTitle": "Ôn tập - Grammar",
+    "intro": "Những thẻ từ bạn đã học và đến hạn ôn lại. Nhớ thì thẻ sẽ hiện chậm dần, chưa nhớ thì mai ôn lại.",
+    "noneTitle": "Hôm nay không có thẻ nào cần ôn",
+    "none": "Khi học bài có thẻ từ, bấm \"Đã nhớ\" hoặc \"Chưa nhớ\" dưới mỗi thẻ để app nhắc bạn ôn đúng lúc.",
+    "doneTitle": "Xong phần ôn hôm nay",
+    "done": "Bạn đã ôn {n} thẻ. Hẹn gặp lại ngày mai!",
+    "position": "Thẻ {n}/{total}",
+    "show": "Xem mặt sau"
   },
   "assign": {
     "noClasses": "Chưa có lớp nào của khối này",
@@ -385,7 +402,10 @@
     "openSaved": "Mở bài đã lưu",
     "save": "Lưu bài",
     "sectionTypes": "Loại phần",
-    "presets": "Mẫu đề THCS"
+    "presets": "Mẫu đề THCS",
+    "copy": "Nhân bản",
+    "copyHint": "Tạo một bài mới có cùng câu hỏi để chỉnh sửa",
+    "copyTitle": "{title} (bản sao)"
   },
   "structure": {
     "startFrom": "Bắt đầu từ",
@@ -490,7 +510,11 @@
     "sumShuffle": "Trộn câu",
     "notGiven": "Đã lưu bài nhưng chưa giao được: {list}. Bấm Lưu bài lần nữa để thử lại phần chưa giao.",
     "showResultsTip": "Bật: học sinh thấy điểm và đáp án đúng ngay sau khi nộp bài. Tắt: các em chỉ thấy khi bạn chấm xong hoặc bấm trả kết quả - hợp với bài kiểm tra, để chưa lộ đáp án khi cả lớp chưa nộp hết.",
-    "shuffleTip": "Mỗi em nhận thứ tự câu hỏi và thứ tự các lựa chọn khác nhau, nên khó chép bài của nhau. Điểm vẫn chấm theo đúng đáp án, và mỗi em luôn thấy cùng một thứ tự mỗi lần mở lại bài."
+    "shuffleTip": "Mỗi em nhận thứ tự câu hỏi và thứ tự các lựa chọn khác nhau, nên khó chép bài của nhau. Điểm vẫn chấm theo đúng đáp án, và mỗi em luôn thấy cùng một thứ tự mỗi lần mở lại bài.",
+    "limit": "Giới hạn thời gian làm bài",
+    "limitEx": "VD 15",
+    "minutes": "phút",
+    "limitHint": "Tính từ lúc học sinh trả lời câu đầu tiên. Hết giờ bài tự nộp (trong vòng 1 phút). Để trống nếu không giới hạn."
   },
   "sectionEd": {
     "preview": "Xem trước",
@@ -726,8 +750,12 @@
       "options": "Tuỳ chọn",
       "pickSome": "Hãy chọn ít nhất một học sinh, hoặc chọn cả lớp.",
       "confirm": "Giao cho lớp {name}",
-      "given": "Đã giao “{lesson}” cho lớp {name}."
-    }
+      "given": "Đã giao “{lesson}” cho lớp {name}.",
+      "limitBad": "Giới hạn thời gian phải là số phút từ 1 đến 300."
+    },
+    "missingFile": "Chua-nop",
+    "missingStatus": "Tình trạng",
+    "timeLimit": "{n} phút"
   },
   "teacherHome": {
     "pageTitle": "Lớp của tôi - Grammar",
@@ -737,7 +765,21 @@
     "none": "Bạn chưa được phân công lớp nào. Hãy nhờ admin phân công lớp cho bạn.",
     "students": "học sinh",
     "given": "bài đã giao",
-    "waiting": "chờ chấm"
+    "waiting": "chờ chấm",
+    "today": {
+      "title": "Việc hôm nay",
+      "nothing": "Không có việc nào cần làm ngay. Mọi bài đã chấm, chưa bài nào sắp hết hạn.",
+      "failed": "Không tải được đủ danh sách việc cần làm.",
+      "waiting": "Bài chờ chấm",
+      "due": "Sắp hết hạn (48 giờ tới)",
+      "dueAt": "hạn {date}",
+      "notSubmitted": "{n} em chưa nộp",
+      "openClass": "Mở lớp",
+      "quiet": "Học sinh không hoạt động 7 ngày ({n})",
+      "never": "chưa làm bài nào",
+      "daysAgo": "{n} ngày trước"
+    },
+    "noneTitle": "Chưa có lớp nào"
   },
   "grading": {
     "pageTitle": "Chấm bài - Grammar",
@@ -808,7 +850,9 @@
     "saveTemplate": "Lưu thành mẫu",
     "commented": "Đã nhận xét",
     "tracked": "Lỗi đang theo dõi của học sinh",
-    "trackedHint": "Học sinh lặp lại lỗi cũ thì bấm \"+1 lần\"; khi đã sửa được thì đổi trạng thái."
+    "trackedHint": "Học sinh lặp lại lỗi cũ thì bấm \"+1 lần\"; khi đã sửa được thì đổi trạng thái.",
+    "keys": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · 1–6 chọn nhóm lỗi (khi không gõ chữ).",
+    "keysQueue": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · J / K sang em sau / trước · 1–6 chọn nhóm lỗi (khi không gõ chữ)."
   },
   "studentPage": {
     "notFound": "Không tìm thấy học sinh.",
@@ -897,7 +941,11 @@
     "assign": "+ Phân công giáo viên",
     "deleteBlocked": "Chuyển hết học sinh sang lớp khác trước khi xoá",
     "delete": "Xoá lớp",
-    "noTeachers": "Chưa có tài khoản giáo viên. Tạo ở trang"
+    "noTeachers": "Chưa có tài khoản giáo viên. Tạo ở trang",
+    "promote": "Lên lớp",
+    "promoteTo": "Chuyển cả lớp sang…",
+    "promoteConfirm": "Bấm lại: chuyển {n} em",
+    "promoted": "Đã chuyển {n} học sinh từ lớp {from} sang lớp {to}."
   },
   "gradeStats": {
     "title": "Thống kê {name}",
@@ -971,7 +1019,8 @@
     "sort": "Sắp xếp",
     "sortNewest": "Mới tạo trước",
     "sortName": "Theo tên A→Z",
-    "found": "{n} người"
+    "found": "{n} người",
+    "createdFile": "Tai-khoan-moi"
   },
   "presets": {
     "pronunciation": {
@@ -1051,5 +1100,196 @@
     "reload": "Tải lại",
     "later": "Để sau",
     "offline": "Bạn đang ngoại tuyến. Hãy kết nối mạng để học và nộp bài."
+  },
+  "gradebook": {
+    "open": "Bảng điểm",
+    "pageTitle": "Bảng điểm - Grammar",
+    "title": "Bảng điểm lớp {name}",
+    "intro": "Mỗi ô là phần trăm số câu đúng của bài đã nộp. Bấm vào ô để mở bài làm.",
+    "export": "Xuất CSV",
+    "average": "Trung bình",
+    "fileName": "Bảng điểm",
+    "noLessons": "Lớp chưa được giao bài nào.",
+    "noStudents": "Lớp chưa có học sinh.",
+    "loadFailed": "Không tải được bảng điểm: {msg}",
+    "legend": "Xanh: từ 80%. Vàng: từ 50%. Đỏ: dưới 50%. \"Đang làm\" và \"Chờ chấm\" chưa tính vào trung bình.",
+    "state": {
+      "none": "Chưa làm",
+      "working": "Đang làm",
+      "waiting": "Chờ chấm",
+      "graded": "Đã chấm"
+    },
+    "noLessonsHint": "Giao bài ở trang lớp, bảng điểm sẽ có cột cho từng bài.",
+    "noStudentsHint": "Học sinh vào lớp bằng mã lớp hoặc tài khoản giáo viên cấp."
+  },
+  "submitDialog": {
+    "title": "Nộp bài?",
+    "blanks": "Còn {n} câu chưa làm",
+    "allDone": "Bạn đã trả lời hết các câu.",
+    "final": "Bài chỉ nộp được một lần. Sau khi nộp bạn không sửa được nữa.",
+    "back": "Làm tiếp",
+    "toBlank": "Tới phần còn trống",
+    "submitAnyway": "Vẫn nộp bài"
+  },
+  "sectionNav": {
+    "label": "Các phần của bài",
+    "progress": "Đã làm {done}/{total} câu"
+  },
+  "resultView": {
+    "title": "Kết quả của bạn",
+    "ring": "Điểm {ok}/{total}, {percent}%",
+    "perfect": "Tuyệt vời, bạn làm đúng hết!",
+    "wrongCount": "Có {n} câu cần xem lại",
+    "showWrong": "Chỉ xem câu sai ({n})",
+    "hideWrong": "Ẩn danh sách câu sai",
+    "yours": "Bạn chọn",
+    "correct": "Đáp án"
+  },
+  "speak": {
+    "read": "Nghe đọc"
+  },
+  "trend": {
+    "title": "Điểm theo thời gian",
+    "none": "Chưa có bài nào có điểm để vẽ biểu đồ.",
+    "lesson": "Bài",
+    "summary": "Biểu đồ điểm của {n} bài, bài gần nhất {last}%.",
+    "mistakes": "Lỗi đang mắc theo nhóm"
+  },
+  "toast": {
+    "dismiss": "Đóng thông báo"
+  },
+  "timer": {
+    "label": "Đồng hồ làm bài",
+    "willStart": "Bài này có giới hạn {n} phút, tính từ khi bạn trả lời câu đầu tiên.",
+    "left": "còn lại (giới hạn {n} phút)",
+    "spoken": "Còn {time}",
+    "timeUp": "Hết giờ. Bài của bạn sẽ được nộp tự động trong ít phút."
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "pageTitle": "Thông báo - Grammar",
+    "bellUnread": "Thông báo, {n} chưa đọc",
+    "markAll": "Đánh dấu đã đọc hết",
+    "remove": "Xoá thông báo",
+    "none": "Chưa có thông báo nào",
+    "noneHint": "Khi có bài mới, bài sắp hết hạn, điểm hoặc nhận xét, bạn sẽ thấy ở đây.",
+    "kind": {
+      "lesson_given": "Bài mới được giao: {lesson}",
+      "due_soon": "Sắp hết hạn ({date}): {lesson}",
+      "graded": "Bài đã có điểm: {lesson}",
+      "feedback": "Giáo viên nhận xét bài: {lesson}",
+      "announcement": "Thông báo mới từ giáo viên của lớp"
+    }
+  },
+  "announcements": {
+    "title": "Thông báo của lớp",
+    "placeholder": "Viết thông báo cho cả lớp, ví dụ: Mai nộp bài Unit 2 trước 21h.",
+    "post": "Đăng thông báo",
+    "hint": "Học sinh nhận được thông báo trong app.",
+    "none": "Chưa có thông báo nào cho lớp này."
+  },
+  "streak": {
+    "title": "Chuỗi ngày học",
+    "days": "{n} ngày liên tiếp | {n} ngày liên tiếp",
+    "today": "Hôm nay bạn đã học rồi.",
+    "keep": "Làm một bài hôm nay để giữ chuỗi.",
+    "start": "Làm một bài hôm nay để bắt đầu chuỗi.",
+    "best": "dài nhất {n} ngày",
+    "week": "Tuần này: {n}/{goal} ngày",
+    "reached": "Đạt mục tiêu",
+    "goal": "Mục tiêu",
+    "perWeek": "{n} ngày/tuần",
+    "calendar": "Lịch 12 tuần gần nhất, ô xanh là ngày có học",
+    "studied": "có học",
+    "rest": "nghỉ"
+  },
+  "cards": {
+    "remembered": "Đã nhớ",
+    "notYet": "Chưa nhớ",
+    "savedOk": "Đã lưu, sẽ nhắc lại sau",
+    "savedAgain": "Đã lưu, mai ôn lại",
+    "failed": "Chưa lưu được, thử lại sau"
+  },
+  "practice": {
+    "start": "Luyện lại câu sai",
+    "title": "Luyện lại câu sai",
+    "pageTitle": "Luyện lại - {lesson}",
+    "howTo": "Làm lại những câu bạn đã sai, rồi bấm Kiểm tra để xem đáp án và giải thích. Điểm của bài chính không đổi và bài luyện không được lưu.",
+    "progress": "Đúng {done}/{total} câu",
+    "notSaved": "Bài luyện không được lưu",
+    "again": "Làm lại từ đầu",
+    "nothingTitle": "Không có câu nào cần luyện",
+    "nothing": "Bạn chưa có kết quả bài này, hoặc đã làm đúng hết.",
+    "back": "Về bài học",
+    "check": "Kiểm tra",
+    "answered": "Đã làm {n}/{total} câu"
+  },
+  "analysis": {
+    "open": "Phân tích câu hỏi",
+    "pageTitle": "Phân tích câu hỏi - Grammar",
+    "title": "Phân tích câu hỏi lớp {name}",
+    "intro": "Câu nào cả lớp làm sai nhiều nhất, và các em hay chọn đáp án sai nào. Câu khó nhất ở trên cùng.",
+    "lesson": "Bài",
+    "question": "Câu",
+    "text": "Nội dung",
+    "answered": "Số em làm",
+    "correct": "Số em đúng",
+    "rightShare": "Tỉ lệ đúng",
+    "commonWrong": "Đáp án sai hay gặp",
+    "fileName": "Phan-tich-cau-hoi",
+    "noneTitle": "Chưa có bài nộp để phân tích",
+    "none": "Chưa học sinh nào của lớp nộp bài {lesson}.",
+    "failed": "Không phân tích được: {msg}",
+    "legend": "Xanh: từ 80% đúng, vàng: từ 50%, đỏ: dưới 50%. Chỉ tính bài đã nộp."
+  },
+  "audit": {
+    "intro": "Ai đã đổi vai trò, khoá hoặc xoá tài khoản, chuyển lớp, đổi mã lớp hoặc cho cả lớp lên lớp mới.",
+    "filter": "Loại thao tác",
+    "all": "Tất cả",
+    "none": "Chưa có thao tác nào được ghi",
+    "noneHint": "Từ nay mọi thay đổi quan trọng về tài khoản và lớp sẽ hiện ở đây.",
+    "when": "Lúc",
+    "who": "Người làm",
+    "what": "Thao tác",
+    "target": "Đối tượng",
+    "detailTitle": "Chi tiết",
+    "system": "Trang quản lý tài khoản",
+    "action": {
+      "role_changed": "Đổi vai trò",
+      "account_locked": "Khoá tài khoản",
+      "account_unlocked": "Mở khoá tài khoản",
+      "class_changed": "Chuyển lớp",
+      "account_deleted": "Xoá tài khoản",
+      "class_code_changed": "Đổi mã lớp",
+      "class_deleted": "Xoá lớp",
+      "class_promoted": "Cho cả lớp lên lớp"
+    },
+    "detail": {
+      "role": "từ {from} sang {to}",
+      "move": "từ {from} sang {to}",
+      "promoted": "{n} học sinh chuyển sang {to}",
+      "deleted": "{role} {login}"
+    }
+  },
+  "logins": {
+    "intro": "Mỗi lần đăng nhập: ai, lúc nào, bao lâu và vì sao phiên kết thúc.",
+    "search": "Tìm theo tên, tên đăng nhập hoặc email",
+    "reasonFilter": "Lý do kết thúc",
+    "all": "Tất cả",
+    "active": "Đang đăng nhập",
+    "none": "Không có lần đăng nhập nào khớp",
+    "who": "Tài khoản",
+    "when": "Đăng nhập lúc",
+    "duration": "Thời gian",
+    "minutes": "{n} phút",
+    "end": "Kết thúc",
+    "device": "Thiết bị",
+    "reason": {
+      "signout": "Tự đăng xuất",
+      "replaced": "Đăng nhập nơi khác",
+      "idle": "Không thao tác 10 phút",
+      "locked": "Tài khoản bị khoá",
+      "unknown": "Không rõ"
+    }
   }
 }

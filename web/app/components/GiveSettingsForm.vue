@@ -33,6 +33,15 @@ const allPicked = computed(() => props.students.length > 0 && props.form.student
     </div>
 
     <div class="field">
+      <label :for="`limit-${uid}`"><b>{{ $t("giveForm.limit") }}</b> <span class="muted small">{{ $t("sectionEd.optional") }}</span></label>
+      <div class="row">
+        <input :id="`limit-${uid}`" v-model="form.limit" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off" class="limit" :placeholder="$t('giveForm.limitEx')">
+        <span class="muted small">{{ $t("giveForm.minutes") }}</span>
+      </div>
+      <p class="hint">{{ $t("giveForm.limitHint") }}</p>
+    </div>
+
+    <div class="field">
       <b>{{ $t("classPage.setup.who") }}</b>
       <div class="row">
         <label class="toggle"><input v-model="form.forAll" type="radio" :name="`who-${uid}`" :value="true"> {{ $t("classPage.whoAll") }}</label>
@@ -74,6 +83,7 @@ const allPicked = computed(() => props.students.length > 0 && props.form.student
 <style scoped>
 .give-form { display: flex; flex-direction: column; gap: 12px; }
 .field { display: flex; flex-direction: column; gap: 6px; }
+.field .limit { width: 6rem; flex: 0 0 auto; padding: 4px 8px; }
 .field input[type=datetime-local] { flex: 0 0 auto; width: auto; min-width: 12.5rem; padding: 4px 8px; }
 .field .row { gap: 6px 10px; }
 .field .btn { padding: 2px 10px; }

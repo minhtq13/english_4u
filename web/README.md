@@ -1,6 +1,6 @@
 # Grammar B1→B2 — web
 
-Nuxt 4 (SPA) + Supabase (Postgres, Auth Google, RLS). Deploy trên Vercel.
+Nuxt 4 (SPA) + Supabase (Postgres, Auth tên đăng nhập + mật khẩu, RLS, Edge Function, pg_cron). Cài được như ứng dụng (PWA). Deploy trên Vercel.
 
 ## Chạy trên máy
 
@@ -52,6 +52,20 @@ không tự tạo tài khoản bằng Google (tài khoản do trang quản lý t
 | Trộn đề | Ô "Trộn câu cho từng em" ở trang lớp (`class_lessons.shuffle`) | Mỗi em thứ tự câu và lựa chọn riêng, cố định; chấm vẫn theo câu gốc. |
 | Phiếu ôn từ câu sai | Trang lớp / hồ sơ học sinh → "Tạo phiếu ôn" (`wrong_questions()`) | Chọn bài + cả lớp hoặc 1 em → chọn câu → mở trình soạn; phiếu cho 1 em chỉ mở cho em đó. |
 
+### Phiên đăng nhập và chống gian lận
+
+Mỗi tài khoản chỉ một phiên: đăng nhập nơi khác thì nơi cũ bị đăng xuất. Phiên tự kết thúc sau 10 phút không thao tác (`useSessionGuard()`, job `end-idle-sessions`) và ngay khi tài khoản bị khoá; khi đó trang hiện hộp thoại nêu lý do. Lúc học sinh đang làm bài, `useAntiCheat()` chặn chọn/sao chép/dán, chuột phải, in, lưu, xem nguồn và dịch tự động, và trang phủ mờ tên + tên đăng nhập + giờ (`ExamWatermark`). Đây chỉ là răn đe, không có gì được database cưỡng chế.
+
+### Ứng dụng cài được (PWA)
+
+Trình duyệt cho phép cài trang như một app (Chrome: "Cài đặt ứng dụng"; iOS: Chia sẻ → Thêm vào Màn hình chính). Service worker chỉ lưu phần vỏ app (JS, CSS, ảnh); **không** lưu dữ liệu hay bài học, vì mọi thứ nằm sau đăng nhập và RLS. Khi có bản mới, thanh ở đáy màn hình hỏi "Tải lại / Để sau" (không tự tải lại giữa bài); mất mạng thì thanh báo ngoại tuyến. Service worker chỉ có ở bản build (`npm run build` + `npm run preview`), không có ở `npm run dev`.
+
+### Kiểm thử và CI
+
+`npm run typecheck`, `npm test` (vitest, `tests/`, gồm kiểm tra khoá i18n của hai ngôn ngữ) và `npm run build` phải qua; workflow `.github/workflows/ci.yml` chạy cả ba trên mỗi pull request và mỗi lần push vào `main`.
+
+`npm run e2e` (Playwright, `e2e/`) mở trình duyệt Chrome của máy và đăng nhập bằng ba tài khoản thử trong `.env.test` trên app đang chạy ở `http://localhost:3000` (đổi bằng `E2E_BASE_URL`): đăng nhập sai, đăng nhập đúng theo từng vai trò, chặn trang không đúng vai trò, đăng xuất, đổi ngôn ngữ. Các test không nộp bài. `E2E_WRITE=1` bật thêm hai test ghi dữ liệu: một chạy trên lớp không có học sinh, một tạo lớp `ZZE2E` + một học sinh thử, cho học sinh làm một bài thường và một bài có giờ rồi xoá hết (học sinh trước, lớp sau); nếu một lần chạy bị ngắt giữa chừng, `E2E_WRITE=1 E2E_CLEANUP=1 npx playwright test write-student -g "clean up"` dọn phần còn sót (chỉ tài khoản `zze2e.*` và lớp `ZZE2E`). Test đầu (đăng rồi xoá thông báo lớp, giao bài có giới hạn thời gian rồi thu hồi) chỉ trên lớp không có học sinh (`E2E_EMPTY_CLASS`, mặc định 7T2). Tài khoản của test đặt trong `.env.test` (`E2E_ADMIN_USER`…, hoặc `TEST_*`). Tài khoản chỉ có một phiên, nên chạy lần lượt và sẽ đăng xuất người đang dùng các tài khoản này. Thử PWA: `npm run build && npm run preview -- --port 3001`, rồi `E2E_PWA=1 E2E_BASE_URL=http://localhost:3001 npm run e2e`. E2E chưa nằm trong CI vì cần tài khoản thật.
+
 ### Sao lưu
 
 Gói Supabase Free không có bản sao lưu tải về được, nên dùng các cách sau (đều chỉ đọc dữ liệu production):
@@ -59,6 +73,14 @@ Gói Supabase Free không có bản sao lưu tải về được, nên dùng cá
 - **Hằng ngày, tự động**: workflow `.github/workflows/db-backup.yml` chạy `pg_dump` lúc 02:00 giờ VN, lấy mọi bảng có dữ liệu (app, `auth`, `storage`, lịch sử migration, job `pg_cron`), mã hoá bằng mật khẩu rồi giữ 30 ngày ở mục *Artifacts* của lần chạy (tab Actions). Cần hai secret của repo: `SUPABASE_DB_URL` (chuỗi *Session pooler* ở Dashboard → Connect) và `BACKUP_PASSPHRASE`. Có nút *Run workflow* để chạy ngay, ví dụ trước khi sửa dữ liệu hàng loạt. Cách mở và khôi phục khi mất dữ liệu: xem `supabase/RESTORE.md`.
 - **Thử khôi phục**: `bash supabase/backup-test.sh file <file .tar.gpg>` mở một backup, khôi phục vào database tạm trong Docker và đối chiếu với production.
 - **Thủ công**: `supabase/backup.sql` chạy trong SQL Editor, trả về một script `INSERT` khôi phục dữ liệu các bảng.
+
+### Học sinh: chuỗi ngày học, thông báo, ôn tập
+
+Trang Lộ trình có thẻ chuỗi ngày học (kèm mục tiêu tuần tự chọn, lưu trong trình duyệt) và thông báo của lớp. Chuông ở thanh bên hiện số thông báo chưa đọc (cập nhật mỗi phút, không dùng Realtime). Bài có thẻ từ cho bấm "Đã nhớ / Chưa nhớ"; trang **Ôn tập** (`/review`) hiện các thẻ đến hạn theo hộp Leitner (1, 2, 4, 8, 16 ngày). Sau khi có điểm, nút "Luyện lại câu sai" (`/practice/<bài>`) cho làm lại những câu sai, chấm ngay trên trình duyệt và không lưu. Bài có giới hạn thời gian (đặt khi giao bài) đếm ngược từ câu trả lời đầu tiên; đồng hồ do database giữ, hết giờ bài tự nộp trong vòng một phút.
+
+### Giáo viên: việc hôm nay, bảng điểm, phân tích
+
+Trang `/teacher` mở đầu bằng **Việc hôm nay** (bài chờ chấm, bài sắp hết hạn trong 48 giờ, học sinh 7 ngày không làm bài). Trang lớp có **Bảng điểm** (học sinh × bài, xuất CSV), **Phân tích câu hỏi** (câu nào sai nhiều, đáp án sai hay gặp, xuất CSV) và **Thông báo của lớp**. Khi chấm: Ctrl/⌘+Enter lưu nhận xét, J / K sang em sau / trước, 1–6 chọn nhóm lỗi. Admin có **Lịch sử đăng nhập**, **Nhật ký thao tác** và nút **Lên lớp** (chuyển cả lớp sang lớp khác ở đầu năm học) ở trang Lớp học.
 
 ### Ngôn ngữ giao diện
 
@@ -133,7 +155,7 @@ Code liên quan: `app/composables/useCourse.ts` (đọc dữ liệu), `app/utils
 
 ## Database (Supabase project `learning-english`, ref `aqguszxitrgbdczvqres`)
 
-Schema nằm trong `supabase/migrations/` (bảng bài học + dữ liệu 16 bài); các bảng người dùng/tiến độ tạo trước đó qua Supabase MCP.
+Schema nằm trong `supabase/migrations/` (bảng, RLS, hàm, trigger, job `pg_cron`; đánh số tới 43, áp theo skill `db-migration`).
 
 | Bảng | Nội dung |
 |---|---|
@@ -144,6 +166,10 @@ Schema nằm trong `supabase/migrations/` (bảng bài học + dữ liệu 16 b�
 | `attempt_results` | Kết quả chấm từng câu của bài đã nộp (ghi bởi `submit_attempt()`). |
 | `feedback` | Nhận xét của giáo viên; thêm nhận xét sẽ chuyển bài sang `graded`. |
 | `error_log` | Lỗi lặp lại của từng học viên (6 nhóm lỗi, trạng thái `open` / `improving` / `fixed`). |
+| `study_days` | Ngày học sinh tự lưu/nộp bài (giờ Việt Nam), do trigger ghi; dùng cho chuỗi ngày học và mục tiêu tuần. |
+| `notifications`, `class_announcements` | Thông báo trong app (bài mới, sắp hết hạn, có điểm, nhận xét, thông báo lớp) do trigger và job `notify-due-soon` ghi; giáo viên đăng thông báo cho lớp. |
+| `card_reviews` | Hộp Leitner và ngày ôn tiếp theo của từng thẻ từ (trang Ôn tập). |
+| `audit_log` | Nhật ký đổi vai trò, khoá/xoá tài khoản, chuyển lớp, đổi mã lớp, cho cả lớp lên lớp; chỉ admin đọc. |
 | `login_log` | Mỗi lần đăng nhập (phiên mới): thời điểm, IP, trình duyệt, lần hoạt động cuối, lúc và lý do kết thúc (`signout`, `replaced` = đăng nhập nơi khác, `idle` = 10 phút không thao tác, `locked`). Trigger trên `auth.sessions` ghi vào; admin xem tất cả, giáo viên xem học sinh lớp mình, mỗi người xem của mình; không ai sửa hay xoá qua API. |
 
 RLS: xem bảng vai trò ở mục "Vai trò, lớp và mở bài". Thêm giáo viên: người đó đăng nhập một lần, rồi admin đổi vai trò ở `/admin/users`.

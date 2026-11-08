@@ -109,5 +109,12 @@ export const nextAfterGrading = (waiting: readonly string[], current: string) =>
 export const nextAfterSkip = (waiting: readonly string[], current: string) =>
   waiting[waiting.indexOf(current) + 1] ?? waiting.find(id => id !== current) ?? null
 
+/** The attempt before `current` in the queue, wrapping to the last one; null when there is no other. */
+export const nextBefore = (waiting: readonly string[], current: string) => {
+  const i = waiting.indexOf(current)
+  const before = i > 0 ? waiting[i - 1] : [...waiting].reverse().find(id => id !== current)
+  return before ?? null
+}
+
 /** 1-based place of `current` in the queue, 0 when it is not in it. */
 export const queuePosition = (waiting: readonly string[], current: string) => waiting.indexOf(current) + 1

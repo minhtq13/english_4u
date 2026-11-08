@@ -7,7 +7,7 @@ import { tr } from "./i18n"
 // lists and the class page agree with each other and with the database.
 
 /** A class's settings for one lesson it was given (class_lessons). */
-export type ClassLessonSetting = Pick<Tables<"class_lessons">, "for_all" | "closed" | "due_at" | "show_results" | "shuffle">
+export type ClassLessonSetting = Pick<Tables<"class_lessons">, "for_all" | "closed" | "due_at" | "show_results" | "shuffle" | "time_limit_min">
 
 /** The lesson stopped taking work: closed by the teacher, or past its deadline (pg_cron closes it within a minute). */
 export const isClosed = (s: Pick<ClassLessonSetting, "closed" | "due_at">, now = Date.now()) => s.closed || isPastDue(s.due_at, now)

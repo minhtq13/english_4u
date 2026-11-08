@@ -29,6 +29,8 @@ const dueAt = ref<string | null>(null)
 const shuffleFor = ref("")
 const arrange = (l: Lesson) => (shuffleFor.value ? shuffleLesson(l, shuffleFor.value) : l)
 const now = ref(Date.now())
+/** Minutes the class gives for this lesson once the student starts; null for no limit. */
+const timeLimit = ref<number | null>(null)
 // Teachers and admins open lessons as a preview with the answers shown.
 const attempt = useAttempt(loaded, { preview: !isStudent.value })
 const { state, results, score, total, answered, locked } = attempt
@@ -43,6 +45,7 @@ onMounted(async () => {
     const mine = await lessonForStudent(client, myClass.value.id, loaded.id, user.value?.sub ?? "")
     access.value = mine.access
     dueAt.value = mine.dueAt
+    timeLimit.value = mine.timeLimit
     shuffleFor.value = mine.shuffle ? user.value?.sub ?? "" : ""
     lesson.value = arrange(lesson.value)
   }
@@ -71,6 +74,34 @@ onMounted(() => {
   }, 15_000)
 })
 onBeforeUnmount(() => clearInterval(tick))
+
+// A timed lesson: the database's clock starts at the first save. Here it only shows the time left and, at zero,
+// blocks the page; the server refuses further writes and submits the work within a minute (cron submit-timed-out).
+const timerLeft = computed(() => {
+  if (!timeLimit.value || !state.timerStartedAt || state.status !== "in_progress") return null
+  return Math.max(0, Date.parse(state.timerStartedAt) + timeLimit.value * 60_000 - now.value)
+})
+let clock: ReturnType<typeof setInterval> | undefined
+let poll: ReturnType<typeof setInterval> | undefined
+watch(() => !!timeLimit.value && state.status === "in_progress", (running) => {
+  clearInterval(clock)
+  if (running) clock = setInterval(() => { now.value = Date.now() }, 1000)
+}, { immediate: true })
+watch(timerLeft, (left) => {
+  if (left !== 0 || poll) return
+  access.value = "closed"
+  state.blocked = true
+  // Wait for the server to submit the work, then show the result.
+  let tries = 0
+  poll = setInterval(async () => {
+    await attempt.load()
+    if (state.status !== "in_progress" || ++tries > 18) {
+      clearInterval(poll)
+      await refreshKey()
+    }
+  }, 10_000)
+})
+onBeforeUnmount(() => { clearInterval(clock); clearInterval(poll) })
 const dueText = computed(() => (dueAt.value ? timeLeft(dueAt.value, now.value) : ""))
 
 // Teachers and admins assign the lesson to classes right from the preview.
@@ -105,23 +136,26 @@ const statusText = computed(() => {
   return t("lessonPage.graded")
 })
 
-// Submitting is final, so it takes a second click.
-const submitArmed = ref(false)
+// Where the student stands in each section, for the strip above the lesson and the summary before submitting.
+const progress = computed(() => sectionProgress(lesson.value, state.responses, state.writing))
+
+// Submitting is final, so it asks first, with what is answered and what is still blank (SubmitDialog).
+const submitOpen = ref(false)
 const submitting = ref(false)
 const submitError = ref("")
 async function submit() {
-  if (!submitArmed.value) {
-    submitArmed.value = true
-    setTimeout(() => { submitArmed.value = false }, 5000)
-    return
-  }
-  submitArmed.value = false
   submitting.value = true
   submitError.value = errorText(await attempt.submit())
   submitting.value = false
+  submitOpen.value = false
   await refreshKey()
+  if (!submitError.value) window.scrollTo({ top: 0, behavior: "smooth" })
 }
-const unanswered = computed(() => total - answered.value)
+/** From the summary to the first section that still has a blank question. */
+function jumpTo(index: number) {
+  submitOpen.value = false
+  nextTick(() => document.getElementById(`sec-${index}`)?.scrollIntoView({ behavior: "smooth", block: "start" }))
+}
 
 const nextId = course.order[course.order.indexOf(loaded.id) + 1]
 const next = nextId ? course.byId[nextId] : null
@@ -179,6 +213,8 @@ const next = nextId ? course.byId[nextId] : null
 
     <Skeleton v-if="!state.loaded" />
     <template v-else>
+      <LessonTimer v-if="timeLimit && !locked && !attempt.preview" :limit-min="timeLimit" :left-ms="timerLeft" />
+      <p v-if="timerLeft === 0 && state.status === 'in_progress'" class="fb wait" role="status">{{ $t("timer.timeUp") }}</p>
       <p v-if="dueAt && !locked" class="fb wait due-note">
         <Icon name="clock" /> {{ $t("roadmap.due", { date: formatDate(dueAt) }) }}<template v-if="dueText"> · {{ dueText }}</template>.
         {{ $t("lessonPage.dueNote") }}
@@ -194,19 +230,21 @@ const next = nextId ? course.byId[nextId] : null
         <span v-html="$t('lessonPage.howTo')" />
         <br><Icon name="lock" /> {{ $t("antiCheat.note") }}
       </p>
+      <LessonResult v-if="!attempt.preview && state.released && results" :lesson="lesson" :results="results" :ok="score.ok" :total="total" />
+      <LessonSectionNav v-if="exam && progress.length > 1" :progress="progress" :answered="answered" :total="total" />
       <ExamWatermark v-if="exam" />
       <p v-if="exam" class="print-only">{{ $t("antiCheat.printNotice") }}</p>
       <p v-if="blocked" class="fb no blocked-note" role="status">{{ $t(`antiCheat.blocked.${blocked}`) }}</p>
 
       <div ref="content" class="lesson-content">
 
-      <section v-for="(s, i) in lesson.sections" :key="`${i}-${withKey}`" class="card">
+      <section v-for="(s, i) in lesson.sections" :id="`sec-${i}`" :key="`${i}-${withKey}`" tabindex="-1" class="card">
         <span v-if="s.time" class="time">{{ s.time }}</span>
         <h2>{{ i + 1 }}. {{ s.title }}</h2>
         <p v-if="s.hint" class="hint" v-html="s.hint" />
 
         <div v-if="s.type === 'explain'" class="explain" v-html="s.html" />
-        <LessonCardsSection v-else-if="s.type === 'cards'" :items="s.items" />
+        <LessonCardsSection v-else-if="s.type === 'cards'" :items="s.items" :lesson-id="isStudent && !attempt.preview ? loaded.id : undefined" :section="i" />
         <LessonQuestions
           v-else-if="isScored(s)"
           :section="s" :responses="state.responses" :results="results" :locked="locked" :show-key="attempt.preview"
@@ -230,12 +268,9 @@ const next = nextId ? course.byId[nextId] : null
           <b v-else>{{ $t("lessonPage.size", { total }) }}</b>
           <small>{{ statusText }}</small>
         </div>
-        <button v-if="!locked" class="btn" :class="submitArmed ? 'danger' : 'primary'" :disabled="submitting" @click="submit">
-          <template v-if="submitting">{{ $t("lessonPage.submitting") }}</template>
-          <template v-else-if="submitArmed">{{ unanswered > 0 ? $t("lessonPage.blanksLeft", { n: unanswered }) : "" }}{{ $t("lessonPage.submitConfirm") }}</template>
-          <template v-else>{{ $t("lessonPage.submit") }}</template>
-        </button>
+        <button v-if="!locked" class="btn primary" :disabled="submitting" @click="submitOpen = true">{{ $t("lessonPage.submit") }}</button>
       </div>
+      <SubmitDialog v-if="submitOpen" :progress="progress" :submitting="submitting" @close="submitOpen = false" @confirm="submit" @jump="jumpTo" />
     </template>
     </template>
   </div>

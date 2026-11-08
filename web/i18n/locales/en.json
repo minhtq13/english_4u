@@ -173,7 +173,13 @@
     "mainMenu": "Main menu",
     "accountTitle": "Account · change password",
     "account": "Account",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "waitingCount": "{n} to grade",
+    "notifications": "Notifications",
+    "review": "Review",
+    "dueCount": "{n} cards due",
+    "audit": "Audit log",
+    "logins": "Sign-in history"
   },
   "login": {
     "ended": {
@@ -224,7 +230,8 @@
     "seeRoadmap": "See your roadmap",
     "correct": "{ok}/{total} correct",
     "comment": "Comment",
-    "submitted": "Submitted"
+    "submitted": "Submitted",
+    "noneHint": "Do a lesson on the Roadmap and your scores and mistakes will show up here."
   },
   "account": {
     "pageTitle": "Account - Grammar",
@@ -267,7 +274,8 @@
     "next": "Up next",
     "due": "Due {date}",
     "open": "Open lesson",
-    "empty": "No lesson has been given to class {name} yet. Your teacher will give lessons when the class starts them."
+    "empty": "No lesson has been given to class {name} yet. Your teacher will give lessons when the class starts them.",
+    "emptyTitle": "No lesson given yet"
   },
   "errors": {
     "none": "No mistakes recorded yet.",
@@ -287,7 +295,16 @@
     "blank": "{n} blank",
     "allRight": "All correct",
     "notSubmitted": "Not submitted yet: these are answers in progress, not graded.",
-    "correct": "{ok}/{total} correct"
+    "correct": "{ok}/{total} correct",
+    "title": "Review today",
+    "pageTitle": "Review - Grammar",
+    "intro": "Flashcards you studied that are due again. Remember one and it comes back later; miss it and you see it tomorrow.",
+    "noneTitle": "No cards to review today",
+    "none": "In a lesson with flashcards, tap \"I remember\" or \"Not yet\" under a card and the app will remind you at the right time.",
+    "doneTitle": "Done for today",
+    "done": "You reviewed {n} cards. See you tomorrow!",
+    "position": "Card {n}/{total}",
+    "show": "Show the back"
   },
   "assign": {
     "noClasses": "No class in this grade yet",
@@ -385,7 +402,10 @@
     "openSaved": "Open saved lesson",
     "save": "Save lesson",
     "sectionTypes": "Section types",
-    "presets": "School exam formats"
+    "presets": "School exam formats",
+    "copy": "Duplicate",
+    "copyHint": "Make a new lesson with the same questions, to edit",
+    "copyTitle": "{title} (copy)"
   },
   "structure": {
     "startFrom": "Start from",
@@ -490,7 +510,11 @@
     "sumShuffle": "Shuffled",
     "notGiven": "The lesson is saved but could not be given: {list}. Press Save again to retry what is left.",
     "showResultsTip": "On: students see their score and the right answers as soon as they submit. Off: they only see them once you have graded or released the results - good for tests, so answers stay hidden until the whole class has submitted.",
-    "shuffleTip": "Each student gets a different order of questions and of answer choices, so copying from a neighbour is harder. Scoring still follows the right answers, and each student sees the same order every time they reopen the lesson."
+    "shuffleTip": "Each student gets a different order of questions and of answer choices, so copying from a neighbour is harder. Scoring still follows the right answers, and each student sees the same order every time they reopen the lesson.",
+    "limit": "Time limit",
+    "limitEx": "e.g. 15",
+    "minutes": "minutes",
+    "limitHint": "Counted from the student's first answer. When time is up the work is submitted by itself (within a minute). Leave empty for no limit."
   },
   "sectionEd": {
     "preview": "Preview",
@@ -726,8 +750,12 @@
       "options": "Options",
       "pickSome": "Choose at least one student, or choose the whole class.",
       "confirm": "Give to class {name}",
-      "given": "Gave “{lesson}” to class {name}."
-    }
+      "given": "Gave “{lesson}” to class {name}.",
+      "limitBad": "The time limit must be a whole number of minutes from 1 to 300."
+    },
+    "missingFile": "Not-submitted",
+    "missingStatus": "Status",
+    "timeLimit": "{n} min"
   },
   "teacherHome": {
     "pageTitle": "My classes - Grammar",
@@ -737,7 +765,21 @@
     "none": "You are not assigned to any class yet. Ask an admin to assign you.",
     "students": "students",
     "given": "lessons given",
-    "waiting": "to grade"
+    "waiting": "to grade",
+    "today": {
+      "title": "To do today",
+      "nothing": "Nothing needs doing right now: everything is graded and no deadline is close.",
+      "failed": "Could not load the whole to-do list.",
+      "waiting": "Work waiting to be graded",
+      "due": "Due within 48 hours",
+      "dueAt": "due {date}",
+      "notSubmitted": "{n} not submitted",
+      "openClass": "Open class",
+      "quiet": "Students silent for 7 days ({n})",
+      "never": "has not done any work",
+      "daysAgo": "{n} days ago"
+    },
+    "noneTitle": "No class yet"
   },
   "grading": {
     "pageTitle": "Grading - Grammar",
@@ -808,7 +850,9 @@
     "saveTemplate": "Save as template",
     "commented": "Commented",
     "tracked": "Mistakes tracked for this student",
-    "trackedHint": "Click \"+1\" when the student repeats an old mistake; change the status once it is fixed."
+    "trackedHint": "Click \"+1\" when the student repeats an old mistake; change the status once it is fixed.",
+    "keys": "Shortcuts: Ctrl/⌘+Enter saves the feedback · 1–6 tick an error tag (when not typing).",
+    "keysQueue": "Shortcuts: Ctrl/⌘+Enter saves the feedback · J / K next / previous student · 1–6 tick an error tag (when not typing)."
   },
   "studentPage": {
     "notFound": "Student not found.",
@@ -897,7 +941,11 @@
     "assign": "+ Assign a teacher",
     "deleteBlocked": "Move every student to another class before deleting",
     "delete": "Delete class",
-    "noTeachers": "There are no teacher accounts yet. Create them on the page"
+    "noTeachers": "There are no teacher accounts yet. Create them on the page",
+    "promote": "Move up",
+    "promoteTo": "Move the whole class to…",
+    "promoteConfirm": "Click again: move {n} students",
+    "promoted": "Moved {n} students from {from} to {to}."
   },
   "gradeStats": {
     "title": "{name} statistics",
@@ -971,7 +1019,8 @@
     "sort": "Sort",
     "sortNewest": "Newest first",
     "sortName": "Name A→Z",
-    "found": "{n} people"
+    "found": "{n} people",
+    "createdFile": "New-accounts"
   },
   "presets": {
     "pronunciation": {
@@ -1051,5 +1100,196 @@
     "reload": "Reload",
     "later": "Later",
     "offline": "You are offline. Connect to the internet to study and submit work."
+  },
+  "gradebook": {
+    "open": "Gradebook",
+    "pageTitle": "Gradebook - Grammar",
+    "title": "Gradebook of class {name}",
+    "intro": "Each cell is the percent of questions answered correctly in submitted work. Click a cell to open the work.",
+    "export": "Export CSV",
+    "average": "Average",
+    "fileName": "Gradebook",
+    "noLessons": "No lesson has been given to this class yet.",
+    "noStudents": "This class has no students yet.",
+    "loadFailed": "Could not load the gradebook: {msg}",
+    "legend": "Green: 80% or more. Amber: 50% or more. Red: under 50%. Work \"in progress\" or \"waiting\" is not in the averages.",
+    "state": {
+      "none": "Not started",
+      "working": "In progress",
+      "waiting": "Waiting",
+      "graded": "Graded"
+    },
+    "noLessonsHint": "Give a lesson on the class page and the gradebook gets a column for it.",
+    "noStudentsHint": "Students join with the class code or an account you create."
+  },
+  "submitDialog": {
+    "title": "Submit your work?",
+    "blanks": "{n} question left blank | {n} questions left blank",
+    "allDone": "You have answered every question.",
+    "final": "You can submit only once. After that you cannot change your answers.",
+    "back": "Keep working",
+    "toBlank": "Go to the blanks",
+    "submitAnyway": "Submit anyway"
+  },
+  "sectionNav": {
+    "label": "Sections of the lesson",
+    "progress": "Answered {done}/{total} questions"
+  },
+  "resultView": {
+    "title": "Your result",
+    "ring": "Score {ok}/{total}, {percent}%",
+    "perfect": "Great, everything is correct!",
+    "wrongCount": "{n} question to review | {n} questions to review",
+    "showWrong": "Show only what I got wrong ({n})",
+    "hideWrong": "Hide the list",
+    "yours": "Your answer",
+    "correct": "Correct"
+  },
+  "speak": {
+    "read": "Listen"
+  },
+  "trend": {
+    "title": "Scores over time",
+    "none": "No scored lesson yet to draw a chart.",
+    "lesson": "Lesson",
+    "summary": "Score chart of {n} lessons, the latest {last}%.",
+    "mistakes": "Open mistakes by type"
+  },
+  "toast": {
+    "dismiss": "Dismiss"
+  },
+  "timer": {
+    "label": "Lesson timer",
+    "willStart": "This lesson has a {n}-minute limit, counted from your first answer.",
+    "left": "left (limit {n} min)",
+    "spoken": "{time} left",
+    "timeUp": "Time is up. Your work will be submitted automatically within a few minutes."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "pageTitle": "Notifications - Grammar",
+    "bellUnread": "Notifications, {n} unread",
+    "markAll": "Mark all as read",
+    "remove": "Delete notification",
+    "none": "No notifications yet",
+    "noneHint": "New lessons, deadlines, scores and comments will show up here.",
+    "kind": {
+      "lesson_given": "New lesson given: {lesson}",
+      "due_soon": "Due soon ({date}): {lesson}",
+      "graded": "Your work has a score: {lesson}",
+      "feedback": "Your teacher commented on: {lesson}",
+      "announcement": "New announcement from your class teacher"
+    }
+  },
+  "announcements": {
+    "title": "Class announcements",
+    "placeholder": "Write a message for the whole class, e.g. Hand in Unit 2 before 9 pm tomorrow.",
+    "post": "Post",
+    "hint": "Students are notified in the app.",
+    "none": "No announcement for this class yet."
+  },
+  "streak": {
+    "title": "Study streak",
+    "days": "{n} day in a row | {n} days in a row",
+    "today": "You have studied today.",
+    "keep": "Do a lesson today to keep your streak.",
+    "start": "Do a lesson today to start a streak.",
+    "best": "best {n}",
+    "week": "This week: {n}/{goal} days",
+    "reached": "Goal reached",
+    "goal": "Goal",
+    "perWeek": "{n} days/week",
+    "calendar": "The last 12 weeks, green squares are days you studied",
+    "studied": "studied",
+    "rest": "rest"
+  },
+  "cards": {
+    "remembered": "I remember",
+    "notYet": "Not yet",
+    "savedOk": "Saved, it will come back later",
+    "savedAgain": "Saved, review tomorrow",
+    "failed": "Could not save, try again later"
+  },
+  "practice": {
+    "start": "Practise what I got wrong",
+    "title": "Practise your mistakes",
+    "pageTitle": "Practice - {lesson}",
+    "howTo": "Redo the questions you got wrong, then press Check to see the answers and explanations. The score of the real lesson does not change and nothing here is saved.",
+    "progress": "{done}/{total} correct",
+    "notSaved": "Practice is not saved",
+    "again": "Start over",
+    "nothingTitle": "Nothing to practise",
+    "nothing": "You have no result for this lesson yet, or everything was right.",
+    "back": "Back to the lesson",
+    "check": "Check",
+    "answered": "Answered {n}/{total}"
+  },
+  "analysis": {
+    "open": "Question analysis",
+    "pageTitle": "Question analysis - Grammar",
+    "title": "Question analysis of class {name}",
+    "intro": "Which questions the class got wrong most, and which wrong answers they chose. The hardest comes first.",
+    "lesson": "Lesson",
+    "question": "Question",
+    "text": "Text",
+    "answered": "Answered",
+    "correct": "Correct",
+    "rightShare": "Right",
+    "commonWrong": "Common wrong answers",
+    "fileName": "Question-analysis",
+    "noneTitle": "No submitted work to analyse",
+    "none": "No student of this class has submitted {lesson} yet.",
+    "failed": "Could not analyse: {msg}",
+    "legend": "Green: 80% right or more, amber: 50%, red: under 50%. Submitted work only."
+  },
+  "audit": {
+    "intro": "Who changed a role, locked or deleted an account, moved a student, changed a class code or promoted a class.",
+    "filter": "Action",
+    "all": "All",
+    "none": "Nothing recorded yet",
+    "noneHint": "From now on every important change to accounts and classes shows up here.",
+    "when": "When",
+    "who": "By",
+    "what": "Action",
+    "target": "Target",
+    "detailTitle": "Details",
+    "system": "Account manager",
+    "action": {
+      "role_changed": "Role changed",
+      "account_locked": "Account locked",
+      "account_unlocked": "Account unlocked",
+      "class_changed": "Class changed",
+      "account_deleted": "Account deleted",
+      "class_code_changed": "Class code changed",
+      "class_deleted": "Class deleted",
+      "class_promoted": "Class promoted"
+    },
+    "detail": {
+      "role": "from {from} to {to}",
+      "move": "from {from} to {to}",
+      "promoted": "{n} students moved to {to}",
+      "deleted": "{role} {login}"
+    }
+  },
+  "logins": {
+    "intro": "Every sign-in: who, when, for how long, and why the session ended.",
+    "search": "Search by name, username or email",
+    "reasonFilter": "How it ended",
+    "all": "All",
+    "active": "Signed in now",
+    "none": "No sign-in matches",
+    "who": "Account",
+    "when": "Signed in",
+    "duration": "Duration",
+    "minutes": "{n} min",
+    "end": "Ended",
+    "device": "Device",
+    "reason": {
+      "signout": "Signed out",
+      "replaced": "Signed in elsewhere",
+      "idle": "Idle for 10 minutes",
+      "locked": "Account locked",
+      "unknown": "Unknown"
+    }
   }
 }

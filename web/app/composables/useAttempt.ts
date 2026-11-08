@@ -22,6 +22,8 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
     responses: {} as Record<string, Response>,
     writing: "",
     status: "in_progress" as Enums<"attempt_status">,
+    /** When the clock of a timed lesson started (first save, or the last redo); null before the first save. */
+    timerStartedAt: null as string | null,
     /** Server score, set once submitted. */
     score: null as Score | null,
     /** Graded answers from attempt_results; null until released. */
@@ -52,7 +54,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
     }
     const { data } = await client
       .from("attempts")
-      .select("id, answers, writing, status, score")
+      .select("id, answers, writing, status, score, timer_started_at")
       .eq("lesson_id", lesson.id)
       .eq("user_id", userId)
       .maybeSingle()
@@ -61,6 +63,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
       state.responses = (data.answers ?? {}) as unknown as Record<string, Response>
       state.writing = data.writing
       state.status = data.status
+      state.timerStartedAt = data.timer_started_at
       if (data.status !== "in_progress") {
         state.score = toScore(data.score)
         await loadResults()
@@ -87,7 +90,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
         },
         { onConflict: "user_id,lesson_id" },
       )
-      .select("id, status")
+      .select("id, status, timer_started_at")
       .single()
     if (error) {
       dirty = true
@@ -96,6 +99,7 @@ export function useAttempt(lesson: Lesson, options: { preview?: boolean } = {}) 
     }
     state.id = data.id
     state.status = data.status
+    state.timerStartedAt = data.timer_started_at
     state.save = dirty ? "saving" : "saved"
   }
 

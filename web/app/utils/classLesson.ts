@@ -10,6 +10,8 @@ export interface GiveSettings {
   studentIds: string[]
   showResults: boolean
   shuffle: boolean
+  /** Minutes a student has once they start; null for no limit. */
+  timeLimit: number | null
 }
 
 /**
@@ -22,9 +24,11 @@ export interface GiveForm {
   studentIds: string[]
   showResults: boolean
   shuffle: boolean
+  /** Minutes as typed, "" for no limit. */
+  limit: string
 }
 
-export const emptyGiveForm = (): GiveForm => ({ due: "", forAll: true, studentIds: [], showResults: false, shuffle: false })
+export const emptyGiveForm = (): GiveForm => ({ due: "", forAll: true, studentIds: [], showResults: false, shuffle: false, limit: "" })
 
 /** datetime-local value (local time) of an ISO timestamp. */
 export function toLocalInput(iso: string) {
@@ -44,26 +48,33 @@ const dueIso = (due: string) => (due ? new Date(due).toISOString() : null)
 /** What the form stands for, as stored. */
 export const settingsOf = (f: GiveForm): GiveSettings => ({
   dueAt: dueIso(f.due), forAll: f.forAll, studentIds: f.forAll ? [] : [...f.studentIds], showResults: f.showResults, shuffle: f.shuffle,
+  timeLimit: limitOf(f.limit),
 })
+
+/** The minutes in a time-limit field: a whole number from 1 to 300, or null (empty, or not valid: see giveProblem). */
+export const limitOf = (v: string | number) => (/^\d+$/.test(String(v).trim()) && +v >= 1 && +v <= MAX_LIMIT ? +v : null)
+export const MAX_LIMIT = 300
 
 /** A lesson already given to a class, as a form: its class_lessons row and the students it is open to. */
 export const formOf = (
-  row: Pick<Tables<"class_lessons">, "due_at" | "for_all" | "show_results" | "shuffle">,
+  row: Pick<Tables<"class_lessons">, "due_at" | "for_all" | "show_results" | "shuffle"> & { time_limit_min?: number | null },
   studentIds: string[] = [],
 ): GiveForm => ({
   due: row.due_at ? toLocalInput(row.due_at) : "", forAll: row.for_all, studentIds: [...studentIds], showResults: row.show_results, shuffle: row.shuffle,
+  limit: row.time_limit_min ? String(row.time_limit_min) : "",
 })
 
 /** Whether two forms give a lesson differently. The picks only matter while "chosen students" is on. */
 export const formChanged = (a: GiveForm, b: GiveForm) =>
-  a.due !== b.due || a.forAll !== b.forAll || a.showResults !== b.showResults || a.shuffle !== b.shuffle
+  a.due !== b.due || a.forAll !== b.forAll || a.showResults !== b.showResults || a.shuffle !== b.shuffle || String(a.limit).trim() !== String(b.limit).trim()
   || (!b.forAll && (a.studentIds.length !== b.studentIds.length || a.studentIds.some(id => !b.studentIds.includes(id))))
 
 /**
  * What stops a form from being used, as an i18n key under classPage: a deadline already past (a deadline left
  * as it was, `saved`, is not checked again), or "chosen students" without any student.
  */
-export function giveProblem(f: GiveForm, saved?: GiveForm | null): "dueInPast" | "setup.pickSome" | null {
+export function giveProblem(f: GiveForm, saved?: GiveForm | null): "dueInPast" | "setup.pickSome" | "setup.limitBad" | null {
+  if (String(f.limit).trim() && limitOf(f.limit) === null) return "setup.limitBad"
   if (f.due && f.due !== saved?.due && isPastDue(dueIso(f.due))) return "dueInPast"
   if (!f.forAll && !f.studentIds.length) return "setup.pickSome"
   return null

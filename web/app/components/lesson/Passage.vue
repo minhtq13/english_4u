@@ -5,7 +5,7 @@ defineProps<{ html: string }>()
 
 <template>
   <div class="passage">
-    <span class="label">{{ $t("lesson.passage") }}</span>
+    <span class="label">{{ $t("lesson.passage") }} <SpeakButton :text="html" /></span>
     <div class="text" v-html="html" />
   </div>
 </template>

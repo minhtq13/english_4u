@@ -3,7 +3,7 @@ import type { Database, Tables } from "~/types/database.types"
 import type { ClassLessonSetting } from "./attemptOutcome"
 import type { GiveForm, GiveSettings } from "./classLesson"
 import { accessOf, isClosed, type LessonAccess } from "./attemptOutcome"
-import { formOf } from "./classLesson"
+import { formOf, limitOf } from "./classLesson"
 import { isPastDue } from "./course"
 import { tr } from "./i18n"
 import { errorText } from "./serverErrors"
@@ -15,13 +15,13 @@ import { errorText } from "./serverErrors"
 
 export type Client = SupabaseClient<Database>
 /** What a teacher changes on a given lesson with one switch or field (class_lessons). */
-export type SettingPatch = Partial<Pick<ClassLessonSetting, "due_at" | "for_all" | "show_results" | "shuffle">>
+export type SettingPatch = Partial<Pick<ClassLessonSetting, "due_at" | "for_all" | "show_results" | "shuffle" | "time_limit_min">>
 /** How a lesson stands in one class. */
 export type ClassLessonState = "notGiven" | "open" | "closed"
 /** An error message already in the current language, or null. */
 export type Failure = string | null
 
-const SETTING_COLUMNS = "show_results, for_all, closed, due_at, shuffle"
+const SETTING_COLUMNS = "show_results, for_all, closed, due_at, shuffle, time_limit_min"
 
 export const failed = (e: { message: string } | null): Failure => (e ? tr("common.notChanged", { msg: errorText(e.message) }) : null)
 
@@ -39,6 +39,7 @@ export async function giveLesson(client: Client, classId: string, lessonId: stri
   const { error } = await client.from("class_lessons").insert({
     class_id: classId, lesson_id: lessonId, unlocked_by: by,
     due_at: settings.dueAt, for_all: settings.forAll, show_results: settings.showResults, shuffle: settings.shuffle,
+    time_limit_min: settings.timeLimit,
   })
   if (error) return { given: false, error: failed(error) }
   if (settings.forAll !== false || !settings.studentIds?.length) return { given: true, error: null }
@@ -73,6 +74,7 @@ export async function updateGivenLesson(client: Client, classId: string, lessonI
   if (prev.forAll !== next.forAll) patch.for_all = next.forAll
   if (prev.showResults !== next.showResults) patch.show_results = next.showResults
   if (prev.shuffle !== next.shuffle) patch.shuffle = next.shuffle
+  if (String(prev.limit).trim() !== String(next.limit).trim()) patch.time_limit_min = limitOf(next.limit)
   if (Object.keys(patch).length) {
     const e = await updateSettings(client, classId, lessonId, patch)
     if (e) return e
@@ -134,7 +136,7 @@ export async function givenInClasses(client: Client, lessonId: string, classIds:
   const out = new Map<string, { form: GiveForm; locked: boolean }>()
   if (!classIds.length) return out
   const [rows, picks] = await Promise.all([
-    client.from("class_lessons").select("class_id, due_at, for_all, show_results, shuffle, closed").eq("lesson_id", lessonId).in("class_id", classIds),
+    client.from("class_lessons").select("class_id, due_at, for_all, show_results, shuffle, closed, time_limit_min").eq("lesson_id", lessonId).in("class_id", classIds),
     client.from("class_lesson_students").select("class_id, student_id").eq("lesson_id", lessonId).in("class_id", classIds),
   ])
   for (const r of rows.data ?? []) {
@@ -183,11 +185,11 @@ export async function lessonsForStudent(client: Client, classId: string, student
 /** One lesson as a student of `classId` meets it: how they may use it, its deadline and whether it is shuffled. */
 export async function lessonForStudent(client: Client, classId: string, lessonId: string, studentId: string) {
   const [cl, mine] = await Promise.all([
-    client.from("class_lessons").select("for_all, closed, due_at, shuffle").eq("class_id", classId).eq("lesson_id", lessonId).maybeSingle(),
+    client.from("class_lessons").select("for_all, closed, due_at, shuffle, time_limit_min").eq("class_id", classId).eq("lesson_id", lessonId).maybeSingle(),
     client.from("class_lesson_students").select("lesson_id").eq("class_id", classId).eq("lesson_id", lessonId).eq("student_id", studentId).maybeSingle(),
   ])
   const access: LessonAccess = cl.data ? accessOf(cl.data, !!mine.data) : "locked"
-  return { access, dueAt: cl.data?.due_at ?? null, shuffle: !!cl.data?.shuffle }
+  return { access, dueAt: cl.data?.due_at ?? null, shuffle: !!cl.data?.shuffle, timeLimit: cl.data?.time_limit_min ?? null }
 }
 
 /** The lessons of a class whose results students see at once, as soon as they submit. */

@@ -69,3 +69,42 @@ describe("the grading queue", () => {
     expect(queueLink("a1", "6.1", "c1")).toBe("/teacher/attempts/a1?queue=6.1&class=c1")
   })
 })
+
+import { nextBefore } from "~/utils/attemptReview"
+import { gradingAction, isTyping } from "~/utils/gradingKeys"
+
+describe("previous in the queue", () => {
+  it("goes back one, wrapping to the last other one", () => {
+    expect(nextBefore(["a", "b", "c"], "b")).toBe("a")
+    expect(nextBefore(["a", "b", "c"], "a")).toBe("c")
+    expect(nextBefore(["a"], "a")).toBeNull()
+  })
+})
+
+describe("grading shortcuts", () => {
+  const key = (k: string, o: Partial<{ ctrlKey: boolean; metaKey: boolean; altKey: boolean; shiftKey: boolean }> = {}) =>
+    ({ key: k, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, ...o })
+  it("Ctrl/⌘+Enter saves, even while typing", () => {
+    expect(gradingAction(key("Enter", { ctrlKey: true }), true)).toEqual({ type: "save" })
+    expect(gradingAction(key("Enter", { metaKey: true }), true)).toEqual({ type: "save" })
+    expect(gradingAction(key("Enter"), true)).toBeNull()
+  })
+  it("letters and digits do nothing while typing", () => {
+    expect(gradingAction(key("j"), true)).toBeNull()
+    expect(gradingAction(key("3"), true)).toBeNull()
+  })
+  it("J / K walk the queue, 1–6 tick tags, anything else is ignored", () => {
+    expect(gradingAction(key("j"), false)).toEqual({ type: "next" })
+    expect(gradingAction(key("K"), false)).toEqual({ type: "previous" })
+    expect(gradingAction(key("1"), false)).toEqual({ type: "tag", index: 0 })
+    expect(gradingAction(key("6"), false)).toEqual({ type: "tag", index: 5 })
+    expect(gradingAction(key("7"), false)).toBeNull()
+    expect(gradingAction(key("j", { ctrlKey: true }), false)).toBeNull()
+  })
+  it("tells a text field from the page", () => {
+    expect(isTyping({ tagName: "TEXTAREA" })).toBe(true)
+    expect(isTyping({ tagName: "DIV", isContentEditable: true })).toBe(true)
+    expect(isTyping({ tagName: "BUTTON" })).toBe(false)
+    expect(isTyping(null)).toBe(false)
+  })
+})

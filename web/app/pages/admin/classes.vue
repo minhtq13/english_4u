@@ -18,6 +18,11 @@ const teachers = shallowRef<Pick<Tables<"profiles">, "id" | "full_name" | "email
 const students = shallowRef<Record<string, number>>({})
 const loaded = ref(false)
 const message = ref("")
+const failure = ref("")
+// Outcomes show as toasts (useToast) instead of a line above a long list.
+const toast = useToast()
+watch(message, v => { if (v) toast.ok(v) })
+watch(failure, v => { if (v) toast.error(v) })
 const busy = ref<string | null>(null)
 
 async function load() {
@@ -48,10 +53,25 @@ const byCourse = computed(() =>
 
 async function run(key: string, action: () => PromiseLike<{ error: { message: string } | null }>, ok: string) {
   busy.value = key
-  message.value = ""
+  message.value = failure.value = ""
   const { error } = await action()
   busy.value = null
-  message.value = error ? t("classesPage.failed", { msg: errorText(error.message) }) : ok
+  if (error) failure.value = t("classesPage.failed", { msg: errorText(error.message) })
+  else message.value = ok
+  if (!error) await load()
+}
+
+// ---- promotion: at the start of a school year, move every student of a class to another class ----
+const promotePick = reactive<Record<string, string>>({})
+async function promote(c: ClassRow) {
+  const target = promotePick[c.id]
+  if (!target || !arm(`promote-${c.id}`)) return
+  busy.value = `promote-${c.id}`
+  message.value = failure.value = ""
+  const { data, error } = await client.rpc("promote_class", { source_class: c.id, target_class: target })
+  busy.value = null
+  if (error) failure.value = t("classesPage.failed", { msg: errorText(error.message) })
+  else message.value = t("classesPage.promoted", { n: data ?? 0, from: c.name, to: classes.value.find(x => x.id === target)?.name ?? "" })
   if (!error) await load()
 }
 
@@ -96,7 +116,6 @@ function remove(c: ClassRow) {
   <div>
     <h1>{{ $t("nav.classes") }}</h1>
     <p class="sub">{{ $t("classesPage.intro") }}</p>
-    <p v-if="message" class="fb ok">{{ message }}</p>
 
     <form class="card row create" @submit.prevent="createClass">
       <b>{{ $t("classesPage.new") }}</b>
@@ -137,6 +156,15 @@ function remove(c: ClassRow) {
           </select>
         </div>
         <div class="cell">
+          <template v-if="studentCount(c.id) > 0">
+            <select v-model="promotePick[c.id]" :aria-label="$t('classesPage.promoteTo')">
+              <option value="">{{ $t("classesPage.promoteTo") }}</option>
+              <option v-for="o in classes.filter(x => x.id !== c.id)" :key="o.id" :value="o.id">{{ o.name }}</option>
+            </select>
+            <button class="btn small" :class="deleteArmed === `promote-${c.id}` ? 'danger' : 'ghost'" :disabled="!promotePick[c.id] || busy === `promote-${c.id}`" @click="promote(c)">
+              {{ deleteArmed === `promote-${c.id}` ? $t("classesPage.promoteConfirm", { n: studentCount(c.id) }) : $t("classesPage.promote") }}
+            </button>
+          </template>
           <button
             class="btn small"
             :class="deleteArmed === c.id ? 'danger' : 'ghost'"
@@ -163,7 +191,7 @@ function remove(c: ClassRow) {
 .name a { text-decoration: none; font-size: 1.1rem; }
 .code b { letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .btn.small { padding: 3px 10px; font-size: .85rem; }
-.teachers select { width: auto; max-width: 240px; }
+.teachers select, .cell select { width: auto; max-width: 240px; }
 .chip-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-soft); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: .88rem; }
 .chip-tag .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 4px; }
 .chip-tag .x:hover { color: var(--bad); }

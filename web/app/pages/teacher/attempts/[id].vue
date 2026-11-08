@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Database, Enums, Tables } from "~/types/database.types"
 import type { AttemptWithStudent } from "~/utils/attemptReview"
+import { gradingAction, isTyping } from "~/utils/gradingKeys"
 import type { Answer, Lesson, Response } from "~/utils/course"
 
 // Remount per attempt, so "next" in the grading queue loads the following student's work.
@@ -79,10 +80,34 @@ async function goNext() {
   await load()
 }
 /** Skip without grading: the next one after this in submission order, wrapping around. */
+function previous() {
+  const prev = nextBefore(waitingIds.value, attemptId)
+  if (prev) navigateTo(linkTo(prev))
+}
 function skip() {
   const next = nextAfterSkip(waitingIds.value, attemptId)
   if (next) navigateTo(linkTo(next))
 }
+
+// ---- keyboard: Ctrl/⌘+Enter saves, J / K walk the queue, 1–6 tick the error tags ----
+function onKey(e: KeyboardEvent) {
+  if (!attempt.value || attempt.value.status === "in_progress") return
+  const action = gradingAction(e, isTyping(e.target as HTMLElement | null), Object.keys(ERROR_CATEGORIES).length)
+  if (!action) return
+  e.preventDefault()
+  if (action.type === "save") {
+    if (body.value.trim() && !saving.value) saveGrade()
+  } else if (action.type === "next") {
+    if (inQueue) skip()
+  } else if (action.type === "previous") {
+    if (inQueue) previous()
+  } else {
+    const key = Object.keys(ERROR_CATEGORIES)[action.index] as Enums<"error_category">
+    tags.value = tags.value.includes(key) ? tags.value.filter(k => k !== key) : [...tags.value, key]
+  }
+}
+onMounted(() => window.addEventListener("keydown", onKey))
+onBeforeUnmount(() => window.removeEventListener("keydown", onKey))
 
 // ---- comment templates (each teacher's own) ----
 const templates = shallowRef<Tables<"comment_templates">[]>([])
@@ -235,6 +260,7 @@ async function saveGrade() {
             </span>
           </div>
           <textarea id="feedback-body" v-model="body" :placeholder="$t('attemptPage.commentEx')" />
+          <p class="small muted keys"><Icon name="clock" size="14" /> {{ $t(inQueue ? "attemptPage.keysQueue" : "attemptPage.keys") }}</p>
           <div>
             <div class="small muted">{{ $t("attemptPage.errorTags") }}</div>
             <div class="row checks">

@@ -135,6 +135,7 @@ Deno.serve(async (req) => {
         if (error) refuse(error.message)
         const { error: e2 } = await db.from("profiles").update({ active }).eq("id", p.id)
         if (e2) refuse(e2.message)
+        await auditActor(db, me!.id, p.id, active ? "account_unlocked" : "account_locked")
         return json({ ok: true })
       }
 
@@ -144,6 +145,7 @@ Deno.serve(async (req) => {
         const p = await target(body.user_id)
         const { error } = await db.auth.admin.deleteUser(p.id)
         if (error) refuse(error.message)
+        await auditActor(db, me!.id, p.id, "account_deleted")
         return json({ ok: true })
       }
 
@@ -157,6 +159,15 @@ Deno.serve(async (req) => {
   }
   return json({ error: "Thao tác không hợp lệ" }, 400)
 })
+
+/**
+ * The audit trigger on profiles writes a row for a lock, unlock or delete, but a change made here runs as the service
+ * role, so the trigger cannot tell who asked. Put the caller on the row it just wrote (best effort: the change is done).
+ */
+async function auditActor(db: SupabaseClient, actor: string, target: string, action: string) {
+  const { error } = await db.from("audit_log").update({ actor }).eq("target", target).eq("action", action).is("actor", null)
+  if (error) console.error("audit actor", error.message)
+}
 
 async function profile(db: SupabaseClient, id: string): Promise<Profile | null> {
   const { data } = await db.from("profiles").select("id, role, class_id, username, full_name, active").eq("id", id).maybeSingle()

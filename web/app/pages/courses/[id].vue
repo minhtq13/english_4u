@@ -157,6 +157,7 @@ const statuses = computed(() =>
             class="btn ghost small"
             >{{ $t("common.edit") }}</NuxtLink
           >
+          <NuxtLink :to="`/teacher/lessons/new?copy=${l.id}`" class="btn ghost small" :title="$t('editor.copyHint')">{{ $t("editor.copy") }}</NuxtLink>
           <template v-if="canEdit(l.createdBy)">
             <button
               class="btn small"

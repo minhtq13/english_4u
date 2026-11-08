@@ -39,10 +39,9 @@ onMounted(async () => {
     <h1>{{ isAdmin ? $t("teacherHome.allClasses") : $t("nav.myClasses") }}</h1>
     <p class="sub">{{ $t("teacherHome.intro") }}</p>
     <p v-if="error" class="fb no">{{ error }}</p>
+    <TeacherToday v-if="loaded && classes.length" :classes="classes" />
     <Skeleton v-if="!loaded" />
-    <p v-else-if="!classes.length" class="card muted">
-      {{ $t("teacherHome.none") }}
-    </p>
+    <EmptyState v-else-if="!classes.length" icon="users" :title="$t('teacherHome.noneTitle')" :text="$t('teacherHome.none')" />
     <div class="grid">
       <NuxtLink v-for="c in classes" :key="c.class_id ?? ''" :to="`/teacher/classes/${c.class_id}`" class="card class-card">
         <div class="top">

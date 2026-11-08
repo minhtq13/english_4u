@@ -30,6 +30,8 @@ const sortBy = ref<"newest" | "name">("newest")
 const loaded = ref(false)
 const message = ref("")
 const error = ref("")
+watch(message, v => { if (v) toast.ok(v) })
+watch(error, v => { if (v) toast.error(v) })
 const busy = ref<string | null>(null)
 
 const className = (id: string | null) => classes.value.find(c => c.id === id)?.name ?? "-"
@@ -133,6 +135,14 @@ async function copyCreated() {
   try { await navigator.clipboard.writeText(`${t("accounts.fullName")}\t${t("accounts.username")}\t${t("login.password")}\n${createdText.value}`) } catch { /* the table stays on screen */ }
 }
 
+/** The new accounts as a file, to keep or print: name, username, password (shown once). */
+function exportCreated() {
+  downloadCsv(`${fileSlug(t("accounts.createdFile"))}.csv`, [
+    [t("accounts.fullName"), t("accounts.username"), t("login.password")],
+    ...created.value.filter(r => r.ok).map(r => [personName(r), r.username, r.password]),
+  ])
+}
+
 // ---- per-account actions ----
 const editing = ref<string | null>(null)
 const editName = ref("")
@@ -151,6 +161,8 @@ async function saveEdit(p: Person) {
 const passwordSet = (msg: string) => { error.value = ""; message.value = msg }
 const passwordFailed = (msg: string) => { message.value = ""; error.value = msg }
 
+// Outcomes show as toasts (useToast); `message` / `error` stay as the places the code sets them.
+const toast = useToast()
 const { armed, arm } = useTwoClick()
 function toggleActive(p: Person) {
   if (p.active && !arm(`lock-${p.id}`)) return
@@ -186,8 +198,6 @@ async function moveClass(p: Person, classId: string) {
       </div>
       <button class="btn primary" @click="showCreate = !showCreate">{{ showCreate ? $t("common.close") : rt("add") }}</button>
     </div>
-    <p v-if="message" class="fb ok">{{ message }}</p>
-    <p v-if="error" class="fb no">{{ error }}</p>
 
     <section v-if="showCreate" class="card stack">
       <h2>{{ rt("addTitle") }}</h2>
@@ -239,6 +249,7 @@ async function moveClass(p: Person, classId: string) {
         </div>
         <div class="row">
           <button class="btn" @click="copyCreated">{{ $t("accounts.copyList") }}</button>
+          <button class="btn" @click="exportCreated"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
           <button class="btn ghost" @click="created = []">{{ $t("accounts.hideList") }}</button>
         </div>
       </template>

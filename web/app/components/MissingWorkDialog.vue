@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // The popup behind a lesson's "Chưa nộp" button: who has not submitted that lesson (the class's open lessons only),
 // whether they have started, and ready-made reminder text to paste into the class chat.
-defineProps<{
+const props = defineProps<{
   lesson: string
   /** The class's deadline for the lesson, if any. */
   due: string | null
@@ -11,6 +11,7 @@ defineProps<{
   remindAll: string
 }>()
 const emit = defineEmits<{ close: [] }>()
+const { t } = useI18n()
 const dialog = ref<HTMLElement | null>(null)
 useDialog(dialog, () => emit("close"))
 
@@ -21,6 +22,14 @@ async function copy(text: string, which: "one" | "all") {
     copied.value = which
     setTimeout(() => { if (copied.value === which) copied.value = "" }, 2000)
   } catch { /* the names stay on screen to copy by hand */ }
+}
+
+/** The same list as a file: name, login and whether they started. */
+function exportCsv() {
+  downloadCsv(`${fileSlug(t("classPage.missingFile"))}-${fileSlug(props.lesson)}.csv`, [
+    [t("accounts.fullName"), t("accounts.username"), t("classPage.missingStatus")],
+    ...props.people.map(m => [m.full_name ?? "", m.username ?? "", m.started ? t("classPage.inProgress") : t("classPage.notStarted")]),
+  ])
 }
 
 const titleId = useId()
@@ -50,6 +59,7 @@ const titleId = useId()
           <div class="row actions">
             <button class="btn small primary" @click="copy(remind, 'one')">{{ copied === "one" ? $t("common.copied") : $t("classPage.copyRemind") }}</button>
             <button class="btn small ghost" @click="copy(remindAll, 'all')">{{ copied === "all" ? $t("common.copied") : $t("classPage.copyAll") }}</button>
+            <button class="btn small ghost" @click="exportCsv"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
           </div>
         </template>
       </div>

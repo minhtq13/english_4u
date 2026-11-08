@@ -16,6 +16,9 @@ const { myClass } = useProfile()
 const errors = shallowRef<Tables<"error_log">[]>([])
 const loaded = ref(false)
 
+const trend = computed(() => trendPoints(attempts.value, showsAtOnce.value))
+const mistakes = computed(() => errorCounts(errors.value))
+
 onMounted(async () => {
   const me = user.value?.sub
   if (!me) return
@@ -45,13 +48,35 @@ onMounted(async () => {
       </section>
 
       <section class="card">
+        <h2>{{ $t("trend.title") }}</h2>
+        <ScoreTrend :points="trend" />
+      </section>
+
+      <section v-if="mistakes.length" class="card">
+        <h2>{{ $t("trend.mistakes") }}</h2>
+        <ul class="bars">
+          <li v-for="m in mistakes" :key="m.category">
+            <span>{{ ERROR_CATEGORIES[m.category as keyof typeof ERROR_CATEGORIES] ?? m.category }}</span>
+            <StatBar :value="Math.round((m.n / mistakes[0]!.n) * 100)" :text="String(m.n)" />
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
         <h2>{{ $t("progress.history") }}</h2>
         <AttemptHistory :rows="attempts" viewer="student" :shows-at-once="showsAtOnce" :link="r => `/lessons/${r.lesson_id}`">
           <template #empty>
-            <p class="muted small">{{ $t("progress.none") }} <NuxtLink to="/">{{ $t("progress.seeRoadmap") }}</NuxtLink>.</p>
+            <EmptyState icon="clipboard" :title="$t('progress.none')" :text="$t('progress.noneHint')">
+              <NuxtLink to="/" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
+            </EmptyState>
           </template>
         </AttemptHistory>
       </section>
     </template>
   </div>
 </template>
+
+<style scoped>
+.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bars li { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(100px, 2fr); gap: 10px; align-items: center; }
+</style>

@@ -40,7 +40,7 @@ export function useClassLessons(classId: string) {
     const { given, error } = await giveLesson(client, classId, lessonId, s, user.value?.sub)
     if (given) {
       settings.value = new Map(settings.value).set(lessonId, {
-        show_results: s.showResults, for_all: s.forAll, closed: false, due_at: s.dueAt, shuffle: s.shuffle,
+        show_results: s.showResults, for_all: s.forAll, closed: false, due_at: s.dueAt, shuffle: s.shuffle, time_limit_min: s.timeLimit,
       })
       if (!s.forAll && !error) picks.value = new Map(picks.value).set(lessonId, new Set(s.studentIds))
     }
