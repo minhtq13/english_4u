@@ -1,3 +1,4 @@
+import { personName } from "./accounts"
 import { fold } from "./text"
 
 // Filtering and sorting the students of one class (a class is small, so its rows are loaded whole and handled
@@ -21,7 +22,6 @@ export type StudentStatus = "" | "waiting" | "none" | "idle"
 export type StudentSort = "name" | "accuracy" | "activity" | "waiting"
 export const IDLE_DAYS = 7
 
-const nameOf = (s: StudentLike) => s.full_name || s.email || s.username || ""
 const accuracyOf = (s: StudentLike) => (s.done ? (s.ok ?? 0) / s.done : null)
 const activityOf = (s: StudentLike) => (s.last_activity ? Date.parse(s.last_activity) : null)
 /** Compares numbers, a missing one always last. `dir` 1 puts small first, -1 large first. */
@@ -40,7 +40,7 @@ export function filterStudents<T extends StudentLike>(
       || (f.status === "waiting" && (s.waiting ?? 0) > 0)
       || (f.status === "none" && (s.submitted ?? 0) === 0)
       || (f.status === "idle" && (activityOf(s) ?? -Infinity) < idleBefore)))
-  const byName = (a: T, b: T) => nameOf(a).localeCompare(nameOf(b), "vi")
+  const byName = (a: T, b: T) => personName(a).localeCompare(personName(b), "vi")
   const compare: Record<StudentSort, (a: T, b: T) => number> = {
     name: byName,
     accuracy: (a, b) => nullsLast(accuracyOf(a), accuracyOf(b), 1),

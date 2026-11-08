@@ -1,3 +1,4 @@
+import { personName } from "./accounts"
 import type { Tables } from "~/types/database.types"
 
 // Where each student of a class stands with one lesson given to it. A class is small, so the page loads the
@@ -21,7 +22,6 @@ export interface StudentLesson<S, A> {
   state: LessonState
 }
 
-const nameOf = (s: PersonLike) => s.full_name || s.email || s.username || ""
 
 /**
  * One row per student. An attempt decides the state whenever there is one (even for a student no longer on the list
@@ -42,7 +42,7 @@ export function lessonStates<S extends PersonLike, A extends AttemptLike>(
     return { student, attempt, state }
   })
   return rows.sort((a, b) =>
-    LESSON_STATES.indexOf(a.state) - LESSON_STATES.indexOf(b.state) || nameOf(a.student).localeCompare(nameOf(b.student), "vi"))
+    LESSON_STATES.indexOf(a.state) - LESSON_STATES.indexOf(b.state) || personName(a.student).localeCompare(personName(b.student), "vi"))
 }
 
 /** How many students are in each state. */

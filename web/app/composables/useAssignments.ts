@@ -18,13 +18,7 @@ export function useAssignments() {
   async function load(courseId: string, lessonIds?: string[]) {
     const { data: cls } = await client.from("classes").select("id, name").eq("course_id", courseId).order("name")
     const list = cls ?? []
-    const ids = list.map(c => c.id)
-    let rows: { class_id: string; lesson_id: string }[] = []
-    if (ids.length) {
-      let q = client.from("class_lessons").select("class_id, lesson_id").in("class_id", ids)
-      if (lessonIds) q = q.in("lesson_id", lessonIds)
-      rows = (await q).data ?? []
-    }
+    const rows = await givenPairs(client, list.map(c => c.id), lessonIds)
     // Both are set together, so a chip never shows "not assigned" while the assignments are still loading.
     assigned.value = new Set(rows.map(r => key(r.class_id, r.lesson_id)))
     classes.value = list

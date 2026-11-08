@@ -54,7 +54,7 @@ async function update(p: Person, patch: Partial<Tables<"profiles">>, ok: string)
   message.value = ""
   const { error } = await client.from("profiles").update(patch).eq("id", p.id)
   busy.value = null
-  message.value = error ? t("usersPage.updateFailed", { name: p.full_name || p.email, msg: errorText(error.message) }) : ok
+  message.value = error ? t("usersPage.updateFailed", { name: personName(p), msg: errorText(error.message) }) : ok
   if (!error) await load()
 }
 
@@ -62,12 +62,12 @@ function setRole(p: Person, role: Enums<"app_role">) {
   if (role === p.role) return
   // Teachers and admins do not belong to a class as learners.
   const patch: Partial<Tables<"profiles">> = role === "student" ? { role } : { role, class_id: null }
-  update(p, patch, t("usersPage.roleSet", { name: p.full_name || p.email, role: ROLE_LABEL[role] }))
+  update(p, patch, t("usersPage.roleSet", { name: personName(p), role: ROLE_LABEL[role] }))
 }
 function setClass(p: Person, classId: string) {
   update(p, { class_id: classId || null },
-    classId ? t("usersPage.classSet", { name: p.full_name || p.email, cls: classes.value.find(c => c.id === classId)?.name })
-      : t("usersPage.classCleared", { name: p.full_name || p.email }))
+    classId ? t("usersPage.classSet", { name: personName(p), cls: classes.value.find(c => c.id === classId)?.name })
+      : t("usersPage.classCleared", { name: personName(p) }))
 }
 </script>
 
@@ -111,7 +111,7 @@ function setClass(p: Person, classId: string) {
         <tbody>
           <tr v-for="p in people.rows" :key="p.id">
             <td :data-label="$t('usersPage.user')">
-              <b>{{ p.full_name || p.email }}</b><span v-if="p.id === user?.sub" class="small muted"> ({{ $t("usersPage.you") }})</span>
+              <b>{{ personName(p) }}</b><span v-if="p.id === user?.sub" class="small muted"> ({{ $t("usersPage.you") }})</span>
               <br><span class="small muted">{{ loginOf(p) }}</span>
             </td>
             <td :data-label="$t('account.role')">
@@ -140,7 +140,7 @@ function setClass(p: Person, classId: string) {
             </td>
             <td :data-label="$t('login.password')" class="pw-cell">
               <NuxtLink v-if="p.id === user?.sub" to="/account" class="small">{{ $t("usersPage.ownPassword") }}</NuxtLink>
-              <SetPasswordButton v-else :user-id="p.id" :name="p.full_name || loginOf(p)" @done="message = $event; failure = ''" @failed="failure = $event; message = ''" />
+              <SetPasswordButton v-else :user-id="p.id" :name="personName(p)" @done="message = $event; failure = ''" @failed="failure = $event; message = ''" />
             </td>
             <td :data-label="$t('usersPage.joined')" class="small muted">{{ formatDate(p.created_at) }}</td>
           </tr>

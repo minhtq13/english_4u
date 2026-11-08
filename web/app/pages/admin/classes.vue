@@ -37,7 +37,7 @@ onMounted(load)
 
 const nameOf = (id: string) => {
   const p = teachers.value.find(x => x.id === id)
-  return p?.full_name || p?.email || "?"
+  return (p && personName(p)) || "?"
 }
 const studentCount = (classId: string) => students.value[classId] ?? 0
 const byCourse = computed(() =>
@@ -85,14 +85,9 @@ function regenerate(c: ClassRow) {
   run(`code-${c.id}`, () => client.from("classes").update({ join_code: newCode() }).eq("id", c.id),
     t("classesPage.codeChanged", { name: c.name }))
 }
-const deleteArmed = ref<string | null>(null)
+const { armed: deleteArmed, arm } = useTwoClick()
 function remove(c: ClassRow) {
-  if (deleteArmed.value !== c.id) {
-    deleteArmed.value = c.id
-    setTimeout(() => { if (deleteArmed.value === c.id) deleteArmed.value = null }, 4000)
-    return
-  }
-  deleteArmed.value = null
+  if (!arm(c.id)) return
   run(`delete-${c.id}`, () => client.from("classes").delete().eq("id", c.id), t("classesPage.deleted", { name: c.name }))
 }
 </script>
@@ -138,7 +133,7 @@ function remove(c: ClassRow) {
               v-for="t in teachers.filter(t => t.role === 'teacher' && !c.class_teachers.some(x => x.teacher_id === t.id))"
               :key="t.id"
               :value="t.id"
-            >{{ t.full_name || t.email }}</option>
+            >{{ personName(t) }}</option>
           </select>
         </div>
         <div class="cell">

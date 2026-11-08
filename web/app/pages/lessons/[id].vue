@@ -40,14 +40,10 @@ const { blocked } = useAntiCheat(content, exam)
 
 onMounted(async () => {
   if (isStudent.value && myClass.value) {
-    const [cl, mine] = await Promise.all([
-      client.from("class_lessons").select("for_all, closed, due_at, shuffle").eq("class_id", myClass.value.id).eq("lesson_id", loaded.id).maybeSingle(),
-      client.from("class_lesson_students").select("lesson_id").eq("class_id", myClass.value.id).eq("lesson_id", loaded.id)
-        .eq("student_id", user.value?.sub ?? "").maybeSingle(),
-    ])
-    access.value = cl.data ? accessOf(cl.data, !!mine.data) : "locked"
-    dueAt.value = cl.data?.due_at ?? null
-    shuffleFor.value = cl.data?.shuffle ? user.value?.sub ?? "" : ""
+    const mine = await lessonForStudent(client, myClass.value.id, loaded.id, user.value?.sub ?? "")
+    access.value = mine.access
+    dueAt.value = mine.dueAt
+    shuffleFor.value = mine.shuffle ? user.value?.sub ?? "" : ""
     lesson.value = arrange(lesson.value)
   }
   await attempt.load()

@@ -68,7 +68,7 @@ const numbers = (s: StudentRow) => ({ done: s.submitted ?? 0, accuracy: percentO
           </thead>
           <tbody>
             <tr v-for="s in paged.rows" :key="s.user_id ?? ''">
-              <td :data-label="$t('common.student')"><NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink><br><span class="small muted">{{ loginOf(s) }}</span></td>
+              <td :data-label="$t('common.student')"><NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ personName(s) }}</b></NuxtLink><br><span class="small muted">{{ loginOf(s) }}</span></td>
               <td :data-label="$t('classPage.submittedLessons')"><StatBar :value="percentOf(numbers(s).done, given)" :text="`${numbers(s).done}/${given}`" /></td>
               <td :data-label="$t('classPage.accuracy')"><StatBar :value="numbers(s).accuracy" /></td>
               <td :data-label="$t('classPage.waiting')" class="n">{{ numbers(s).waiting }}</td>

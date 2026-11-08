@@ -23,11 +23,9 @@ onMounted(async () => {
     client.from("attempts").select("id, lesson_id, score, status, updated_at, feedback(id, body, created_at), lessons(title, label)")
       .eq("user_id", me).order("updated_at", { ascending: false }),
     client.from("error_log").select("*").eq("user_id", me),
-    myClass.value
-      ? client.from("class_lessons").select("lesson_id").eq("class_id", myClass.value.id).eq("show_results", true)
-      : { data: [] },
+    myClass.value ? lessonsShowingResults(client, myClass.value.id) : new Set<string>(),
   ])
-  showsAtOnce.value = new Set((c.data ?? []).map(r => r.lesson_id))
+  showsAtOnce.value = c
   attempts.value = (a.data ?? []) as AttemptHistoryRow[]
   errors.value = e.data ?? []
   loaded.value = true

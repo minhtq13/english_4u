@@ -45,7 +45,7 @@ const titleId = useId()
             <span
               v-for="m in people" :key="m.user_id ?? ''" class="name-chip" :class="{ started: m.started }"
               :title="m.started ? $t('classPage.inProgress') : $t('classPage.notStarted')"
-            >{{ m.full_name || m.username || "?" }}<template v-if="m.started"> · {{ $t("classPage.inProgress") }}</template></span>
+            >{{ personName(m) || "?" }}<template v-if="m.started"> · {{ $t("classPage.inProgress") }}</template></span>
           </div>
           <div class="row actions">
             <button class="btn small primary" @click="copy(remind, 'one')">{{ copied === "one" ? $t("common.copied") : $t("classPage.copyRemind") }}</button>

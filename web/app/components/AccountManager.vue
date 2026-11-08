@@ -80,7 +80,7 @@ async function run(key: string, action: () => Promise<{ error: string | null }>,
   }
   return !e
 }
-const name = (p: Person) => p.full_name || loginOf(p)
+const name = (p: Person) => personName(p)
 
 // ---- create (one or many: one name per line) ----
 const showCreate = ref(false)
@@ -128,7 +128,7 @@ async function createAll() {
 }
 
 const createdText = computed(() =>
-  created.value.filter(r => r.ok).map(r => `${r.full_name || r.username}\t${r.username}\t${r.password}`).join("\n"))
+  created.value.filter(r => r.ok).map(r => `${personName(r)}\t${r.username}\t${r.password}`).join("\n"))
 async function copyCreated() {
   try { await navigator.clipboard.writeText(`${t("accounts.fullName")}\t${t("accounts.username")}\t${t("login.password")}\n${createdText.value}`) } catch { /* the table stays on screen */ }
 }
@@ -151,16 +151,7 @@ async function saveEdit(p: Person) {
 const passwordSet = (msg: string) => { error.value = ""; message.value = msg }
 const passwordFailed = (msg: string) => { message.value = ""; error.value = msg }
 
-const armed = ref<string | null>(null)
-function arm(key: string) {
-  if (armed.value === key) {
-    armed.value = null
-    return true
-  }
-  armed.value = key
-  setTimeout(() => { if (armed.value === key) armed.value = null }, 4000)
-  return false
-}
+const { armed, arm } = useTwoClick()
 function toggleActive(p: Person) {
   if (p.active && !arm(`lock-${p.id}`)) return
   run(`lock-${p.id}`, () => accounts.setActive(p.id, !p.active), t(p.active ? "accounts.locked" : "accounts.unlocked", { name: name(p) }))
@@ -238,7 +229,7 @@ async function moveClass(p: Person, classId: string) {
             <thead><tr><th>{{ $t("accounts.fullName") }}</th><th>{{ $t("accounts.username") }}</th><th>{{ $t("login.password") }}</th></tr></thead>
             <tbody>
               <tr v-for="r in created" :key="r.username">
-                <td>{{ r.full_name || r.username }}</td>
+                <td>{{ personName(r) }}</td>
                 <td><b>{{ r.username }}</b></td>
                 <td v-if="r.ok"><code>{{ r.password }}</code></td>
                 <td v-else class="bad-text">{{ errorText(r.error ?? "") }}</td>

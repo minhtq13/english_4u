@@ -40,7 +40,7 @@ export function useLessonGiving() {
     if (plan.students || loadingStudents.has(plan.classId)) return
     loadingStudents.add(plan.classId)
     const { data } = await client.from("student_progress").select("user_id, full_name, username, email").eq("class_id", plan.classId).order("full_name")
-    plan.students = (data ?? []).map(s => ({ id: s.user_id ?? "", name: s.full_name || s.username || s.email || "?" }))
+    plan.students = (data ?? []).map(s => ({ id: s.user_id ?? "", name: personName(s) || "?" }))
     loadingStudents.delete(plan.classId)
   }
   // Choosing "chosen students" on a class needs its students, whenever that is chosen.
@@ -72,15 +72,7 @@ export function useLessonGiving() {
   /** An existing lesson: which classes have it, with their settings and chosen students. */
   async function loadGiven(lessonId: string, classIds: string[]) {
     if (!classIds.length) return
-    const [rows, picks] = await Promise.all([
-      client.from("class_lessons").select("class_id, due_at, for_all, show_results, shuffle, closed").eq("lesson_id", lessonId).in("class_id", classIds),
-      client.from("class_lesson_students").select("class_id, student_id").eq("lesson_id", lessonId).in("class_id", classIds),
-    ])
-    const map = new Map<string, { form: GiveForm; locked: boolean }>()
-    for (const r of rows.data ?? []) {
-      const ids = (picks.data ?? []).filter(p => p.class_id === r.class_id).map(p => p.student_id)
-      map.set(r.class_id, { form: formOf(r, ids), locked: isClosed(r) })
-    }
+    const map = await givenInClasses(client, lessonId, classIds)
     given.value = map
     plans.value = plans.value.map(p => (map.has(p.classId) ? create({ id: p.classId, name: p.name }) : p))
   }

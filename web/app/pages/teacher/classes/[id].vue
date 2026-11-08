@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Database, Tables, Views } from "~/types/database.types"
+import type { Database, Tables } from "~/types/database.types"
 import type { Course } from "~/utils/course"
 import type { GiveSettings } from "~/utils/classLesson"
-import type { SettingPatch } from "~/composables/useClassLessons"
+import type { ClassStudentRow } from "~/composables/useClassWorkspace"
 
 definePageMeta({ roles: ["teacher"] })
 
@@ -11,39 +11,23 @@ const classId = route.params.id as string
 const client = useSupabaseClient<Database>()
 const user = useSupabaseUser()
 const { load } = useCourse()
-/** Which classes of this grade already have each lesson (shown in the panel before giving it). */
-const assignments = useAssignments()
 const { t } = useI18n()
 
 type ClassRow = Tables<"classes"> & { courses: Pick<Tables<"courses">, "name"> | null }
-type StudentRow = Pick<Views<"student_progress">, "user_id" | "full_name" | "email" | "username" | "submitted" | "waiting" | "ok" | "done" | "last_activity">
-type LessonRow = Pick<Views<"class_lesson_stats">, "lesson_id" | "submitted" | "waiting" | "ok" | "done" | "started">
 
 const cls = shallowRef<ClassRow | null>(null)
 const outline = shallowRef<Course | null>(null)
-/** Lessons given to this class (`unlocked`), who they are open to (`picks`), and every change to them. */
-const classLessons = useClassLessons(classId)
-const { settings: unlocked, picks, stateOf } = classLessons
+/** The class's lessons and what a change to them moves (numbers, who owes work): see useClassWorkspace. */
+const workspace = useClassWorkspace(classId, outline, cls)
+const {
+  settings: unlocked, picks, stateOf, students, busy, notice, armed, lessonName, missingByLesson, missingOf, missingCount, remindText, remindAll,
+  lessonStats, givenToOthers, canTakeBack, takeBack, setClosed, setSetting, releaseAll, togglePick, loadStudents,
+} = workspace
 const queue = useGradingQueue()
-const students = shallowRef<StudentRow[]>([])
-const lessonRows = shallowRef<Record<string, LessonRow>>({})
 const otherClasses = shallowRef<Pick<Tables<"classes">, "id" | "name">[]>([])
 const loaded = ref(false)
 const error = ref("")
-const busy = ref<string | null>(null)
 const message = ref("")
-
-// Per-student and per-lesson numbers come pre-aggregated from views (no raw attempts).
-async function loadStudents() {
-  const [st, ls] = await Promise.all([
-    client.from("student_progress")
-      .select("user_id, full_name, email, username, submitted, waiting, ok, done, last_activity")
-      .eq("class_id", classId).order("full_name"),
-    client.from("class_lesson_stats").select("lesson_id, submitted, waiting, ok, done, started").eq("class_id", classId),
-  ])
-  students.value = (st.data ?? []) as StudentRow[]
-  lessonRows.value = Object.fromEntries(((ls.data ?? []) as LessonRow[]).map(r => [r.lesson_id ?? "", r]))
-}
 
 onMounted(async () => {
   try {
@@ -54,10 +38,7 @@ onMounted(async () => {
     const [o, others] = await Promise.all([
       load(cls.value.course_id, true),
       client.from("classes").select("id, name").neq("id", classId).order("name"),
-      classLessons.load(),
-      loadStudents(),
-      loadMissing(),
-      assignments.load(cls.value.course_id),
+      workspace.load(cls.value.course_id),
     ])
     outline.value = o
     otherClasses.value = others.data ?? []
@@ -69,125 +50,18 @@ onMounted(async () => {
 })
 useHead({ title: () => t("classPage.pageTitle", { name: cls.value?.name ?? "" }) })
 
-// ---- who still owes work (open lessons, not submitted) ----
-type Missing = Pick<Views<"class_missing_work">, "lesson_id" | "due_at" | "user_id" | "full_name" | "username" | "started">
-const missing = shallowRef<Missing[]>([])
-async function loadMissing() {
-  const { data } = await client.from("class_missing_work")
-    .select("lesson_id, due_at, user_id, full_name, username, started").eq("class_id", classId)
-  missing.value = (data ?? []) as Missing[]
-}
-/** One group per lesson, the nearest deadline first (lessons without a deadline last). */
-const missingByLesson = computed(() => {
-  const groups = new Map<string, { lessonId: string; due: string | null; people: Missing[] }>()
-  for (const m of missing.value) {
-    const g = groups.get(m.lesson_id ?? "") ?? { lessonId: m.lesson_id ?? "", due: m.due_at, people: [] }
-    g.people.push(m)
-    groups.set(g.lessonId, g)
-  }
-  return [...groups.values()].sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999"))
-})
-const lessonName = (id: string) => {
-  const l = outline.value?.byId[id]
-  return l ? `${l.label} - ${l.title}` : id
-}
-const personName = (m: Missing) => m.full_name || m.username || "?"
-const remindText = (g: { lessonId: string; due: string | null; people: Missing[] }) =>
-  t(g.due ? "classPage.remindDue" : "classPage.remind", { lesson: lessonName(g.lessonId), due: formatDate(g.due), names: g.people.map(personName).join(", ") })
-const missingOf = (lessonId: string) => missingByLesson.value.find(g => g.lessonId === lessonId)
-const missingCount = (lessonId: string) => missingOf(lessonId)?.people.length ?? 0
 /** The lesson whose "Chưa nộp" popup is open. */
 const missingOpen = ref<string | null>(null)
 /** The lesson whose "Tình trạng nộp bài" popup (every student, where they stand) is open. */
 const progressOpen = ref<string | null>(null)
-const remindAll = computed(() => missingByLesson.value.map(remindText).join("\n"))
-
-// ---- changing lessons given to the class: one busy key per control; the outcome shows under that lesson ----
-/** The last change's outcome, shown inside the lesson it was about (the list is long; the page top is out of sight). */
-const notice = ref<{ lessonId: string; text: string; ok: boolean } | null>(null)
-const tell = (lessonId: string, text: string, ok = true) => { notice.value = { lessonId, text, ok } }
-/** Runs one change on a lesson with `key` marked busy; true when it went through. */
-async function act(lessonId: string, key: string, change: () => Promise<string | null>) {
-  busy.value = key
-  notice.value = null
-  const e = await change()
-  busy.value = null
-  if (e) tell(lessonId, e, false)
-  return !e
-}
-
-// Taking a lesson back is a second click; the database refuses it once students have worked on it.
-const armed = ref<string | null>(null)
-function arm(key: string) {
-  if (armed.value === key) return true
-  armed.value = key
-  setTimeout(() => { if (armed.value === key) armed.value = null }, 4000)
-  return false
-}
 
 // One lesson at a time opens its panel (info + settings) before it is given.
 const setupOpen = ref<string | null>(null)
 const toggleSetup = (lessonId: string) => (setupOpen.value = setupOpen.value === lessonId ? null : lessonId)
-const pickable = computed(() => students.value.map(st => ({ id: st.user_id ?? "", name: st.full_name || st.username || st.email || "?" })))
-/** Other classes of the grade (not this one) that have the lesson. */
-const givenToOthers = (lessonId: string) => assignments.classesOf(lessonId).filter(c => c.id !== classId).map(c => c.name)
+const pickable = computed(() => students.value.map(st => ({ id: st.user_id ?? "", name: personName(st) || "?" })))
 
 async function give(lessonId: string, settings: GiveSettings) {
-  const ok = await act(lessonId, lessonId, () => classLessons.give(lessonId, settings))
-  if (unlocked.value.has(lessonId)) {
-    setupOpen.value = null
-    if (ok) tell(lessonId, t("classPage.setup.given", { lesson: lessonName(lessonId), name: cls.value?.name ?? "" }))
-    assignments.load(cls.value!.course_id)
-    loadMissing()
-  }
-}
-
-/** Taking back is refused once any student has opened the lesson, even without submitting. */
-const canTakeBack = (lessonId: string) => lessonStats(lessonId).started === 0
-
-async function takeBack(lessonId: string) {
-  if (!arm(`back-${lessonId}`)) return
-  armed.value = null
-  if (!await act(lessonId, lessonId, () => classLessons.takeBack(lessonId))) return
-  tell(lessonId, t("classPage.takenBack", { lesson: lessonName(lessonId) }))
-  assignments.load(cls.value!.course_id)
-  loadMissing()
-}
-
-async function setClosed(lessonId: string, close: boolean) {
-  if (close && !arm(`close-${lessonId}`)) return
-  armed.value = null
-  let submitted = 0
-  const ok = await act(lessonId, lessonId, async () => {
-    const r = await classLessons.setClosed(lessonId, close)
-    submitted = r.submitted
-    return r.error
-  })
-  if (!ok) return
-  tell(lessonId, close
-    ? [t("classPage.closed"), submitted ? t("classPage.autoSubmitted", { n: submitted }) : "", t("classPage.closedReview")].filter(Boolean).join(" ")
-    : t("classPage.reopened"))
-  if (close && submitted) await loadStudents()
-  loadMissing()
-}
-
-/** Results at submit, shuffle, who may work: one switch each. Who may work changes who still owes work. */
-async function setSetting(lessonId: string, key: "show" | "shuffle" | "who", patch: SettingPatch) {
-  if (await act(lessonId, `${key}-${lessonId}`, () => classLessons.update(lessonId, patch)) && key === "who") loadMissing()
-}
-
-async function releaseAll(lessonId: string) {
-  if (!arm(`release-${lessonId}`)) return
-  armed.value = null
-  let released = 0
-  const ok = await act(lessonId, `release-${lessonId}`, async () => {
-    const r = await classLessons.release(lessonId)
-    released = r.released
-    return r.error
-  })
-  if (!ok) return
-  tell(lessonId, t("classPage.released", { n: released }))
-  await loadStudents()
+  if (await workspace.give(lessonId, settings)) setupOpen.value = null
 }
 
 // ---- deadline: past it students cannot work, and the lesson closes itself (pg_cron, every minute) ----
@@ -202,15 +76,7 @@ function editDue(lessonId: string) {
   dueEditing.value = lessonId
 }
 async function saveDue(lessonId: string, clear = false) {
-  const due = clear ? null : new Date(dueValue.value).toISOString()
-  if (due && isPastDue(due)) {
-    tell(lessonId, t("classPage.dueInPast"), false)
-    return
-  }
-  if (!await act(lessonId, `due-${lessonId}`, () => classLessons.update(lessonId, { due_at: due }))) return
-  loadMissing()
-  dueEditing.value = null
-  tell(lessonId, due ? t("classPage.dueSet", { date: formatDate(due) }) : t("classPage.dueCleared"))
+  if (await workspace.saveDue(lessonId, clear ? null : new Date(dueValue.value).toISOString())) dueEditing.value = null
 }
 
 // ---- a given lesson folds down to one line; unfolded it shows its numbers and controls ----
@@ -240,9 +106,6 @@ const summaryOf = (lessonId: string) => {
 
 // ---- who may work on a lesson (default: the whole class) ----
 const whoOpen = ref<string | null>(null)
-async function togglePick(lessonId: string, studentId: string) {
-  if (await act(lessonId, `pick-${lessonId}-${studentId}`, () => classLessons.togglePick(lessonId, studentId))) loadMissing()
-}
 const whoText = (lessonId: string) => {
   const st = unlocked.value.get(lessonId)
   return st?.for_all ? t("classPage.wholeClass") : t("classPage.someStudents", { n: picks.value.get(lessonId)?.size ?? 0, total: students.value.length })
@@ -267,23 +130,19 @@ const lessonFilter = useLessonFilter(outline, {
   },
 })
 
-const lessonStats = (id: string) => {
-  const r = lessonRows.value[id]
-  return { done: r?.submitted ?? 0, accuracy: percentOf(r?.ok, r?.done), waiting: r?.waiting ?? 0, started: r?.started ?? 0 }
-}
 
 // ---- moving a student ----
-async function moveStudent(s: StudentRow, target: string) {
+async function moveStudent(s: ClassStudentRow, target: string) {
   if (!target) return
   busy.value = s.user_id
   message.value = ""
   const { error: e } = await client.from("profiles").update({ class_id: target }).eq("id", s.user_id ?? "")
   busy.value = null
   if (e) {
-    message.value = t("classPage.moveFailed", { name: s.full_name || s.email, msg: errorText(e.message) })
+    message.value = t("classPage.moveFailed", { name: personName(s), msg: errorText(e.message) })
     return
   }
-  message.value = t("classPage.moved", { name: s.full_name || s.email, cls: otherClasses.value.find(c => c.id === target)?.name })
+  message.value = t("classPage.moved", { name: personName(s), cls: otherClasses.value.find(c => c.id === target)?.name })
   await loadStudents()
 }
 
@@ -476,7 +335,7 @@ async function copyCode() {
                   <div v-else class="row picks">
                     <label v-for="st in students" :key="st.user_id ?? ''" class="pick" :class="{ on: picks.get(l.id)?.has(st.user_id ?? '') }">
                       <input type="checkbox" :checked="picks.get(l.id)?.has(st.user_id ?? '')" :disabled="busy === `pick-${l.id}-${st.user_id}`" @change="togglePick(l.id, st.user_id ?? '')">
-                      {{ st.full_name || st.username }}
+                      {{ personName(st) }}
                     </label>
                   </div>
                   <p class="hint">{{ $t("classPage.whoHint") }}</p>

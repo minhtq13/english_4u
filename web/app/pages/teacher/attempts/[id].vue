@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Database, Enums, Tables } from "~/types/database.types"
+import type { AttemptWithStudent } from "~/utils/attemptReview"
 import type { Answer, Lesson, Response } from "~/utils/course"
 
 // Remount per attempt, so "next" in the grading queue loads the following student's work.
@@ -9,8 +10,7 @@ const route = useRoute()
 const client = useSupabaseClient<Database>()
 const attemptId = route.params.id as string
 
-type AttemptRow = Tables<"attempts"> & { profiles: Pick<Tables<"profiles">, "id" | "full_name" | "email"> | null }
-const attempt = shallowRef<AttemptRow | null>(null)
+const attempt = shallowRef<AttemptWithStudent | null>(null)
 const feedback = shallowRef<Tables<"feedback">[]>([])
 const errors = shallowRef<Tables<"error_log">[]>([])
 const loaded = ref(false)
@@ -24,19 +24,13 @@ const score = computed(() => (attempt.value ? toScore(attempt.value.score) : und
 const student = computed(() => attempt.value?.profiles)
 
 async function load() {
-  const { data } = await client.from("attempts").select("*, profiles(id, full_name, email)").eq("id", attemptId).maybeSingle()
-  attempt.value = data as AttemptRow | null
-  if (data) {
-    const [f, e, l, r] = await Promise.all([
-      client.from("feedback").select("*").eq("attempt_id", attemptId).order("created_at", { ascending: false }),
-      client.from("error_log").select("*").eq("user_id", data.user_id),
-      lesson.value?.id === data.lesson_id ? lesson.value : getLesson(data.lesson_id),
-      client.from("attempt_results").select("answers").eq("attempt_id", attemptId).maybeSingle(),
-    ])
-    answers.value = r.data ? (r.data.answers as unknown as Record<string, Answer>) : null
-    feedback.value = f.data ?? []
-    errors.value = e.data ?? []
-    lesson.value = l
+  const review = await readAttempt(client, attemptId)
+  attempt.value = review?.attempt ?? null
+  if (review) {
+    lesson.value = lesson.value?.id === review.attempt.lesson_id ? lesson.value : await getLesson(review.attempt.lesson_id)
+    answers.value = review.results as Record<string, Answer> | null
+    feedback.value = review.feedback
+    errors.value = review.errors
   }
   loaded.value = true
 }
@@ -46,8 +40,7 @@ useHead({ title: () => `${t("grading.grade")} ${attempt.value?.lesson_id ?? ""}`
 
 async function reloadErrors() {
   if (!attempt.value) return
-  const { data } = await client.from("error_log").select("*").eq("user_id", attempt.value.user_id)
-  errors.value = data ?? []
+  errors.value = await readErrors(client, attempt.value.user_id)
 }
 
 // ---- releasing results / letting the student redo ----
@@ -56,9 +49,9 @@ const actionMsg = ref("")
 async function releaseResults() {
   if (!attempt.value) return
   acting.value = true
-  const { error } = await client.from("attempts").update({ status: "graded" }).eq("id", attempt.value.id)
+  const error = await releaseAttempt(client, attempt.value.id)
   acting.value = false
-  actionMsg.value = error ? t("attemptPage.releaseFailed", { msg: errorText(error.message) }) : t("attemptPage.released")
+  actionMsg.value = error ?? t("attemptPage.released")
   if (!error && inQueue) return goNext()
   await load()
 }
@@ -74,22 +67,21 @@ async function loadQueue() {
   if (inQueue) waitingIds.value = await queue.waiting(queueLesson, queueClass)
 }
 onMounted(loadQueue)
-const queuePos = computed(() => waitingIds.value.indexOf(attemptId) + 1)
-const queueLink = (id: string) => queue.link(id, queueLesson, queueClass)
+const queuePos = computed(() => queuePosition(waitingIds.value, attemptId))
+const linkTo = (id: string) => queueLink(id, queueLesson, queueClass)
 
 /** After grading this one: the oldest still waiting (this one is no longer in the list). */
 async function goNext() {
   await loadQueue()
-  const next = waitingIds.value.find(id => id !== attemptId)
-  if (next) return navigateTo(queueLink(next))
+  const next = nextAfterGrading(waitingIds.value, attemptId)
+  if (next) return navigateTo(linkTo(next))
   queueDone.value = true
   await load()
 }
 /** Skip without grading: the next one after this in submission order, wrapping around. */
 function skip() {
-  const i = waitingIds.value.indexOf(attemptId)
-  const next = waitingIds.value[i + 1] ?? waitingIds.value.find(id => id !== attemptId)
-  if (next) navigateTo(queueLink(next))
+  const next = nextAfterSkip(waitingIds.value, attemptId)
+  if (next) navigateTo(linkTo(next))
 }
 
 // ---- comment templates (each teacher's own) ----
@@ -113,20 +105,14 @@ async function removeTemplate(id: string) {
   await loadTemplates()
 }
 
-const redoArmed = ref(false)
+const { armed, arm } = useTwoClick()
 async function allowRedo() {
-  if (!attempt.value) return
-  if (!redoArmed.value) {
-    redoArmed.value = true
-    setTimeout(() => { redoArmed.value = false }, 4000)
-    return
-  }
-  redoArmed.value = false
+  if (!attempt.value || !arm("redo")) return
   acting.value = true
   // One transaction: the graded results go and the attempt reopens together.
-  const { error } = await client.rpc("allow_redo", { target: attempt.value.id })
+  const error = await reopenAttempt(client, attempt.value.id)
   acting.value = false
-  actionMsg.value = error ? t("attemptPage.redoFailed", { msg: errorText(error.message) }) : t("attemptPage.redone")
+  actionMsg.value = error ?? t("attemptPage.redone")
   await load()
 }
 
@@ -134,7 +120,6 @@ async function allowRedo() {
 const editing = ref<string | null>(null)
 const editBody = ref("")
 const editTags = ref<string[]>([])
-const deleteArmed = ref<string | null>(null)
 const feedbackBusy = ref(false)
 
 function startEdit(f: Tables<"feedback">) {
@@ -146,10 +131,10 @@ function startEdit(f: Tables<"feedback">) {
 async function saveEdit(id: string) {
   if (!editBody.value.trim()) return
   feedbackBusy.value = true
-  const { error } = await client.from("feedback").update({ body: editBody.value.trim(), error_tags: editTags.value }).eq("id", id)
+  const error = await editFeedback(client, id, editBody.value, editTags.value)
   feedbackBusy.value = false
   if (error) {
-    message.value = t("common.notChanged", { msg: errorText(error.message) })
+    message.value = error
     return
   }
   editing.value = null
@@ -157,16 +142,11 @@ async function saveEdit(id: string) {
 }
 
 async function removeFeedback(id: string) {
-  if (deleteArmed.value !== id) {
-    deleteArmed.value = id
-    setTimeout(() => { if (deleteArmed.value === id) deleteArmed.value = null }, 4000)
-    return
-  }
-  deleteArmed.value = null
+  if (!arm(id)) return
   feedbackBusy.value = true
-  const { error } = await client.from("feedback").delete().eq("id", id)
+  const error = await deleteFeedback(client, id)
   feedbackBusy.value = false
-  if (error) message.value = t("editor.notDeleted", { msg: errorText(error.message) })
+  if (error) message.value = error
   await load()
 }
 
@@ -183,21 +163,13 @@ async function saveGrade() {
   if (!attempt.value || !body.value.trim()) return
   saving.value = true
   message.value = ""
-  const { error } = await client.from("feedback").insert({
-    attempt_id: attempt.value.id,
-    body: body.value.trim(),
-    error_tags: tags.value,
+  const error = await saveFeedback(client, {
+    attemptId: attempt.value.id, userId: attempt.value.user_id, lessonId: attempt.value.lesson_id,
+    body: body.value, tags: tags.value, newErrors: newErrors.value,
   })
-  const rows = newErrors.value.filter(e => e.note.trim()).map(e => ({
-    user_id: attempt.value!.user_id,
-    lesson_id: attempt.value!.lesson_id,
-    category: e.category,
-    note: e.note.trim(),
-  }))
-  const errorInsert = rows.length ? await client.from("error_log").insert(rows) : { error: null }
   saving.value = false
-  if (error || errorInsert.error) {
-    message.value = t("common.notSaved", { msg: errorText((error ?? errorInsert.error)!.message) })
+  if (error) {
+    message.value = error
     return
   }
   body.value = ""
@@ -224,7 +196,7 @@ async function saveGrade() {
     <Skeleton v-if="!loaded" />
     <p v-else-if="!attempt || !lesson" class="muted">{{ $t("attemptPage.notFound") }}</p>
     <template v-else>
-      <h1>{{ student?.full_name || student?.email }} · {{ lesson.label }} - {{ lesson.title }}</h1>
+      <h1>{{ student ? personName(student) : "" }} · {{ lesson.label }} - {{ lesson.title }}</h1>
       <p class="sub">
         {{ lesson.title }} · {{ $t("attemptPage.scoreLine", { ok: score?.ok ?? 0, done: score?.done ?? 0, total: lessonTotal(lesson) }) }}
         · <span class="badge" :class="attempt.status">{{ ATTEMPT_STATUS[attempt.status] }}</span>
@@ -234,8 +206,8 @@ async function saveGrade() {
         <button v-if="attempt.status === 'submitted'" class="btn primary" :disabled="acting" @click="releaseResults">
           {{ inQueue ? $t("attemptPage.releaseNext") : $t("attemptPage.release") }}
         </button>
-        <button v-if="attempt.status !== 'in_progress'" class="btn" :class="redoArmed ? 'danger' : 'ghost'" :disabled="acting" @click="allowRedo">
-          {{ redoArmed ? $t("attemptPage.redoConfirm") : $t("attemptPage.redo") }}
+        <button v-if="attempt.status !== 'in_progress'" class="btn" :class="armed === 'redo' ? 'danger' : 'ghost'" :disabled="acting" @click="allowRedo">
+          {{ armed === 'redo' ? $t("attemptPage.redoConfirm") : $t("attemptPage.redo") }}
         </button>
         <span v-if="attempt.status === 'in_progress'" class="small muted">{{ $t("attemptPage.notSubmitted") }}</span>
       </div>
@@ -299,8 +271,8 @@ async function saveGrade() {
             <span><b>{{ $t("attemptPage.commented") }}</b> <span class="muted small">· {{ formatDate(f.created_at) }}</span></span>
             <span v-if="editing !== f.id" class="row fb-actions">
               <button class="btn ghost small" :disabled="feedbackBusy" @click="startEdit(f)">{{ $t("common.edit") }}</button>
-              <button class="btn small" :class="deleteArmed === f.id ? 'danger' : 'ghost'" :disabled="feedbackBusy" @click="removeFeedback(f.id)">
-                {{ deleteArmed === f.id ? $t("common.confirmAgain") : $t("common.delete") }}
+              <button class="btn small" :class="armed === f.id ? 'danger' : 'ghost'" :disabled="feedbackBusy" @click="removeFeedback(f.id)">
+                {{ armed === f.id ? $t("common.confirmAgain") : $t("common.delete") }}
               </button>
             </span>
           </div>

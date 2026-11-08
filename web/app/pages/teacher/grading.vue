@@ -87,7 +87,7 @@ onMounted(async () => {
   loaded.value = true
 })
 
-const name = (p: { full_name: string | null; email: string } | null) => p?.full_name || p?.email || t("common.student")
+const name = (p: { full_name: string | null; email: string } | null) => (p && personName(p)) || t("common.student")
 const outcome = (a: AttemptRow) => attemptOutcome(a, "teacher")
 const className = (id: string | null | undefined) => classes.value.find(c => c.id === id)?.name ?? "-"
 const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a.lessons?.title ?? ""}`

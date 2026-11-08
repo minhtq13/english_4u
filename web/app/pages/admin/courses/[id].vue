@@ -187,7 +187,7 @@ const students = useServerList<Views<"student_progress">>(async ([from, to]) => 
             <tbody>
               <tr v-for="s in students.rows" :key="s.user_id ?? ''">
                 <td>
-                  <NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ s.full_name || s.email }}</b></NuxtLink>
+                  <NuxtLink :to="`/teacher/students/${s.user_id}`"><b>{{ personName(s) }}</b></NuxtLink>
                 </td>
                 <td>{{ s.class_name }}</td>
                 <td>

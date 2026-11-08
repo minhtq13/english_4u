@@ -11,6 +11,14 @@ export const loginEmail = (login: string) => {
 /** What to show as someone's login: the username, or the real email of Google / email accounts. */
 export const loginOf = (p: { username?: string | null; email: string | null }) => p.username || p.email || ""
 
+/**
+ * How a person is named wherever a page lists them: their full name, else their login. The login is the username
+ * (a student's auth email is a made-up address, never shown while a username exists) or the real email of a Google
+ * account. "" when there is nothing, so a caller picks its own placeholder.
+ */
+export const personName = (p: { full_name?: string | null; username?: string | null; email?: string | null }) =>
+  p.full_name || loginOf({ username: p.username, email: p.email ?? null })
+
 const PASSWORD_CHARS = "abcdefghjkmnpqrstuvwxyz23456789"
 /** An easy-to-type random password (no look-alike characters). */
 export function randomPassword(length = 8) {

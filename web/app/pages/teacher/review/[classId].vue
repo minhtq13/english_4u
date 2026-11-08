@@ -82,7 +82,7 @@ async function build() {
     studentId: student.value,
     courseId: cls.value!.course_id,
     label: t("editor.reviewLabel"),
-    title: who ? t("reviewPage.titleStudent", { name: who.full_name || who.username }) : t("reviewPage.titleClass", { name: cls.value?.name }),
+    title: who ? t("reviewPage.titleStudent", { name: personName(who) }) : t("reviewPage.titleClass", { name: cls.value?.name }),
     sections: sectionsFromQuestions(chosen, type => t(`reviewPage.section.${type}`)),
   }
   await navigateTo(`/teacher/lessons/new?class=${classId}&from=review`)
@@ -108,7 +108,7 @@ async function build() {
         <label class="field">{{ $t("common.student") }}
           <select v-model="student">
             <option value="">{{ $t("classPage.wholeClass") }}</option>
-            <option v-for="s in students" :key="s.user_id ?? ''" :value="s.user_id ?? ''">{{ s.full_name || s.username }}</option>
+            <option v-for="s in students" :key="s.user_id ?? ''" :value="s.user_id ?? ''">{{ personName(s) }}</option>
           </select>
         </label>
         <div><button class="btn primary" :disabled="loading || !chosenLessons.length" @click="find">{{ loading ? $t("reviewPage.finding") : $t("reviewPage.find") }}</button></div>

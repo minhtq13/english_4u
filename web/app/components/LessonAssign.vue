@@ -4,15 +4,10 @@ import type { Assignments } from "~/composables/useAssignments"
 // One chip per class of the grade: filled = assigned (students of that class see the lesson).
 // Taking a lesson back takes a second click, since it disappears from the students' roadmap.
 const props = defineProps<{ lessonId: string; assign: Assignments }>()
-const armed = ref<string | null>(null)
+const { armed, arm } = useTwoClick()
 
 function click(classId: string) {
-  if (props.assign.isAssigned(classId, props.lessonId) && armed.value !== classId) {
-    armed.value = classId
-    setTimeout(() => { if (armed.value === classId) armed.value = null }, 4000)
-    return
-  }
-  armed.value = null
+  if (props.assign.isAssigned(classId, props.lessonId) && !arm(classId)) return
   props.assign.toggle(classId, props.lessonId)
 }
 </script>

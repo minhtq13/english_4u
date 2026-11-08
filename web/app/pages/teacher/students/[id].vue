@@ -29,7 +29,7 @@ onMounted(async () => {
   loaded.value = true
 })
 const { t } = useI18n()
-useHead({ title: () => student.value?.full_name || t("common.student") })
+useHead({ title: () => (student.value && personName(student.value)) || t("common.student") })
 
 const accuracy = computed(() => {
   const scores = attempts.value.map(a => toScore(a.score))
@@ -43,7 +43,7 @@ const accuracy = computed(() => {
     <Skeleton v-if="!loaded" />
     <p v-else-if="!student" class="muted">{{ $t("studentPage.notFound") }}</p>
     <template v-else>
-      <h1>{{ student.full_name || student.email }}</h1>
+      <h1>{{ personName(student) }}</h1>
       <p class="sub">{{ loginOf(student) }} · {{ $t("studentPage.joined", { date: formatDate(student.created_at) }) }}</p>
       <p v-if="student.class_id">
         <NuxtLink :to="`/teacher/review/${student.class_id}?student=${student.id}`" class="btn ghost">{{ $t("studentPage.review") }}</NuxtLink>

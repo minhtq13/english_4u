@@ -31,16 +31,15 @@ onMounted(async () => {
   const cls = myClass.value
   if (!me || !cls) return
   try {
-    const [outline, opened, picked, { data: rows }, { count }] = await Promise.all([
+    const [outline, given, { data: rows }, { count }] = await Promise.all([
       load(cls.course_id),
-      client.from("class_lessons").select("lesson_id, show_results, for_all, closed, due_at, shuffle").eq("class_id", cls.id),
-      client.from("class_lesson_students").select("lesson_id").eq("class_id", cls.id).eq("student_id", me),
+      lessonsForStudent(client, cls.id, me),
       client.from("attempts").select("lesson_id, answers, score, status, updated_at").eq("user_id", me),
       client.from("error_log").select("id", { count: "exact", head: true }).eq("user_id", me).neq("status", "fixed"),
     ])
     course.value = outline
-    unlocked.value = new Map((opened.data ?? []).map(({ lesson_id, ...setting }) => [lesson_id, setting]))
-    mine.value = new Set((picked.data ?? []).map(r => r.lesson_id))
+    unlocked.value = given.settings
+    mine.value = given.picked
     attempts.value = Object.fromEntries((rows ?? []).map(r => [r.lesson_id, r]))
     openErrors.value = count ?? 0
   } catch (e) {

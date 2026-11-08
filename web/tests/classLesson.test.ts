@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { updateGivenLesson } from "~/composables/useClassLessons"
+import { updateGivenLesson } from "~/utils/classLessonStore"
 import {
   emptyGiveForm, formChanged, formOf, giveProblem, inDays, settingsOf, toLocalInput, type GiveForm,
 } from "~/utils/classLesson"

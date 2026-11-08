@@ -59,7 +59,7 @@ async function logout() {
   myClass.value = null
   await navigateTo("/login")
 }
-const displayName = computed(() => profile.value?.full_name || (profile.value ? loginOf(profile.value) : ""))
+const displayName = computed(() => profile.value ? personName(profile.value) : "")
 </script>
 
 <template>

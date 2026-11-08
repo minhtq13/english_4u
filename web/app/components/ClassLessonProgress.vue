@@ -21,10 +21,9 @@ let latest = 0
 async function load() {
   const run = ++latest
   loaded.value = false
-  const [st, cl, pk] = await Promise.all([
+  const [st, who] = await Promise.all([
     client.from("student_progress").select("user_id, full_name, username, email").eq("class_id", props.classId).order("full_name"),
-    client.from("class_lessons").select("for_all").eq("class_id", props.classId).eq("lesson_id", props.lessonId).maybeSingle(),
-    client.from("class_lesson_students").select("student_id").eq("class_id", props.classId).eq("lesson_id", props.lessonId),
+    whoMayWork(client, props.classId, props.lessonId),
   ])
   const list = st.data ?? []
   const ids = list.map(s => s.user_id ?? "").filter(Boolean)
@@ -32,12 +31,12 @@ async function load() {
     ? await client.from("attempts").select("id, user_id, status, score, submitted_at, updated_at").eq("lesson_id", props.lessonId).in("user_id", ids)
     : { data: [], error: null }
   if (run !== latest) return
-  failed.value = !!(st.error || cl.error || pk.error || at.error)
+  failed.value = !!(st.error || who.error || at.error)
   if (!failed.value) {
     students.value = list
     attempts.value = at.data ?? []
-    forAll.value = cl.data?.for_all ?? true
-    pickedIds.value = new Set((pk.data ?? []).map(r => r.student_id))
+    forAll.value = who.forAll
+    pickedIds.value = who.pickedIds
   }
   loaded.value = true
 }
@@ -75,7 +74,7 @@ const scoreOf = (r: (typeof rows.value)[number]) => (r.attempt && r.attempt.stat
 
       <ul class="list">
         <li v-for="r in paged.rows" :key="r.student.user_id ?? ''" class="item">
-          <NuxtLink :to="`/teacher/students/${r.student.user_id}`" class="who"><b>{{ r.student.full_name || r.student.email || r.student.username }}</b></NuxtLink>
+          <NuxtLink :to="`/teacher/students/${r.student.user_id}`" class="who"><b>{{ personName(r.student) }}</b></NuxtLink>
           <span class="badge" :class="BADGE[r.state]">{{ $t(`classPage.lessonState.${r.state}`) }}</span>
           <span class="small muted detail">
             <template v-if="scoreOf(r)">{{ $t("progress.correct", scoreOf(r)!) }}</template>
