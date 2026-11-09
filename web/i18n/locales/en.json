@@ -1106,7 +1106,7 @@
     "pageTitle": "Gradebook - Grammar",
     "title": "Gradebook of class {name}",
     "intro": "Each cell is the percent of questions answered correctly in submitted work. Click a cell to open the work.",
-    "export": "Export CSV",
+    "export": "Export Excel",
     "average": "Average",
     "fileName": "Gradebook",
     "noLessons": "No lesson has been given to this class yet.",
@@ -1120,7 +1120,9 @@
       "graded": "Graded"
     },
     "noLessonsHint": "Give a lesson on the class page and the gradebook gets a column for it.",
-    "noStudentsHint": "Students join with the class code or an account you create."
+    "noStudentsHint": "Students join with the class code or an account you create.",
+    "sheetTitle": "Gradebook of class {name}",
+    "sheetNote": "Note: each cell is the score of a submitted lesson, as the percent of the lesson's questions answered correctly (85% = 85% of the questions right). \"Working\" and \"Waiting for a grade\" have no score yet, so they are left out of the averages. Empty cell: not started."
   },
   "submitDialog": {
     "title": "Submit your work?",
@@ -1240,7 +1242,9 @@
     "noneTitle": "No submitted work to analyse",
     "none": "No student of this class has submitted {lesson} yet.",
     "failed": "Could not analyse: {msg}",
-    "legend": "Green: 80% right or more, amber: 50%, red: under 50%. Submitted work only."
+    "legend": "Green: 80% right or more, amber: 50%, red: under 50%. Submitted work only.",
+    "sheetTitle": "Question analysis - class {name} - {lesson}",
+    "sheetNote": "Note: the % column is the share of students who answered the question correctly out of those who answered it; the last column lists the common wrong answers, the number in brackets is how many students gave it."
   },
   "audit": {
     "intro": "Who changed a role, locked or deleted an account, moved a student, changed a class code or promoted a class.",

@@ -1106,7 +1106,7 @@
     "pageTitle": "Bảng điểm - Grammar",
     "title": "Bảng điểm lớp {name}",
     "intro": "Mỗi ô là phần trăm số câu đúng của bài đã nộp. Bấm vào ô để mở bài làm.",
-    "export": "Xuất CSV",
+    "export": "Xuất Excel",
     "average": "Trung bình",
     "fileName": "Bảng điểm",
     "noLessons": "Lớp chưa được giao bài nào.",
@@ -1120,7 +1120,9 @@
       "graded": "Đã chấm"
     },
     "noLessonsHint": "Giao bài ở trang lớp, bảng điểm sẽ có cột cho từng bài.",
-    "noStudentsHint": "Học sinh vào lớp bằng mã lớp hoặc tài khoản giáo viên cấp."
+    "noStudentsHint": "Học sinh vào lớp bằng mã lớp hoặc tài khoản giáo viên cấp.",
+    "sheetTitle": "Bảng điểm lớp {name}",
+    "sheetNote": "Ghi chú: mỗi ô là điểm của bài đã nộp, tính bằng % số câu đúng trên tổng số câu của bài (ví dụ 85% = đúng 85% số câu). \"Đang làm\" và \"Chờ chấm\" chưa có điểm nên chưa tính vào cột và dòng Trung bình. Ô trống: chưa làm bài."
   },
   "submitDialog": {
     "title": "Nộp bài?",
@@ -1240,7 +1242,9 @@
     "noneTitle": "Chưa có bài nộp để phân tích",
     "none": "Chưa học sinh nào của lớp nộp bài {lesson}.",
     "failed": "Không phân tích được: {msg}",
-    "legend": "Xanh: từ 80% đúng, vàng: từ 50%, đỏ: dưới 50%. Chỉ tính bài đã nộp."
+    "legend": "Xanh: từ 80% đúng, vàng: từ 50%, đỏ: dưới 50%. Chỉ tính bài đã nộp.",
+    "sheetTitle": "Phân tích câu hỏi - lớp {name} - {lesson}",
+    "sheetNote": "Ghi chú: cột % là tỉ lệ học sinh trả lời đúng câu đó trên số học sinh đã làm; cột cuối liệt kê các đáp án sai hay gặp, số trong ngoặc là số học sinh chọn."
   },
   "audit": {
     "intro": "Ai đã đổi vai trò, khoá hoặc xoá tài khoản, chuyển lớp, đổi mã lớp hoặc cho cả lớp lên lớp mới.",

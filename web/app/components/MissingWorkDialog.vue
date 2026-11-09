@@ -25,11 +25,11 @@ async function copy(text: string, which: "one" | "all") {
 }
 
 /** The same list as a file: name, login and whether they started. */
-function exportCsv() {
-  downloadCsv(`${fileSlug(t("classPage.missingFile"))}-${fileSlug(props.lesson)}.csv`, [
+async function exportXlsx() {
+  await downloadXlsx(`${fileSlug(t("classPage.missingFile"))}-${fileSlug(props.lesson)}`, { sheetName: t("classPage.missingFile"), title: props.lesson, rows: [
     [t("accounts.fullName"), t("accounts.username"), t("classPage.missingStatus")],
     ...props.people.map(m => [m.full_name ?? "", m.username ?? "", m.started ? t("classPage.inProgress") : t("classPage.notStarted")]),
-  ])
+  ] })
 }
 
 const titleId = useId()
@@ -59,7 +59,7 @@ const titleId = useId()
           <div class="row actions">
             <button class="btn small primary" @click="copy(remind, 'one')">{{ copied === "one" ? $t("common.copied") : $t("classPage.copyRemind") }}</button>
             <button class="btn small ghost" @click="copy(remindAll, 'all')">{{ copied === "all" ? $t("common.copied") : $t("classPage.copyAll") }}</button>
-            <button class="btn small ghost" @click="exportCsv"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
+            <button class="btn small ghost" @click="exportXlsx"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
           </div>
         </template>
       </div>

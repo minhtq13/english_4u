@@ -2,7 +2,7 @@
 import type { Database, Tables } from "~/types/database.types"
 import { analysisRows, type AnalysisRow } from "~/utils/questionAnalysis"
 import { lessonsOfClass } from "~/utils/classLessonStore"
-import { downloadCsv, fileSlug } from "~/utils/csv"
+import { downloadXlsx, fileSlug } from "~/utils/spreadsheet"
 import { errorText } from "~/utils/serverErrors"
 
 // Which questions a class found hard in one lesson: % right, and the wrong answers given most often.
@@ -47,11 +47,17 @@ watch(lessonId, run)
 watch(loaded, (l) => { if (l && lessonId.value) run() })
 
 const lessonName = computed(() => lessons.value.find(l => l.id === lessonId.value)?.name ?? "")
-function exportCsv() {
-  downloadCsv(`${fileSlug(t("analysis.fileName"))}-${fileSlug(cls.value?.name ?? "")}-${fileSlug(lessonId.value)}.csv`, [
-    [t("analysis.question"), t("analysis.text"), t("analysis.answered"), t("analysis.correct"), "%", t("analysis.commonWrong")],
-    ...rows.value.map(r => [r.qid, r.question, r.answered, r.ok, r.percent, r.wrong.map(w => `${w.given} (${w.n})`).join("; ")]),
-  ])
+async function exportXlsx() {
+  await downloadXlsx(`${fileSlug(t("analysis.fileName"))}-${fileSlug(cls.value?.name ?? "")}-${fileSlug(lessonId.value)}`, {
+    sheetName: lessonId.value,
+    title: t("analysis.sheetTitle", { name: cls.value?.name ?? "", lesson: lessonName.value }),
+    note: t("analysis.sheetNote"),
+    rows: [
+      [t("analysis.question"), t("analysis.text"), t("analysis.answered"), t("analysis.correct"), "%", t("analysis.commonWrong")],
+      ...rows.value.map(r => [r.qid, r.question, r.answered, r.ok, r.percent, r.wrong.map(w => `${w.given} (${w.n})`).join("; ")]),
+    ],
+    percentColumns: [4],
+  })
 }
 </script>
 
@@ -65,7 +71,7 @@ function exportCsv() {
           <h1>{{ $t("analysis.title", { name: cls.name }) }}</h1>
           <p class="sub">{{ $t("analysis.intro") }}</p>
         </div>
-        <button class="btn" :disabled="!rows.length" @click="exportCsv"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
+        <button class="btn" :disabled="!rows.length" @click="exportXlsx"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
       </div>
       <EmptyState v-if="!lessons.length" icon="clipboard" :title="$t('gradebook.noLessons')" :text="$t('gradebook.noLessonsHint')" />
       <template v-else>

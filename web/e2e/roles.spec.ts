@@ -67,6 +67,37 @@ test.describe("student", () => {
 })
 
 test.describe("teacher", () => {
+  test("gradebook downloads as an Excel file with a note and percents", async ({ page }) => {
+    const errors = noPageErrors(page)
+    await signIn(page, "TEACHER")
+    await page.goto("/teacher")
+    const cards = page.locator("a.class-card")
+    await expect(cards.first()).toBeVisible()
+    let file = null
+    for (let i = 0; i < await cards.count() && !file; i++) {
+      await page.goto("/teacher")
+      await cards.nth(i).click()
+      await page.getByRole("link", { name: /Bảng điểm|Gradebook/ }).click()
+      await expect(page.locator("table.grid, .empty").first()).toBeVisible()
+      const button = page.getByRole("button", { name: /Xuất Excel|Export Excel/ })
+      if (await button.isEnabled()) {
+        const [download] = await Promise.all([page.waitForEvent("download"), button.click()])
+        file = download
+      }
+    }
+    test.skip(!file, "no class of this teacher has a lesson and a student yet")
+    expect(file!.suggestedFilename()).toMatch(/\.xlsx$/)
+    const excel = await import("exceljs")
+    const book = new (excel.Workbook ?? excel.default.Workbook)()
+    await book.xlsx.readFile((await file!.path())!)
+    const ws = book.worksheets[0]!
+    expect(String(ws.getRow(1).getCell(1).value)).toMatch(/Bảng điểm|Gradebook/)
+    expect(String(ws.getRow(2).getCell(1).value)).toMatch(/Ghi chú|Note/)
+    expect(JSON.stringify(ws.getRow(4).values)).toMatch(/Học sinh|Student/)
+    expect(errors).toEqual([])
+    await signOut(page)
+  })
+
   test("today, class tools, gradebook and analysis", async ({ page }) => {
     const errors = noPageErrors(page)
     await signIn(page, "TEACHER")

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Database, Tables } from "~/types/database.types"
 import { bandOf, buildGradebook, type GradeAttempt, type GradeStudent, type Gradebook } from "~/utils/gradebook"
-import { downloadCsv, fileSlug } from "~/utils/csv"
+import { downloadXlsx, fileSlug } from "~/utils/spreadsheet"
 import { lessonsOfClass } from "~/utils/classLessonStore"
 
 // Students × the lessons given to the class, each cell the score as a percent (or where the work stands).
@@ -52,15 +52,21 @@ onMounted(async () => {
 const stateText = (s: string) => t(`gradebook.state.${s}`)
 const cellText = (c: { state: string; percent: number | null }) => (c.percent !== null ? `${c.percent}%` : c.state === "none" ? "–" : stateText(c.state))
 
-function exportCsv() {
+async function exportXlsx() {
   if (!book.value || !cls.value) return
   const b = book.value
-  const rows = [
-    [t("common.student"), ...b.lessons.map(l => `${l.label} - ${l.title}`), t("gradebook.average")],
-    ...b.rows.map(r => [r.name, ...r.cells.map(c => (c.percent !== null ? c.percent : c.state === "none" ? "" : stateText(c.state))), r.average ?? ""]),
-    [t("gradebook.average"), ...b.averages.map(a => a ?? ""), ""],
-  ]
-  downloadCsv(`${fileSlug(t("gradebook.fileName"))}-${fileSlug(cls.value.name)}.csv`, rows)
+  await downloadXlsx(`${fileSlug(t("gradebook.fileName"))}-${fileSlug(cls.value.name)}`, {
+    sheetName: cls.value.name,
+    title: t("gradebook.sheetTitle", { name: cls.value.name }),
+    note: t("gradebook.sheetNote"),
+    rows: [
+      [t("common.student"), ...b.lessons.map(l => `${l.label} - ${l.title}`), t("gradebook.average")],
+      ...b.rows.map(r => [r.name, ...r.cells.map(c => (c.percent !== null ? c.percent : c.state === "none" ? "" : stateText(c.state))), r.average]),
+      [t("gradebook.average"), ...b.averages, null],
+    ],
+    percentColumns: Array.from({ length: b.lessons.length + 1 }, (_, i) => i + 1),
+    boldLastRows: 1,
+  })
 }
 </script>
 
@@ -76,7 +82,7 @@ function exportCsv() {
           <h1>{{ $t("gradebook.title", { name: cls.name }) }}</h1>
           <p class="sub">{{ $t("gradebook.intro") }}</p>
         </div>
-        <button class="btn" :disabled="!book.rows.length || !book.lessons.length" @click="exportCsv"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
+        <button class="btn" :disabled="!book.rows.length || !book.lessons.length" @click="exportXlsx"><Icon name="file" /> {{ $t("gradebook.export") }}</button>
       </div>
       <EmptyState v-if="!book.lessons.length" icon="clipboard" :title="$t('gradebook.noLessons')" :text="$t('gradebook.noLessonsHint')" />
       <EmptyState v-else-if="!book.rows.length" icon="users" :title="$t('gradebook.noStudents')" :text="$t('gradebook.noStudentsHint')" />

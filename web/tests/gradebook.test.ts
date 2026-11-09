@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { bandOf, buildGradebook } from "~/utils/gradebook"
-import { csvCell, fileSlug, toCsv } from "~/utils/csv"
+import { Workbook } from "exceljs"
+import { fileSlug, xlsxBytes } from "~/utils/spreadsheet"
 
 const student = (id: string, name: string) => ({ user_id: id, full_name: name, username: null, email: null })
 const lessons = [{ id: "6.1", label: "Unit 1", title: "A", total: 10 }, { id: "6.2", label: "Unit 2", title: "B", total: 20 }]
@@ -34,19 +35,29 @@ describe("buildGradebook", () => {
   })
 })
 
-describe("csv", () => {
-  it("quotes commas, quotes and line breaks", () => {
-    expect(csvCell('a,"b"')).toBe('"a,""b"""')
-    expect(csvCell("x\ny")).toBe('"x\ny"')
-    expect(csvCell(null)).toBe("")
-    expect(csvCell(7)).toBe("7")
+describe("spreadsheet", () => {
+  async function sheetOf(spec: Parameters<typeof xlsxBytes>[0]) {
+    const book = new Workbook()
+    await book.xlsx.load(await xlsxBytes(spec))
+    return book.worksheets[0]!
+  }
+  it("puts the title and the note above the header, then the data", async () => {
+    const ws = await sheetOf({ sheetName: "6T1", title: "Bảng điểm", note: "Điểm là %", rows: [["Học sinh", "Bài 1"], ["An", 90]], percentColumns: [1] })
+    expect(ws.getRow(1).getCell(1).value).toBe("Bảng điểm")
+    expect(ws.getRow(2).getCell(1).value).toBe("Điểm là %")
+    expect(ws.getRow(4).getCell(1).value).toBe("Học sinh")
+    expect(ws.getRow(5).getCell(1).value).toBe("An")
+    expect(ws.getRow(5).getCell(2).value).toBe(90)
+    expect(ws.getRow(5).getCell(2).numFmt).toBe('0"%"')
   })
-  it("defuses spreadsheet formulas in text", () => {
-    expect(csvCell("=SUM(A1)")).toBe('"\t=SUM(A1)"')
-    expect(csvCell(-3)).toBe("-3")
+  it("keeps a pasted formula as text and leaves empty cells empty", async () => {
+    const ws = await sheetOf({ sheetName: "x", rows: [["Tên", "Điểm"], ["=SUM(A1)", null]] })
+    expect(ws.getRow(2).getCell(1).value).toBe("=SUM(A1)")
+    expect(ws.getRow(2).getCell(2).value).toBeNull()
   })
-  it("starts with a byte-order mark and ends rows with CRLF", () => {
-    expect(toCsv([["Tên", "Điểm"], ["An", 9]])).toBe("﻿Tên,Điểm\r\nAn,9\r\n")
+  it("cleans a sheet name Excel would refuse", async () => {
+    const ws = await sheetOf({ sheetName: "6/T1: [x]", rows: [["a"]] })
+    expect(ws.name).toBe("6 T1   x ")
   })
   it("makes a plain file name", () => {
     expect(fileSlug("Bảng điểm 6T1 – Đề 1")).toBe("Bang-diem-6T1-De-1")

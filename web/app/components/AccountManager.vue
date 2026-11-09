@@ -136,11 +136,11 @@ async function copyCreated() {
 }
 
 /** The new accounts as a file, to keep or print: name, username, password (shown once). */
-function exportCreated() {
-  downloadCsv(`${fileSlug(t("accounts.createdFile"))}.csv`, [
+async function exportCreated() {
+  await downloadXlsx(fileSlug(t("accounts.createdFile")), { sheetName: t("accounts.createdFile"), rows: [
     [t("accounts.fullName"), t("accounts.username"), t("login.password")],
     ...created.value.filter(r => r.ok).map(r => [personName(r), r.username, r.password]),
-  ])
+  ] })
 }
 
 // ---- per-account actions ----
