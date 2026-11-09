@@ -62,6 +62,16 @@ export default defineNuxtConfig({
         resolveId: (id) => (id === "#components" ? { id, external: true } : null),
       },
     ],
+    build: {
+      rollupOptions: {
+        output: {
+          // exceljs (Excel export, ~900 KB) only runs when a teacher saves a file: give it a file name the service
+          // worker can recognise and leave out of the precache, so students never download it.
+          chunkFileNames: (chunk) => (chunk.name === "lazy-exceljs" ? "_nuxt/lazy-exceljs.[hash].js" : "_nuxt/[hash].js"),
+          manualChunks: (id) => (id.includes("/node_modules/exceljs/") ? "lazy-exceljs" : undefined),
+        },
+      },
+    },
   },
 
   // Installable app. The service worker precaches only the app shell (built JS/CSS/icons); no data is ever cached, since
@@ -87,7 +97,7 @@ export default defineNuxtConfig({
     },
     workbox: {
       globPatterns: ["**/*.{js,css,png,ico,svg,woff2}"],
-      globIgnores: ["**/favicon_io/android-chrome-512x512.png"],
+      globIgnores: ["**/favicon_io/android-chrome-512x512.png", "**/lazy-exceljs*.js"],
       // The SPA shell is served by Nitro, not a static file, so there is no HTML to fall back to: page loads always use the network.
       navigateFallback: null,
       cleanupOutdatedCaches: true,
