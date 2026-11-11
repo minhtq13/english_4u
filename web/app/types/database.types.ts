@@ -283,6 +283,35 @@ export type Database = {
         Update: { created_at?: string; id?: string; name?: string; sections?: Json; teacher_id?: string }
         Relationships: []
       }
+      exam_sets: {
+        Row: {
+          codes: string; course_id: string | null; created_at: string; department: string; id: string; minutes: number; mode: string
+          owner_id: string; part_hints: Json; /** Generated: the number of questions in `questions`. */ question_count: number; questions: Json
+          school: string; school_year: string; sheet_at: string; term: string; title: string; updated_at: string
+        }
+        Insert: {
+          codes?: string; course_id?: string | null; created_at?: string; department?: string; id?: string; minutes?: number; mode?: string
+          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; term?: string; title: string; updated_at?: string
+        }
+        Update: {
+          codes?: string; course_id?: string | null; created_at?: string; department?: string; id?: string; minutes?: number; mode?: string
+          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; term?: string; title?: string; updated_at?: string
+        }
+        Relationships: [
+          { foreignKeyName: "exam_sets_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "exam_sets_course_id_fkey"; columns: ["course_id"]; isOneToOne: false; referencedRelation: "courses"; referencedColumns: ["id"] },
+        ]
+      }
+      exam_set_shares: {
+        Row: { can_edit: boolean; created_at: string; created_by: string; exam_id: string; user_id: string }
+        Insert: { can_edit?: boolean; created_at?: string; created_by?: string; exam_id: string; user_id: string }
+        Update: { can_edit?: boolean; created_at?: string; created_by?: string; exam_id?: string; user_id?: string }
+        Relationships: [
+          { foreignKeyName: "exam_set_shares_exam_id_fkey"; columns: ["exam_id"]; isOneToOne: false; referencedRelation: "exam_sets"; referencedColumns: ["id"] },
+          { foreignKeyName: "exam_set_shares_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "exam_set_shares_created_by_fkey"; columns: ["created_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       class_lesson_students: {
         Row: { class_id: string; created_at: string; lesson_id: string; student_id: string }
         Insert: { class_id: string; created_at?: string; lesson_id: string; student_id: string }
@@ -704,6 +733,10 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      staff_directory: {
+        Args: { term?: string | null; ids?: string[] | null }
+        Returns: { id: string; full_name: string | null; username: string | null; role: Database["public"]["Enums"]["app_role"] }[]
+      }
       close_class_lesson: {
         Args: { target_class: string; target_lesson: string; close_it: boolean }
         Returns: number

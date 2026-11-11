@@ -53,7 +53,7 @@ async function build() {
 <template>
   <div>
     <h1>{{ $t("bankPage.pageTitle") }}</h1>
-    <p class="sub">{{ $t("bankPage.intro") }}</p>
+    <p class="sub">{{ $t("bankPage.intro") }} <NuxtLink to="/teacher/exams">{{ $t("bankPage.toExam") }} →</NuxtLink></p>
 
     <div class="row filters">
       <select id="bank-course" v-model="course" :aria-label="$t('bank.allGrades')">

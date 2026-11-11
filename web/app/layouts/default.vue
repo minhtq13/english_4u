@@ -12,7 +12,7 @@ const session = useSessionGuard()
 
 interface NavGroup { title: string; links: { to: string; label: string; icon: IconName }[] }
 const ICONS: Record<string, IconName> = {
-  roadmap: "home", review: "clock", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file",
+  roadmap: "home", review: "clock", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file", exams: "clipboard",
   dashboard: "chart", classes: "users", teachers: "users", users: "user", logins: "clock", audit: "clipboard",
 }
 
@@ -23,7 +23,7 @@ const groups = computed<NavGroup[]>(() => {
   const teacher = {
     title: t("nav.groupTeach"),
     links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading"),
-      link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson"), link("/teacher/bank", "bank")],
+      link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson"), link("/teacher/bank", "bank"), link("/teacher/exams", "exams")],
   }
   const admin = {
     title: t("nav.groupAdmin"),

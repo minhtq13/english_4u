@@ -18,7 +18,18 @@ export function account(role: Role) {
 
 /** Signs in through the login page and waits until the signed-in layout is there. */
 export async function signIn(page: Page, role: Role) {
-  const { user, password } = account(role)
+  await signInWith(page, account(role))
+}
+
+/** The plain test accounts (TEST_*: test.admin, gv.02, hs.04), for flows that must not touch the accounts people use (E2E_*). */
+export function testAccount(role: Role) {
+  const user = process.env[`TEST_${role}_USER`]
+  const password = process.env[`TEST_${role}_PASSWORD`]
+  if (!user || !password) throw new Error(`TEST_${role}_USER / TEST_${role}_PASSWORD are not set (web/.env.test)`)
+  return { user, password }
+}
+
+export async function signInWith(page: Page, { user, password }: { user: string; password: string }) {
   await page.goto("/login")
   await page.locator("#login-user").fill(user)
   await page.locator("#login-pass").fill(password)

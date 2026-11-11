@@ -45,6 +45,7 @@ không tự tạo tài khoản bằng Google (tài khoản do trang quản lý t
 | Chấm lần lượt | Chấm bài → "Chấm lần lượt", hoặc cột Chờ chấm ở trang lớp | Lưu nhận xét / trả kết quả là tự sang em tiếp theo. |
 | Nhận xét mẫu | Ô nhận xét ở trang chấm (`comment_templates`) | Bấm để chèn; "Lưu thành mẫu"; mỗi giáo viên có mẫu riêng. |
 | Cấu trúc bài đã lưu | Bước "Cấu trúc bài" của trang soạn bài (`lesson_structures`) | Lưu danh sách phần (loại, tiêu đề, gợi ý, số câu, mẫu đề THCS), không lưu câu hỏi; mỗi giáo viên có mẫu riêng. |
+| Bộ đề thi | Menu "Bộ đề thi" (`/teacher/exams`, bảng `exam_sets`) | Soạn đề giấy: chọn câu từ ngân hàng hoặc bốc theo ma trận, sinh nhiều mã đề (trộn theo mã), tải Word / PDF / Excel đáp án. Lưu cả bộ để mở, sửa, xoá; câu hỏi lưu dạng bản chụp kèm đáp án. Kéo thả để sắp xếp câu và các phần; tự viết chú thích dưới tên từng phần. Chia sẻ bộ đề cho giáo viên / admin khác (chỉ xem hoặc được sửa; học sinh không nhận được), tạo bản sao để tự sửa. Giáo viên thấy bộ của mình và bộ được chia sẻ, admin thấy tất cả. |
 | Trả kết quả cả lớp | Cột Chờ chấm ở trang lớp (`release_class_results()`) | Cho phiếu chỉ có câu tự chấm. |
 | Chưa nộp | Mục "Chưa nộp" ở trang lớp (view `class_missing_work`) | Theo bài, gần hạn trước; copy để nhắn Zalo. |
 | In phiếu | Nút "In" ở danh sách bài / xem trước (`/teacher/print/<id>`) | Bản học sinh hoặc bản đáp án; in hoặc lưu PDF từ trình duyệt. |

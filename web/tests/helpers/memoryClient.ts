@@ -7,11 +7,12 @@ type Result = { data: unknown; error: { message: string } | null }
  * An in-memory stand-in for the Supabase client, for the modules that read and write tables. It understands the
  * calls those modules make: from().select / insert / update / delete, chained with eq / in, `.select()` after a
  * delete, `maybeSingle()`, and rpc(). `unique` lists the key columns of a table: inserting the same key twice fails
- * as the database would. `fail` is "table.op" (e.g. "class_lessons.insert") to make that call return an error.
+ * as the database would. `autoId` lists tables whose inserted rows get an `id` when they bring none (a uuid default).
+ * Insert and update give the written rows back when `.select()` is chained. `fail` is "table.op" (e.g. "class_lessons.insert") to make that call return an error.
  */
 export function memoryClient(
   seed: Record<string, Row[]> = {},
-  opts: { unique?: Record<string, string[]>; fail?: string[]; rpc?: Record<string, (args: Row) => unknown> } = {},
+  opts: { unique?: Record<string, string[]>; fail?: string[]; rpc?: Record<string, (args: Row) => unknown>; autoId?: string[] } = {},
 ) {
   const tables: Record<string, Row[]> = Object.fromEntries(Object.entries(seed).map(([k, v]) => [k, v.map(r => ({ ...r }))]))
   const rows = (t: string) => (tables[t] ??= [])
@@ -50,12 +51,13 @@ export function memoryClient(
         for (const r of list) {
           if (key && rows(table).some(x => key.every(k => x[k] === r[k]))) return { data: null, error: { message: `duplicate key value violates unique constraint on ${table}` } }
         }
-        rows(table).push(...list.map(r => ({ ...r })))
-        return { data: null, error: null }
+        const stored = list.map(r => ({ ...(opts.autoId?.includes(table) && r.id === undefined ? { id: crypto.randomUUID() } : {}), ...r }))
+        rows(table).push(...stored)
+        return { data: stored.map(r => ({ ...r })), error: null }
       }),
       update: (patch: Row) => query("update", (filtered) => {
         for (const r of filtered) Object.assign(r, Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)))
-        return { data: null, error: null }
+        return { data: filtered.map(r => ({ ...r })), error: null }
       }),
       delete: () => query("delete", (filtered) => {
         tables[table] = rows(table).filter(r => !filtered.includes(r))
