@@ -71,6 +71,12 @@ async function save() {
     </section>
 
     <section class="card">
+      <h2>{{ $t("accent.title") }}</h2>
+      <p class="hint">{{ $t("accent.hint") }}</p>
+      <AccentPicker />
+    </section>
+
+    <section class="card">
       <h2>{{ hasPassword ? $t("account.change") : $t("account.setTitle") }}</h2>
       <p v-if="!hasPassword" class="hint">{{ $t("account.googleHint") }}</p>
       <form class="stack form" @submit.prevent="save">

@@ -11,8 +11,8 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: "vi" },
-      // The theme chosen in ThemeSwitch (useTheme), applied before the app starts so a dark choice never flashes light.
-      script: [{ innerHTML: "try{var t=document.cookie.match(/(?:^|; )theme=(light|dark)/);if(t)document.documentElement.dataset.theme=t[1]}catch(e){}" }],
+      // The theme (useTheme) and primary colour (useAccent) chosen by the person, applied before the app starts so a dark choice never flashes light.
+      script: [{ innerHTML: "try{var t=document.cookie.match(/(?:^|; )theme=(light|dark)/);if(t)document.documentElement.dataset.theme=t[1];var a=document.cookie.match(/(?:^|; )accent=([a-z]+)/);if(a&&a[1]!=='blue'){var d=document.documentElement;d.dataset.accent=a[1];if(a[1]==='custom'){var v=document.cookie.match(/(?:^|; )accentVars=([0-9a-f.]+)/);if(v){var q=v[1].split('.'),n=['c-accent','c-soft','c-on','cd-accent','cd-soft','cd-on'];for(var i=0;i<6;i++)d.style.setProperty('--'+n[i],'#'+q[i])}}}}catch(e){}" }],
       title: "Ngữ pháp tiếng Anh",
       meta: [
         { name: "theme-color", content: "#f5f6f8", media: "(prefers-color-scheme: light)" },
