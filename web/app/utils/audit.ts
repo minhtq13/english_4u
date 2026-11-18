@@ -6,11 +6,11 @@ import type { Json, Tables } from "~/types/database.types"
 export type AuditRow = Pick<Tables<"audit_log">, "id" | "at" | "actor" | "action" | "target" | "detail">
 
 export const AUDIT_ACTIONS = [
-  "role_changed", "account_locked", "account_unlocked", "class_changed", "account_deleted", "class_code_changed", "class_deleted", "class_promoted",
+  "role_changed", "account_locked", "account_unlocked", "class_changed", "account_deleted", "class_code_changed", "class_deleted", "class_promoted", "class_graduated",
 ] as const
 export type AuditAction = (typeof AUDIT_ACTIONS)[number]
 
-const CLASS_ACTIONS = new Set<string>(["class_code_changed", "class_deleted", "class_promoted"])
+const CLASS_ACTIONS = new Set<string>(["class_code_changed", "class_deleted", "class_promoted", "class_graduated"])
 
 /** Whether the row's target is a class (otherwise it is a person). */
 export const targetsClass = (action: string) => CLASS_ACTIONS.has(action)
@@ -44,6 +44,7 @@ export function auditView(r: AuditRow, people: ReadonlyMap<string, string>, clas
   if (r.action === "role_changed") detail = { key: "audit.detail.role", params: { from: str(d.from), to: str(d.to) } }
   else if (r.action === "class_changed") detail = { key: "audit.detail.move", params: { from: cls(str(d.from)), to: cls(str(d.to)) } }
   else if (r.action === "class_promoted") detail = { key: "audit.detail.promoted", params: { n: typeof d.students === "number" ? d.students : 0, to: cls(str(d.to)) } }
+  else if (r.action === "class_graduated") detail = { key: "audit.detail.graduated", params: { n: typeof d.students === "number" ? d.students : 0 } }
   else if (r.action === "account_deleted") detail = { key: "audit.detail.deleted", params: { role: str(d.role), login: str(d.username) || str(d.email) } }
   return { action: r.action, actor: r.actor ? people.get(r.actor) ?? "?" : "", target, detail }
 }

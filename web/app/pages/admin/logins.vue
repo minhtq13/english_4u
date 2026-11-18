@@ -14,18 +14,46 @@ type Row = Pick<Tables<"login_log">, "id" | "signed_in_at" | "last_seen_at" | "e
 const search = ref("")
 const reason = ref("")
 const REASONS = ["signout", "replaced", "idle", "locked"] as const
+const classId = ref("")
+const range = ref("")
+const RANGES = [["today", 0], ["7", 7], ["30", 30]] as const
+const classes = shallowRef<{ id: string; name: string }[]>([])
+/** The start of a range as a timestamp: today = midnight Vietnam time, else that many days back. */
+const sinceOf = (r: string) => {
+  if (!r) return null
+  if (r === "today") return new Date(`${new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(Date.now())}T00:00:00+07:00`).toISOString()
+  return new Date(Date.now() - Number(r) * 24 * 3600 * 1000).toISOString()
+}
+
+// Today's numbers: sign-ins since midnight (Vietnam) and how long their sessions lasted on average.
+const today = reactive({ n: 0, avg: null as number | null })
+async function loadToday() {
+  const { data } = await client.from("login_log").select("signed_in_at, last_seen_at, ended_at").gte("signed_in_at", sinceOf("today")!).limit(2000)
+  const rows = data ?? []
+  today.n = rows.length
+  const mins = rows.map(r => Math.max(0, (Date.parse(r.ended_at ?? r.last_seen_at) - Date.parse(r.signed_in_at)) / 60000))
+  today.avg = mins.length ? Math.round(mins.reduce((a, b) => a + b, 0) / mins.length) : null
+}
 
 const list = useServerList<Row>(([from, to]) => {
   let q = client.from("login_log")
     .select("id, signed_in_at, last_seen_at, ended_at, end_reason, ip, user_agent, profiles!inner(full_name, username, email)", { count: "exact" })
     .order("signed_in_at", { ascending: false })
+  if (classId.value) q = q.eq("profiles.class_id", classId.value)
+  const since = sinceOf(range.value)
+  if (since) q = q.gte("signed_in_at", since)
   if (reason.value === "active") q = q.is("ended_at", null)
   else if (reason.value) q = q.eq("end_reason", reason.value)
   const term = filterTerm(search.value)
   if (term) q = q.or(personSearch(term), { referencedTable: "profiles" })
   return q.range(from, to) as unknown as PromiseLike<{ data: Row[] | null; count: number | null; error: { message: string } | null }>
-}, { pageSize: 25, filters: [search, reason] })
-onMounted(() => list.load())
+}, { pageSize: 25, filters: [search, reason, classId, range] })
+onMounted(async () => {
+  list.load()
+  loadToday()
+  const { data } = await client.from("classes").select("id, name").order("name")
+  classes.value = data ?? []
+})
 
 /** A short readable browser name from the user agent. */
 const browser = (ua: string | null) => {
@@ -42,8 +70,20 @@ const reasonLabel = (r: Row) => (r.ended_at ? t(`logins.reason.${r.end_reason ??
   <div>
     <h1>{{ $t("nav.logins") }}</h1>
     <p class="sub">{{ $t("logins.intro") }}</p>
+    <div class="stats">
+      <div class="stat"><b>{{ today.n }}</b><span>{{ $t("logins.todayCount") }}</span></div>
+      <div class="stat"><b>{{ today.avg === null ? "–" : $t("logins.minutes", today.avg) }}</b><span>{{ $t("logins.todayAvg") }}</span></div>
+    </div>
     <div class="row filters">
       <input v-model="search" type="search" :placeholder="$t('logins.search')" :aria-label="$t('logins.search')">
+      <select v-model="classId" :aria-label="$t('logins.classFilter')">
+        <option value="">{{ $t("logins.allClasses") }}</option>
+        <option v-for="c in classes" :key="c.id" :value="c.id">{{ c.name }}</option>
+      </select>
+      <select v-model="range" :aria-label="$t('logins.rangeFilter')">
+        <option value="">{{ $t("logins.anyTime") }}</option>
+        <option v-for="[k] in RANGES" :key="k" :value="k">{{ $t(`logins.range.${k}`) }}</option>
+      </select>
       <select v-model="reason" :aria-label="$t('logins.reasonFilter')">
         <option value="">{{ $t("logins.all") }}</option>
         <option value="active">{{ $t("logins.active") }}</option>
@@ -73,7 +113,7 @@ const reasonLabel = (r: Row) => (r.ended_at ? t(`logins.reason.${r.end_reason ??
 </template>
 
 <style scoped>
-.filters { align-items: center; gap: 8px; margin: 8px 0 12px; flex-wrap: wrap; }
+.filters { align-items: center; gap: var(--space-sm); margin: 8px 0 12px; flex-wrap: wrap; }
 .filters input { flex: 1; min-width: 180px; }
 .filters select { width: auto; }
 .scroll { overflow-x: auto; padding: 0; }

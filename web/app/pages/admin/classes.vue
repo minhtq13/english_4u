@@ -61,6 +61,7 @@ async function run(key: string, action: () => PromiseLike<{ error: { message: st
   if (!error) await load()
 }
 
+const promoteOpen = ref(false)
 // ---- promotion: at the start of a school year, move every student of a class to another class ----
 const promotePick = reactive<Record<string, string>>({})
 async function promote(c: ClassRow) {
@@ -116,6 +117,11 @@ function remove(c: ClassRow) {
   <div>
     <h1>{{ $t("nav.classes") }}</h1>
     <p class="sub">{{ $t("classesPage.intro") }}</p>
+
+    <div class="row yearbar">
+      <button class="btn" @click="promoteOpen = true"><Icon name="users" /> {{ $t("promotion.open") }}</button>
+    </div>
+    <PromoteDialog v-if="promoteOpen" :classes="classes.map(c => ({ id: c.id, name: c.name, students: studentCount(c.id) }))" @close="promoteOpen = false" @done="load" />
 
     <form class="card row create" @submit.prevent="createClass">
       <b>{{ $t("classesPage.new") }}</b>
@@ -184,15 +190,15 @@ function remove(c: ClassRow) {
 <style scoped>
 .create { gap: 10px; }
 .create select { width: auto; }
-.class-row { display: grid; grid-template-columns: 140px 200px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.class-row { display: grid; grid-template-columns: 140px 200px 1fr auto; gap: var(--space-md); align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
 .class-row:first-of-type { border-top: 0; }
-.cell { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.cell { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; min-width: 0; }
 .name { flex-direction: column; align-items: flex-start; gap: 0; }
 .name a { text-decoration: none; font-size: 1.1rem; }
 .code b { letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .btn.small { padding: 3px 10px; font-size: .85rem; }
 .teachers select, .cell select { width: auto; max-width: 240px; }
-.chip-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-soft); border-radius: 999px; padding: 2px 4px 2px 10px; font-size: .88rem; }
+.chip-tag { display: inline-flex; align-items: center; gap: var(--space-xs); background: var(--accent-soft); border-radius: var(--radius-full); padding: 2px 4px 2px 10px; font-size: .88rem; }
 .chip-tag .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 4px; }
 .chip-tag .x:hover { color: var(--bad); }
 @media (max-width: 760px) { .class-row { grid-template-columns: 1fr; } }

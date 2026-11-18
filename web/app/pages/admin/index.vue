@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Database, Views } from "~/types/database.types"
+import { dailyCounts, scoreBands, topClasses, type SubmittedAttempt } from "~/utils/adminCharts"
 
 definePageMeta({ roles: ["admin"] })
 const { t } = useI18n()
@@ -12,6 +13,12 @@ const summaries = shallowRef<Views<"course_summary">[]>([])
 const totals = reactive({ students: 0, noClass: 0, active: 0, attemptsWeek: 0, waiting: 0, accuracy: null as number | null })
 const loaded = ref(false)
 const error = ref("")
+const handIns = shallowRef<SubmittedAttempt[]>([])
+const daily = computed(() => dailyCounts(handIns.value))
+const maxDaily = computed(() => Math.max(1, ...daily.value.map(d => d.n)))
+const top = computed(() => topClasses(handIns.value))
+const bands = computed(() => scoreBands(handIns.value))
+const bandTotal = computed(() => bands.value.low + bands.value.mid + bands.value.good)
 
 onMounted(async () => {
   try {
@@ -35,6 +42,13 @@ onMounted(async () => {
     error.value = t("dashboard.loadFailed", { msg: (e as Error).message })
   }
   loaded.value = true
+  // Charts: the hand-ins of the last 30 days (up to 5000 rows), counted in the browser.
+  const from = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
+  const { data, error: chartError } = await (client.from("attempts")
+    .select("submitted_at, score, profiles!inner(classes!profiles_class_id_fkey(name))")
+    .neq("status", "in_progress").gte("submitted_at", from).limit(5000) as unknown as PromiseLike<{ error: { message: string } | null; data: { submitted_at: string | null; score: { ok?: number; total?: number } | null; profiles: { classes: { name: string } | null } | null }[] | null }>)
+  if (chartError) error.value = t("dashboard.loadFailed", { msg: chartError.message })
+  handIns.value = (data ?? []).map(r => ({ submitted_at: r.submitted_at, ok: r.score?.ok ?? 0, total: r.score?.total ?? 0, className: r.profiles?.classes?.name ?? null }))
 })
 </script>
 
@@ -57,7 +71,32 @@ onMounted(async () => {
       </NuxtLink>
     </div>
 
-    <section class="card">
+    <div class="charts" :aria-busy="!loaded">
+      <section class="card wide-chart">
+        <h2>{{ $t("dashboard.chartDaily") }}</h2>
+        <div class="daily" role="img" :aria-label="$t('dashboard.chartDaily')">
+          <span v-for="d in daily" :key="d.day" class="col" :title="`${formatDate(d.day)}: ${d.n}`">
+            <span class="b" :style="{ height: `${(d.n / maxDaily) * 100}%` }" />
+          </span>
+        </div>
+        <p class="small muted">{{ $t("dashboard.chartDailyHint", { max: maxDaily }) }}</p>
+      </section>
+      <section class="card">
+        <h2>{{ $t("dashboard.chartTop") }}</h2>
+        <p v-if="!top.length" class="muted small">{{ $t("dashboard.chartNone") }}</p>
+        <div v-for="c in top" :key="c.name" class="trow"><b>{{ c.name }}</b><StatBar :value="Math.round((c.n / top[0]!.n) * 100)" :text="String(c.n)" /></div>
+      </section>
+      <section class="card">
+        <h2>{{ $t("dashboard.chartScores") }}</h2>
+        <p v-if="!bandTotal" class="muted small">{{ $t("dashboard.chartNone") }}</p>
+        <div v-for="k in (['low', 'mid', 'good'] as const)" :key="k" class="trow">
+          <span class="small">{{ $t(`dashboard.band.${k}`) }}</span>
+          <span class="meter hist"><span class="track"><span class="fill" :class="k" :style="{ width: `${(bands[k] / Math.max(1, bandTotal)) * 100}%` }" /></span><span class="num">{{ bands[k] }}</span></span>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top: var(--space-lg)">
       <h2>{{ $t("dashboard.byGrade") }}</h2>
       <p class="hint">{{ $t("dashboard.byGradeHint") }}</p>
       <Skeleton v-if="!loaded" :card="false" />
@@ -111,6 +150,20 @@ onMounted(async () => {
 .course-table td { white-space: nowrap; }
 .course-table th { vertical-align: bottom; }
 .course-table td:nth-child(7), .course-table td:nth-child(8) { min-width: 130px; }
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-lg); }
+.charts .card { margin: 0; min-height: 176px; }
+.charts .wide-chart { min-height: 220px; }
+.wide-chart { grid-column: 1 / -1; }
+.daily { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
+.daily .col { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.daily .b { display: block; width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; background: var(--accent); }
+.trow { display: grid; grid-template-columns: 90px 1fr; gap: var(--space-sm); align-items: center; padding: 4px 0; }
+.hist { display: flex; align-items: center; gap: var(--space-sm); }
+.hist .track { flex: 1; height: 8px; border-radius: var(--radius-full); background: var(--line); overflow: hidden; }
+.hist .fill { display: block; height: 100%; }
+.fill.low { background: var(--bad); } .fill.mid { background: var(--warn); } .fill.good { background: var(--ok); }
+.hist .num { font-weight: 600; min-width: 2ch; text-align: right; }
+@media (max-width: 700px) { .charts { grid-template-columns: minmax(0, 1fr); } }
 .n { text-align: right; font-variant-numeric: tabular-nums; }
 .course-table a { text-decoration: none; }
 </style>
