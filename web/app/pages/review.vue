@@ -72,7 +72,7 @@ async function answer(remembered: boolean) {
 </template>
 
 <style scoped>
-.study { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.study { display: flex; flex-direction: column; gap: var(--space-md); align-items: stretch; }
 .face { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 180px; padding: 20px; border-radius: 14px; background: var(--accent-soft); text-align: center; }
 .face.back { background: var(--bg); border: 1px solid var(--line); }
 .word { font-size: 1.5rem; font-weight: 700; }

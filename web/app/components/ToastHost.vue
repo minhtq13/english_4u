@@ -13,9 +13,9 @@ const { toasts, dismiss } = useToast()
 </template>
 
 <style scoped>
-.toasts { position: fixed; left: 12px; right: 12px; bottom: 76px; z-index: 70; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toasts { position: fixed; left: 12px; right: 12px; bottom: 76px; z-index: 70; display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); pointer-events: none; }
 @media (min-width: 901px) { .toasts { bottom: 20px; left: 244px; } }
-.toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 520px; padding: 10px 14px; border-radius: 12px;
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 520px; padding: 10px 14px; border-radius: var(--radius-lg);
   background: var(--card); border: 1px solid var(--line); box-shadow: 0 6px 24px rgba(0, 0, 0, .2); }
 .toast.ok { border-color: var(--ok); color: var(--ok); }
 .toast.error { border-color: var(--bad); color: var(--bad); }

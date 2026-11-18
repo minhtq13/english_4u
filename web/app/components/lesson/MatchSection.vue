@@ -53,7 +53,7 @@ function state(i: number) {
 </template>
 
 <style scoped>
-.choices { margin: 0 0 8px; padding: 10px 12px 10px 32px; background: var(--accent-soft); border-radius: 8px; }
+.choices { margin: 0 0 8px; padding: 10px 12px 10px 32px; background: var(--accent-soft); border-radius: var(--radius-md); }
 .choices li { margin: 2px 0; }
 .pair select { width: 100%; max-width: 520px; }
 .pair select.right { border-color: var(--ok); }

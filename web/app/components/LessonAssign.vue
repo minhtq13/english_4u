@@ -33,7 +33,7 @@ function click(classId: string) {
 
 <style scoped>
 .assign { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.chip-class { border: 1px dashed var(--line); background: var(--bg); color: var(--muted); border-radius: 999px;
+.chip-class { border: 1px dashed var(--line); background: var(--bg); color: var(--muted); border-radius: var(--radius-full);
   padding: 2px 10px; font: inherit; font-size: .82rem; cursor: pointer; white-space: nowrap; }
 .chip-class:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .chip-class.on { border-style: solid; border-color: var(--ok); background: var(--ok-soft); color: var(--ok); font-weight: 600; }

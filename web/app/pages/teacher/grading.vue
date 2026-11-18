@@ -165,8 +165,8 @@ const lessonLabel = (a: AttemptRow) => `${a.lessons?.label ?? a.lesson_id} - ${a
 </template>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
-.filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; margin-bottom: 16px; }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-md); flex-wrap: wrap; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; margin-bottom: var(--space-lg); }
 .filter { display: flex; flex-direction: column; gap: 2px; }
 .filter select { width: auto; min-width: 180px; max-width: 280px; }
 .filter input { min-width: 180px; }

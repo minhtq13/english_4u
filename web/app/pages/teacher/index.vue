@@ -60,14 +60,14 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-.class-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text); margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-md); }
+.class-card { display: flex; flex-direction: column; gap: var(--space-sm); text-decoration: none; color: var(--text); margin: 0; }
 .class-card:hover { border-color: var(--accent); }
-.top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-sm); }
 .name { font-size: 1.4rem; }
 .code { font-size: .9rem; color: var(--muted); }
 .code b { color: var(--text); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
-.nums { display: flex; gap: 12px; flex-wrap: wrap; color: var(--muted); }
+.nums { display: flex; gap: var(--space-md); flex-wrap: wrap; color: var(--muted); }
 .nums b { color: var(--text); font-variant-numeric: tabular-nums; }
 .nums .warn b { color: var(--warn); }
 </style>

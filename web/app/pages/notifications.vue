@@ -45,12 +45,12 @@ const text = (n: (typeof rows.value)[number]) =>
 </template>
 
 <style scoped>
-.head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.item { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; }
+.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm); }
+.item { display: flex; align-items: center; gap: var(--space-sm); margin: 0; padding: 10px 14px; }
 .item.unread { border-left: 4px solid var(--accent); background: var(--accent-soft); }
 .body { flex: 1; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--text); min-width: 0; }
 .text { font-weight: 600; }
-.x { background: none; border: 0; color: var(--muted); cursor: pointer; min-width: 36px; min-height: 36px; border-radius: 8px; }
+.x { background: none; border: 0; color: var(--muted); cursor: pointer; min-width: 36px; min-height: 36px; border-radius: var(--radius-md); }
 .x:hover { background: var(--bg); color: var(--text); }
 </style>

@@ -48,8 +48,8 @@ async function del(id: string) {
 </template>
 
 <style scoped>
-.ann { margin-bottom: 16px; }
-.compose { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.ann { margin-bottom: var(--space-lg); }
+.compose { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-sm); }
 .compose textarea { width: 100%; resize: vertical; }
 .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .list li { padding: 8px 0; border-top: 1px solid var(--line); }

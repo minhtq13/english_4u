@@ -60,7 +60,7 @@ onBeforeUnmount(() => document.removeEventListener("pointerdown", outside))
 .tip-btn:hover, .tip-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
 /* To the right of the "i" so it never covers the line below; under it on a narrow screen, where there is no room beside it. */
 .bubble { display: none; position: absolute; z-index: 30; left: calc(100% + 8px); top: 50%; transform: translate(var(--shift, 0px), -50%); width: max-content; max-width: min(300px, calc(100vw - 24px));
-  padding: 8px 10px; border-radius: 8px; background: var(--text); color: var(--card); box-shadow: 0 4px 16px var(--shadow);
+  padding: 8px 10px; border-radius: var(--radius-md); background: var(--text); color: var(--card); box-shadow: 0 4px 16px var(--shadow);
   font-size: .82rem; font-weight: 400; line-height: 1.45; text-align: left; white-space: normal; }
 .bubble.shown { display: block; }
 @media (max-width: 640px) {

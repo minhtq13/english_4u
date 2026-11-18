@@ -9,8 +9,8 @@ const value = computed({ get: () => props.modelValue, set: (v: string) => emit("
 </script>
 
 <template>
-  <RichEditorCore v-if="!inline" v-model="value" :placeholder="placeholder" />
-  <RichEditorCore v-else-if="editing" v-model="value" inline autofocus :placeholder="placeholder" @blur="editing = false" />
+  <LazyRichEditorCore v-if="!inline" v-model="value" :placeholder="placeholder" />
+  <LazyRichEditorCore v-else-if="editing" v-model="value" inline autofocus :placeholder="placeholder" @blur="editing = false" />
   <div
     v-else
     class="preview"
@@ -25,7 +25,7 @@ const value = computed({ get: () => props.modelValue, set: (v: string) => emit("
 </template>
 
 <style scoped>
-.preview { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 8px 10px; min-height: 40px;
+.preview { border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--bg); padding: 8px 10px; min-height: 40px;
   cursor: text; font-weight: 400; }
 .preview:hover { border-color: var(--accent); }
 .preview :deep(p) { margin: 0; }

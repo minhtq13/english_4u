@@ -49,11 +49,11 @@ const flip = (i: number) => { flipped.value[i] = !flipped.value[i] }
 .cell { display: flex; flex-direction: column; gap: 6px; }
 .rate { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; min-height: 32px; }
 .bad { color: var(--bad); }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-md); }
 .flash { perspective: 800px; height: 160px; cursor: pointer; }
 .inner { position: relative; width: 100%; height: 100%; transition: transform .45s; transform-style: preserve-3d; }
 .flash.flipped .inner { transform: rotateY(180deg); }
-.face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; border: 1px solid var(--line);
+.face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: var(--radius-lg); border: 1px solid var(--line);
   display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; font-size: .95rem; }
 .face-front { background: var(--accent-soft); font-weight: 700; font-size: 1.1rem; }
 .spk { position: absolute; top: 6px; right: 6px; }

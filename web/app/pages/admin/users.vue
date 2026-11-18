@@ -157,7 +157,7 @@ function setClass(p: Person, classId: string) {
 </template>
 
 <style scoped>
-.filters { margin-bottom: 12px; }
+.filters { margin-bottom: var(--space-md); }
 .filters input { flex: 1; min-width: 200px; }
 .filters select { width: auto; }
 .users select { width: auto; min-width: 140px; }

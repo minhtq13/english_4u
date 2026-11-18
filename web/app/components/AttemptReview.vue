@@ -45,13 +45,13 @@ const sections = computed(() =>
 </template>
 
 <style scoped>
-.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: var(--space-sm); }
 .tile { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
   background: var(--bg); color: var(--text); text-decoration: none; }
 .tile:hover { border-color: var(--accent); }
 .tile-title { font-weight: 600; font-size: .92rem; }
 .bad { color: var(--bad); font-weight: 600; }
-.block { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 8px; scroll-margin-top: 72px; }
-.block-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.block { border-top: 1px solid var(--line); margin-top: var(--space-lg); padding-top: 8px; scroll-margin-top: 72px; }
+.block-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
 .block-head h3 { margin: 8px 0; }
 </style>

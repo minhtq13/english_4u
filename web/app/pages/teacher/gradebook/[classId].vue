@@ -120,7 +120,7 @@ async function exportXlsx() {
 </template>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
 .scroll { overflow-x: auto; padding: 0; }
 .grid { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .grid th, .grid td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
@@ -132,5 +132,5 @@ async function exportXlsx() {
 .cell.low { background: var(--bad-soft); color: var(--bad); }
 .cell.working, .cell.waiting { font-style: italic; }
 .avg { font-weight: 700; }
-.legend { margin-top: 8px; }
+.legend { margin-top: var(--space-sm); }
 </style>

@@ -98,18 +98,18 @@ async function build() {
 </template>
 
 <style scoped>
-.filters { margin-bottom: 12px; }
+.filters { margin-bottom: var(--space-md); }
 .filters select { width: auto; }
 .filters input { flex: 1 1 200px; min-width: 0; }
 .filters .tag { max-width: 220px; }
-.picked-bar { position: sticky; top: 8px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  flex-wrap: wrap; margin-bottom: 12px; padding: 8px 14px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.picked-bar { position: sticky; top: 8px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm);
+  flex-wrap: wrap; margin-bottom: var(--space-md); padding: 8px 14px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
 .picked-bar .btn { padding: 4px 12px; }
-.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md);
   cursor: pointer; margin-bottom: 6px; }
 .q-row:hover { border-color: var(--accent); }
 .q-row.on { border-color: var(--accent); background: var(--accent-soft); }
-.q-row input { margin-top: 4px; }
+.q-row input { margin-top: var(--space-xs); }
 .q-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .q-text .badge { font-size: .72rem; margin-right: 4px; }
 </style>

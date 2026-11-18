@@ -142,6 +142,7 @@ const progress = computed(() => sectionProgress(lesson.value, state.responses, s
 // Submitting is final, so it asks first, with what is answered and what is still blank (SubmitDialog).
 const submitOpen = ref(false)
 const submitting = ref(false)
+const celebrate = ref(false)
 const submitError = ref("")
 async function submit() {
   submitting.value = true
@@ -149,7 +150,10 @@ async function submit() {
   submitting.value = false
   submitOpen.value = false
   await refreshKey()
-  if (!submitError.value) window.scrollTo({ top: 0, behavior: "smooth" })
+  if (!submitError.value) {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+    celebrate.value = true
+  }
 }
 /** From the summary to the first section that still has a blank question. */
 function jumpTo(index: number) {
@@ -267,9 +271,11 @@ const next = nextId ? course.byId[nextId] : null
           <b v-if="results">{{ $t("lessonPage.score", { ok: score.ok, total }) }}</b>
           <b v-else>{{ $t("lessonPage.size", { total }) }}</b>
           <small>{{ statusText }}</small>
+          <span v-if="state.status === 'in_progress' && total" class="sb-bar" aria-hidden="true"><span :style="{ width: `${Math.min(100, Math.round((answered / total) * 100))}%` }" /></span>
         </div>
         <button v-if="!locked" class="btn primary" :disabled="submitting" @click="submitOpen = true">{{ $t("lessonPage.submit") }}</button>
       </div>
+      <ConfettiBurst v-if="celebrate" @done="celebrate = false" />
       <SubmitDialog v-if="submitOpen" :progress="progress" :submitting="submitting" @close="submitOpen = false" @confirm="submit" @jump="jumpTo" />
     </template>
     </template>
@@ -278,12 +284,14 @@ const next = nextId ? course.byId[nextId] : null
 
 <style scoped>
 .blocked-note { position: sticky; top: 12px; z-index: 45; margin: 0 0 12px; }
-.actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin: 4px 0 16px; }
-.tags { margin-top: 8px; }
+.actions { display: flex; justify-content: flex-end; gap: var(--space-sm); flex-wrap: wrap; margin: 4px 0 16px; }
+.tags { margin-top: var(--space-sm); }
 .assign-card { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; }
-.assign-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.assign-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
 .assign-head .btn { padding: 2px 10px; }
 .fb.wait { background: var(--warn-soft); color: var(--warn); margin: 0 0 16px; }
 .due-note { font-weight: 500; }
 .fb.ok:not(.feedback-box), .preview-note { margin: 0 0 16px; }
+.sb-bar { display: block; height: 4px; border-radius: var(--radius-full); background: var(--line); overflow: hidden; margin-top: 4px; min-width: 140px; }
+.sb-bar span { display: block; height: 100%; background: var(--accent); transition: width var(--transition-normal); }
 </style>

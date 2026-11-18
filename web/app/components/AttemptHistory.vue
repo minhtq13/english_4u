@@ -64,7 +64,7 @@ const short = (s: string) => (s.length > 90 ? `${s.slice(0, 90)}…` : s)
 </template>
 
 <style scoped>
-.list-filters { margin-bottom: 8px; }
+.list-filters { margin-bottom: var(--space-sm); }
 .list-filters input { flex: 1 1 200px; min-width: 0; }
 .list-filters select { width: auto; }
 </style>

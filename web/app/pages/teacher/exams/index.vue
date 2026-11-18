@@ -181,8 +181,8 @@ const sharing = shallowRef<ListRow | null>(null)
 </template>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.filters { margin-bottom: 12px; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
+.filters { margin-bottom: var(--space-md); }
 .filters select { width: auto; }
 .filters input { flex: 1 1 220px; min-width: 0; }
 .block { display: block; }

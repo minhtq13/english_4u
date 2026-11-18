@@ -20,5 +20,5 @@ defineProps<{ icon?: IconName; title: string; text?: string }>()
 .title { font-size: 1.05rem; }
 p { margin: 0; max-width: 46ch; }
 .actions:empty { display: none; }
-.actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.actions { margin-top: var(--space-sm); display: flex; gap: var(--space-sm); flex-wrap: wrap; justify-content: center; }
 </style>

@@ -45,16 +45,16 @@ const titleId = useId()
 .bar { padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
 .body p { margin: 0; }
-.fb { padding: 8px 10px; border-radius: 8px; }
+.fb { padding: 8px 10px; border-radius: var(--radius-md); }
 .fb.wait { background: var(--warn-soft); color: var(--warn); }
 .fb.ok { background: var(--ok-soft); color: var(--ok); }
 .sections { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.sections li { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.sections li { display: flex; align-items: center; gap: var(--space-sm); padding: 8px 0; border-top: 1px solid var(--line); }
 .sections li:first-child { border-top: 0; }
 .name { flex: 1; }
 .count { font-variant-numeric: tabular-nums; font-weight: 600; }
 .sections li.done { color: var(--ok); }
 .sections li.partial, .sections li.empty { color: var(--warn); }
-.actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); }
+.actions { display: flex; gap: var(--space-sm); justify-content: flex-end; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); }
 .actions .btn { min-height: 44px; }
 </style>

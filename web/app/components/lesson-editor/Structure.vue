@@ -215,24 +215,24 @@ const countLabel = (s: DraftSection) => t(s.type === "cards" ? "structure.cardsN
 .starter .icon { font-size: 1.2rem; line-height: 1.2; }
 .more { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
 .more summary { cursor: pointer; font-size: .92rem; font-weight: 500; }
-.more[open] summary { margin-bottom: 8px; }
+.more[open] summary { margin-bottom: var(--space-sm); }
 .saved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.saved li { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; border-top: 1px dashed var(--line); }
+.saved li { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; padding: 6px 0; border-top: 1px dashed var(--line); }
 .saved li:first-child { border-top: 0; }
 .saved .name { display: flex; flex-direction: column; min-width: 0; }
 .from-lesson select { width: auto; max-width: 100%; flex: 1 1 220px; }
 .inline { display: flex; align-items: center; gap: 6px; font-size: .88rem; }
 .empty { margin: 0; padding: 14px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); text-align: center; }
-.outline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.outline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm); }
 .outline li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
 .n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: .85rem; }
 .main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .top { gap: 10px; }
 .count { display: inline-flex; align-items: center; gap: 6px; }
-.step { width: 24px; height: 24px; line-height: 1; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--text); cursor: pointer; font: inherit; }
+.step { width: 24px; height: 24px; line-height: 1; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card); color: var(--text); cursor: pointer; font: inherit; }
 .step:hover:not(:disabled) { border-color: var(--accent); }
 .step:disabled { opacity: .4; cursor: default; }
-.tools { display: flex; gap: 4px; }
+.tools { display: flex; gap: var(--space-xs); }
 .tools .btn { padding: 2px 10px; }
 .save-as { border-top: 1px solid var(--line); padding-top: 4px; display: flex; flex-direction: column; gap: 6px; }
 .save-as .small { margin: 0; }

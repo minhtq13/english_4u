@@ -247,6 +247,24 @@ export type Database = {
           },
         ]
       }
+      client_errors: {
+        Row: { created_at: string; message: string; slot: number; stack: string | null; url: string | null; user_agent: string | null; user_id: string | null }
+        Insert: { created_at?: string; message: string; slot: number; stack?: string | null; url?: string | null; user_agent?: string | null; user_id?: string | null }
+        Update: { created_at?: string; message?: string; slot?: number; stack?: string | null; url?: string | null; user_agent?: string | null; user_id?: string | null }
+        Relationships: [{ foreignKeyName: "client_errors_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }]
+      }
+      badges: {
+        Row: { key: string; position: number; target: number }
+        Insert: { key: string; position: number; target: number }
+        Update: { key?: string; position?: number; target?: number }
+        Relationships: []
+      }
+      user_badges: {
+        Row: { badge: string; earned_at: string; user_id: string }
+        Insert: { badge: string; earned_at?: string; user_id: string }
+        Update: { badge?: string; earned_at?: string; user_id?: string }
+        Relationships: []
+      }
       study_days: {
         Row: { day: string; user_id: string }
         Insert: { day: string; user_id: string }
@@ -761,6 +779,14 @@ export type Database = {
         Args: { target: string }
         Returns: undefined
       }
+      log_client_error: {
+        Args: { msg: string; trace?: string; page?: string; agent?: string }
+        Returns: undefined
+      }
+      my_badges: {
+        Args: Record<string, never>
+        Returns: { badge: string; earned_at: string | null; progress: number; target: number; is_new: boolean }[]
+      }
       touch_session: {
         Args: Record<string, never>
         Returns: string
@@ -768,6 +794,10 @@ export type Database = {
       question_analysis: {
         Args: { target_class: string; target_lesson: string }
         Returns: { qid: string; q: string | null; answered: number; ok: number; wrong: Json }[]
+      }
+      graduate_class: {
+        Args: { source_class: string }
+        Returns: number
       }
       promote_class: {
         Args: { source_class: string; target_class: string }

@@ -59,9 +59,22 @@ async function signInWithGoogle() {
 
 <template>
   <main class="login">
+    <aside class="hero" aria-hidden="false">
+      <BrandLogo class="hero-logo" />
+      <p class="slogan">{{ $t("login.slogan") }}</p>
+      <svg class="art" viewBox="0 0 240 150" aria-hidden="true">
+        <rect x="30" y="40" width="180" height="96" rx="14" fill="var(--card)" stroke="var(--line)" />
+        <path d="M120 54v70M52 56a3 3 0 0 1 3-3h30a30 30 0 0 1 35 29 30 30 0 0 1 35-29h30a3 3 0 0 1 3 3v62a3 3 0 0 1-3 3h-34a20 20 0 0 0-31 14 20 20 0 0 0-31-14H55a3 3 0 0 1-3-3z"
+          fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+        <rect x="150" y="8" width="64" height="30" rx="14" fill="var(--purple)" />
+        <path d="M168 38l-6 10 14-10z" fill="var(--purple)" />
+        <text x="182" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="var(--card)">A+</text>
+        <circle cx="34" cy="30" r="9" fill="var(--orange)" />
+        <circle cx="52" cy="14" r="5" fill="var(--ok)" />
+      </svg>
+    </aside>
     <div class="card panel">
       <div class="top">
-        <span class="brand"><span class="mark"><Icon name="book" size="18" /></span>Grammar</span>
         <span class="prefs"><LangSwitch /><ThemeSwitch /></span>
       </div>
       <div class="intro">
@@ -110,29 +123,40 @@ async function signInWithGoogle() {
 
 <style scoped>
 .prefs { display: flex; align-items: center; gap: 6px; }
-.login { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+.login { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--accent-soft) 100%); }
+.hero { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-xl); padding: var(--space-2xl) 48px;
+  background: linear-gradient(160deg, var(--accent-soft), var(--purple-soft)); }
+.hero-logo { font-size: 1.3rem; }
+.slogan { margin: 0; font-size: 1.6rem; font-weight: 700; line-height: 1.35; max-width: 20ch; text-wrap: balance; }
+.art { width: min(320px, 100%); height: auto; }
+.login > .panel { align-self: center; justify-self: center; margin: var(--space-xl) var(--space-lg); }
 .panel { max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 18px; padding: 28px; margin: 0; }
 .panel h1 { margin: 0; }
 .panel p { margin: 0; }
-.top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-.brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.05rem; }
-.mark { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.top { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
 .intro { display: flex; flex-direction: column; gap: 6px; }
 .eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
-.stack { gap: 16px; }
+.stack { gap: var(--space-lg); }
 .field { display: flex; flex-direction: column; gap: 6px; font-size: .88rem; font-weight: 500; }
 .field input { min-height: 44px; }
 .field input[aria-invalid="true"] { border-color: var(--bad); }
 .pass { position: relative; display: flex; }
 .pass input { padding-right: 46px; }
-.eye { position: absolute; right: 2px; top: 2px; bottom: 2px; width: 40px; border: 0; border-radius: 6px; background: none; color: var(--muted);
+.eye { position: absolute; right: 2px; top: 2px; bottom: 2px; width: 40px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--muted);
   display: grid; place-items: center; cursor: pointer; }
 .eye:hover { color: var(--text); background: var(--bg); }
-.caps { display: inline-flex; align-items: center; gap: 4px; color: var(--warn); font-weight: 500; }
+.caps { display: inline-flex; align-items: center; gap: var(--space-xs); color: var(--warn); font-weight: 500; }
 .stack .fb { margin: 0; }
 .wide { text-align: center; padding: 12px 16px; min-height: 44px; }
 .help { text-align: center; }
 .divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .8rem; }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+@media (max-width: 800px) {
+  .login { grid-template-columns: minmax(0, 1fr); align-content: start; }
+  .hero { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-md); padding: var(--space-lg); }
+  .slogan { font-size: 1rem; max-width: none; flex-basis: 100%; }
+  .art { display: none; }
+}
 @media (max-width: 480px) { .panel { padding: 22px 18px; } }
 </style>

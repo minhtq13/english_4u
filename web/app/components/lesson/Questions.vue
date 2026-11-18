@@ -48,7 +48,7 @@ const respond = (qid: string, r: Response | null) => emit("respond", qid, r)
 </template>
 
 <style scoped>
-.with-passage .side { margin-bottom: 8px; }
+.with-passage .side { margin-bottom: var(--space-sm); }
 @media (min-width: 900px) {
   .with-passage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
   .with-passage .side { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; margin: 0; }

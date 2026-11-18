@@ -71,7 +71,7 @@ const titleId = useId()
 .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
   align-items: flex-start; padding: 48px 16px; overflow-y: auto; }
 .dialog { width: 100%; max-width: 560px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); padding: 10px 16px; border-bottom: 1px solid var(--line); }
 .bar .btn { padding: 4px 12px; }
 .body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
 .body p { margin: 0; }
@@ -79,7 +79,7 @@ const titleId = useId()
 .hint { color: var(--muted); font-size: .85rem; }
 .late { color: var(--bad); }
 .names { gap: 6px; }
-.name-chip { font-size: .85rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); }
+.name-chip { font-size: .85rem; padding: 2px 10px; border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--bg); }
 .name-chip.started { border-color: var(--warn); background: var(--warn-soft); color: var(--warn); }
 .actions { gap: 6px; }
 @media (max-width: 560px) { .overlay { padding: 0; } .dialog { border-radius: 0; min-height: 100%; } }

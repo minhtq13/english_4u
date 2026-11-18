@@ -78,16 +78,16 @@ function add() {
 .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
   align-items: flex-start; padding: 24px 16px; overflow-y: auto; }
 .dialog { width: 100%; max-width: 760px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
-.bar { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+.bar { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap;
   padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; }
 .bar .btn { padding: 4px 12px; }
-.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: var(--space-sm); }
 .filters select { width: auto; }
 .filters input { flex: 1; min-width: 160px; }
 .filters .tag { max-width: 220px; }
-.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); cursor: pointer; }
 .q-row:hover { border-color: var(--accent); }
 .q-row.on { border-color: var(--accent); background: var(--accent-soft); }
-.q-row input { margin-top: 4px; }
+.q-row input { margin-top: var(--space-xs); }
 .q-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 </style>

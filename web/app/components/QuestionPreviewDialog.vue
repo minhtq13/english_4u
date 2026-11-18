@@ -83,17 +83,17 @@ const sentence = computed(() => q.value.words.join(" "))
 .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
 .body { padding: 14px 16px; overflow-y: auto; overflow-wrap: anywhere; }
 .meta { margin: 0 0 10px; }
-.passage { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; background: var(--bg); max-height: 40dvh; overflow-y: auto; }
+.passage { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: var(--space-md); background: var(--bg); max-height: 40dvh; overflow-y: auto; }
 .passage :deep(p) { margin: 0 0 6px; }
-.prompt { font-size: 1.05rem; margin-bottom: 8px; }
+.prompt { font-size: 1.05rem; margin-bottom: var(--space-sm); }
 .prompt :deep(p) { margin: 0 0 6px; }
 .choices { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
-.choices li { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.choices li { display: flex; align-items: center; gap: var(--space-sm); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 6px 10px; }
 .choices li.right, .chunk.right { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); font-weight: 600; }
 .chunks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
-.chunk { border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
-.key { margin-top: 4px; }
+.chunk { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 4px 10px; }
+.key { margin-top: var(--space-xs); }
 .why { margin-top: 10px; font-size: .95rem; }
 .why :deep(p) { margin: 4px 0 0; }
-.foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.foot { display: flex; justify-content: flex-end; gap: var(--space-sm); padding: 12px 16px; border-top: 1px solid var(--line); }
 </style>

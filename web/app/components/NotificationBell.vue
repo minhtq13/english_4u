@@ -15,8 +15,8 @@ watch(() => route.path, () => { if (route.path !== "/notifications") load() })
 </template>
 
 <style scoped>
-.bell { position: relative; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; color: var(--text); text-decoration: none; }
+.bell { position: relative; display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-md); color: var(--text); text-decoration: none; }
 .bell:hover, .bell.router-link-active { background: var(--accent-soft); color: var(--accent); }
-.dot { position: absolute; top: 2px; right: 0; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--bad); color: var(--card);
+.dot { position: absolute; top: 2px; right: 0; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-full); background: var(--bad); color: var(--card);
   font-size: .7rem; font-weight: 700; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
 </style>

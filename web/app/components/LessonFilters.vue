@@ -31,7 +31,7 @@ defineProps<{ filter: LessonFilter; phases: Phase[]; statuses?: LessonStatusOpti
 </template>
 
 <style scoped>
-.lesson-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 12px; }
+.lesson-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin: 0 0 12px; }
 .lesson-filters input { flex: 1 1 220px; min-width: 0; }
 .lesson-filters select { width: auto; max-width: 100%; }
 .count { white-space: nowrap; }

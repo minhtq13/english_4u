@@ -106,10 +106,10 @@ const matchLetter = (choices: string[], answer: string) =>
 </template>
 
 <style scoped>
-.sheet { background: #fff; color: #111; padding: 32px 40px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; line-height: 1.55; }
+.sheet { background: #fff; color: #111; padding: 32px 40px; border: 1px solid var(--line); border-radius: var(--radius-md); font-size: 15px; line-height: 1.55; }
 .sheet h1 { font-size: 1.35rem; margin: 0 0 2px; color: #111; }
 .sheet .sub { color: #444; margin: 0 0 8px; }
-.student-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0 4px; }
+.student-line { display: flex; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; margin: 12px 0 4px; }
 .part { margin-top: 18px; break-inside: auto; }
 .part h2 { font-size: 1.05rem; margin: 0 0 4px; color: #111; }
 .sheet .hint { color: #444; font-style: italic; margin: 0 0 6px; font-size: .95em; }
@@ -128,13 +128,13 @@ const matchLetter = (choices: string[], answer: string) =>
 .sheet :deep(em.g) { color: #111; font-weight: 700; text-decoration: underline; }
 .sheet :deep(th), .sheet :deep(td) { color: #111; border-color: #ccc; }
 .key p { margin: 4px 0; }
-.passage { border: 1px solid #bbb; padding: 8px 12px; margin-bottom: 8px; }
+.passage { border: 1px solid #bbb; padding: 8px 12px; margin-bottom: var(--space-sm); }
 .passage :deep(p) { margin: 0 0 6px; }
 .err-chunk { margin-right: 6px; }
 .err-chunk > span { text-decoration: underline; }
 .err-chunk sub { font-weight: 700; font-size: .7em; margin-left: 1px; }
 .fix-line { color: #444; }
-.match { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.match { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
 
 @media print {
   .sheet { border: 0; padding: 0; border-radius: 0; }

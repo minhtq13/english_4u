@@ -4,6 +4,13 @@
   --line: #dfe3ea; --accent: #2b5fd0; --accent-soft: #e5ecfb; --on-accent: #ffffff;
   --ok: #1b7543; --ok-soft: #e1f3e8; --bad: #b3261e; --bad-soft: #fbe6e4;
   --warn: #8a5a00; --warn-soft: #fbf1d6; --shadow: rgba(20, 30, 50, .10);
+  /* Gamification (streak, badges, rewards). */
+  --purple: #6d3fc9; --purple-soft: #efe8fb; --orange: #b4500a; --orange-soft: #fde9d5;
+  /* Scales: use these instead of a literal 8px / 12px. */
+  --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 16px; --space-xl: 24px; --space-2xl: 32px;
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-full: 999px;
+  --shadow-sm: 0 1px 2px var(--shadow); --shadow-md: 0 4px 12px var(--shadow); --shadow-lg: 0 10px 28px var(--shadow);
+  --transition-fast: 150ms ease; --transition-normal: 250ms ease;
   --font: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
 }
@@ -14,6 +21,7 @@
     --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
     --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
     --warn: #f0c060; --warn-soft: #3a3322; --shadow: rgba(0, 0, 0, .4);
+    --purple: #b79cff; --purple-soft: #2c2447; --orange: #ffb066; --orange-soft: #3d2c1a;
     color-scheme: dark;
   }
 }
@@ -22,6 +30,7 @@
   --line: #2f3542; --accent: #82a8ff; --accent-soft: #233150; --on-accent: #0f1626;
   --ok: #62cf93; --ok-soft: #173326; --bad: #ff8d84; --bad-soft: #3b201e;
   --warn: #f0c060; --warn-soft: #3a3322; --shadow: rgba(0, 0, 0, .4);
+  --purple: #b79cff; --purple-soft: #2c2447; --orange: #ffb066; --orange-soft: #3d2c1a;
   color-scheme: dark;
 }
 
@@ -32,7 +41,7 @@ a { color: var(--accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* A dialog takes focus itself when it opens (useDialog); the ring belongs on the controls inside it. */
 [role=dialog]:focus { outline: none; }
-.skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: 8px;
+.skip-link { position: absolute; left: 8px; top: -48px; z-index: 100; padding: 8px 14px; border-radius: var(--radius-md);
   background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none; }
 .skip-link:focus { top: 8px; }
 img { max-width: 100%; }
@@ -46,9 +55,9 @@ h3 { font-size: 1.05rem; margin: 16px 0 6px; }
 .muted { color: var(--muted); }
 .small { font-size: .88rem; }
 
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; margin-bottom: var(--space-lg); }
 .time { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; margin-bottom: 10px; }
+  color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: var(--radius-full); margin-bottom: 10px; }
 .hint { color: var(--muted); font-size: .92rem; margin: 0 0 14px; }
 
 .explain table, .table-wrap table { width: 100%; border-collapse: collapse; font-size: .95rem; margin: 10px 0; }
@@ -63,7 +72,7 @@ th { color: var(--muted); font-weight: 600; }
   .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
   .stack-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .stack-table tr { border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; margin-bottom: 10px; background: var(--card); }
-  .stack-table td { border: 0; padding: 6px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  .stack-table td { border: 0; padding: 6px 0; display: flex; align-items: center; justify-content: space-between; gap: var(--space-md);
     flex-wrap: wrap; white-space: normal; text-align: right; }
   .stack-table td::before { content: attr(data-label); color: var(--muted); font-size: .85rem; font-weight: 600; text-align: left; }
   .stack-table td:first-child { display: block; text-align: left; padding-top: 8px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
@@ -82,14 +91,17 @@ s { color: var(--bad); }
 .q { padding: 12px 0; border-top: 1px solid var(--line); }
 .q:first-child { border-top: 0; padding-top: 0; }
 .q p { margin: 0 0 8px; }
-.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opts { display: flex; flex-wrap: wrap; gap: var(--space-sm); }
 button { font: inherit; }
 .btn, .opts button, .chip { border: 1px solid var(--line); background: var(--bg); color: var(--text);
-  padding: 6px 14px; border-radius: 8px; cursor: pointer; text-align: left; text-decoration: none; display: inline-block;
-  touch-action: manipulation; transition: border-color .15s, background-color .15s, color .15s; }
+  padding: 6px 14px; border-radius: var(--radius-md); cursor: pointer; text-align: left; text-decoration: none; display: inline-block;
+  touch-action: manipulation; transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast); }
 .btn:hover:not(:disabled), .opts button:hover:not(:disabled), .chip:hover { border-color: var(--accent); }
 .btn:disabled, .opts button:disabled { cursor: default; }
 .btn:disabled { opacity: .6; }
+.opts button:active:not(:disabled) { transform: scale(.98); }
+.opts button.picked { transform: scale(1.02); animation: pick-pop var(--transition-normal) ease-out; }
+@keyframes pick-pop { 0% { box-shadow: 0 0 0 0 var(--accent-soft); } 100% { box-shadow: 0 0 0 8px transparent; } }
 .opts button.picked { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .opts button:disabled:not(.right, .wrong, .picked) { opacity: .7; }
 .opts button.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
@@ -97,67 +109,99 @@ button { font: inherit; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
 .btn.ghost { background: transparent; color: var(--muted); }
 .btn.danger { color: var(--bad); border-color: var(--bad); }
+/* Sizes: sm / md (default) / lg. The older .small keeps working as an alias of .sm. */
+.btn.sm, .btn.small { padding: var(--space-xs) 10px; font-size: .88rem; border-radius: var(--radius-sm); }
+.btn.lg { padding: 10px 20px; font-size: 1.05rem; border-radius: var(--radius-lg); }
+/* Icon only: a square with even padding (give it an aria-label). */
+.btn.icon { display: inline-grid; place-items: center; padding: 0; width: 36px; height: 36px; }
+.btn.icon.sm, .btn.icon.small { width: 28px; height: 28px; }
+.btn.icon.lg { width: 44px; height: 44px; }
+/* Loading: the label stays (so the width does not jump), a spinner turns in front and the button ignores input. */
+.btn.loading { position: relative; pointer-events: none; opacity: .8; }
+.btn.loading::before { content: ""; display: inline-block; width: .9em; height: .9em; margin-right: .5em; vertical-align: -.1em;
+  border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: btn-spin .7s linear infinite; }
+.btn.icon.loading::before { margin: 0; }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
 
-input[type=text], input[type=search], input[type=password], input[type=number], input[type=datetime-local], textarea, select { font: inherit; width: 100%; padding: 8px 10px; border-radius: 8px;
+input[type=text], input[type=search], input[type=password], input[type=number], input[type=datetime-local], textarea, select { font: inherit; width: 100%; padding: 8px 10px; border-radius: var(--radius-md);
   border: 1px solid var(--line); background: var(--bg); color: var(--text); }
 input.short { max-width: 260px; }
 textarea { min-height: 160px; resize: vertical; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.row { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; }
 .row > input:not(.short, [type=checkbox], [type=radio]) { flex: 1; min-width: 0; }
 input[type=checkbox], input[type=radio] { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
-.stack { display: flex; flex-direction: column; gap: 12px; }
+.stack { display: flex; flex-direction: column; gap: var(--space-md); }
 
-.fb { margin-top: 8px; font-size: .93rem; border-radius: 8px; padding: 8px 10px; }
+.fb { margin-top: var(--space-sm); font-size: .93rem; border-radius: var(--radius-md); padding: 8px 10px; }
 .fb.ok { background: var(--ok-soft); color: var(--ok); }
 .fb.no { background: var(--bad-soft); color: var(--bad); }
 .fb.key { background: var(--accent-soft); color: var(--accent); }
-.fb .why { color: var(--text); display: block; margin-top: 4px; }
+.fb .why { color: var(--text); display: block; margin-top: var(--space-xs); }
 
-.built { min-height: 44px; border: 1px dashed var(--line); border-radius: 8px; padding: 6px;
-  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
-.pool { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.built { min-height: 44px; border: 1px dashed var(--line); border-radius: var(--radius-md); padding: 6px;
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-sm); }
+.pool { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--space-sm); }
 .chip { padding: 4px 10px; }
 .built .chip { background: var(--accent-soft); }
 
-.badge { white-space: nowrap; font-size: .8rem; padding: 2px 10px; border-radius: 999px;
+.badge { white-space: nowrap; font-size: .8rem; padding: 2px 10px; border-radius: var(--radius-full);
   color: var(--muted); border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .badge.done, .badge.graded, .badge.fixed { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
 .badge.partial, .badge.in_progress, .badge.improving { color: var(--accent); border-color: var(--accent); }
 .badge.submitted, .badge.open { color: var(--warn); border-color: var(--warn); background: var(--warn-soft); }
 
-.list-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0;
+.list-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-md); padding: 10px 0;
   border-top: 1px solid var(--line); text-decoration: none; color: var(--text); }
 .list-row:first-child { border-top: 0; }
 a.list-row:hover b { color: var(--accent); }
 .list-row > span:first-child { min-width: 0; }
 .list-row small { color: var(--muted); display: block; }
 
-.feedback-box { border-left: 4px solid var(--ok); background: var(--ok-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; }
+.feedback-box { border-left: 4px solid var(--ok); background: var(--ok-soft); border-radius: 10px; padding: 12px 14px; margin-bottom: var(--space-lg); }
 .feedback-box b { color: var(--ok); }
 .feedback-box p { margin: 4px 0 0; white-space: pre-line; color: var(--text); }
 .pre { white-space: pre-line; }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg); }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px 16px; }
 .stat b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
 .stat span { color: var(--muted); font-size: .85rem; }
 /* Three tiles that stay on one row, also on phones. */
 .stats.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 560px) {
-  .stats.three { gap: 8px; }
+  .stats.three { gap: var(--space-sm); }
   .stats.three .stat { padding: 10px 10px; }
   .stats.three .stat b { font-size: 1.2rem; }
   .stats.three .stat span { font-size: .75rem; line-height: 1.3; display: block; }
 }
 
 .scorebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--card);
-  border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: flex; justify-content: space-between;
+  border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 10px 14px; display: flex; justify-content: space-between;
   align-items: center; gap: 10px; flex-wrap: wrap; box-shadow: 0 4px 16px var(--shadow); }
 .scorebar .meta { display: flex; flex-direction: column; font-size: .9rem; min-width: 0; }
 .scorebar .meta b { font-variant-numeric: tabular-nums; }
 .scorebar .meta small { color: var(--muted); }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* A card that is a link lifts a little under the pointer. */
+a.card, .card.clickable { transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast); text-decoration: none; color: inherit; display: block; }
+@media (hover: hover) {
+  a.card:hover, .card.clickable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent); }
+}
+/* Short fade-in of each new page (pure CSS: pages with several root elements cannot use <NuxtPage> transitions). */
+#main > * { animation: page-in 180ms ease-out; }
+@keyframes page-in { from { opacity: 0; } }
+/* Confetti: .confetti holds a few <i>, each falling from its own --x / --d / --c (see ConfettiBurst). */
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
+.confetti i { position: absolute; top: -12px; left: var(--x); width: 8px; height: 14px; background: var(--c); border-radius: 2px;
+  animation: confetti-fall 1.8s var(--d) ease-in forwards; }
+@keyframes confetti-fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+  .confetti { display: none; }
+  .opts button.picked, .btn.loading::before, #main > * { animation: none; }
+  .opts button.picked { transform: none; }
+}
 
 /* A student working on a lesson (useAntiCheat): the questions cannot be selected (nor long-pressed on phones), the
    answers stay editable, and printing from the browser menu prints a notice instead of the lesson. */

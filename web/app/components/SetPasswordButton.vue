@@ -47,7 +47,7 @@ async function save() {
 </template>
 
 <style scoped>
-.set-pw { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.set-pw { display: inline-flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
 .set-pw .btn { padding: 2px 10px; }
 .pw { width: 130px; padding: 2px 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .saved code { font-size: .92rem; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }

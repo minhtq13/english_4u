@@ -11,7 +11,7 @@ const { locale, setLang } = useLang()
 </template>
 
 <style scoped>
-.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none; }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-full); overflow: hidden; flex: none; }
 .lang button { border: 0; background: none; color: var(--muted); font: inherit; font-size: .75rem; font-weight: 600; padding: 3px 9px; cursor: pointer; }
 .lang button.on { background: var(--accent); color: var(--on-accent); }
 </style>

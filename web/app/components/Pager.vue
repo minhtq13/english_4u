@@ -17,6 +17,6 @@ const to = computed(() => Math.min(props.total, (props.page + 1) * props.pageSiz
 </template>
 
 <style scoped>
-.pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.pager { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-top: var(--space-md); }
 .pager .btn { padding: 4px 12px; }
 </style>

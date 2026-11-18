@@ -3,6 +3,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   // Everything sits behind a login, so the app renders in the browser only.
   ssr: false,
+  // A plain splash drawn by the HTML shell while the JavaScript loads, so the first paint does not wait for it.
+  spaLoadingTemplate: true,
   modules: ["@nuxtjs/supabase", "@nuxtjs/i18n", "@vite-pwa/nuxt"],
   css: ["~/assets/css/main.css"],
 
@@ -24,9 +26,13 @@ export default defineNuxtConfig({
         { rel: "apple-touch-icon", sizes: "180x180", href: "/favicon_io/apple-touch-icon.png" },
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
+        // The font stylesheet must not block the first paint: it loads as "print" and becomes "all" once it arrives
+        // (text shows in the fallback font meanwhile, display=swap).
         {
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap",
+          media: "print",
+          onload: "this.media='all'",
         },
       ],
     },

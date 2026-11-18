@@ -178,11 +178,14 @@
     "notifications": "Thông báo",
     "review": "Ôn tập",
     "dueCount": "{n} thẻ cần ôn",
+    "unreadCount": "{n} chưa đọc",
     "audit": "Nhật ký thao tác",
     "logins": "Lịch sử đăng nhập",
-    "exams": "Bộ đề thi"
+    "exams": "Bộ đề thi",
+    "errors": "Lỗi trên trình duyệt"
   },
   "login": {
+    "slogan": "Học ngữ pháp tiếng Anh mỗi ngày, 30 phút mỗi bài.",
     "ended": {
       "replaced": "Tài khoản vừa được đăng nhập ở nơi khác, nên phiên trên máy này đã kết thúc. Mỗi tài khoản chỉ dùng được ở một nơi cùng lúc.",
       "idle": "Bạn đã bị đăng xuất vì 10 phút không thao tác. Hãy đăng nhập lại.",
@@ -258,6 +261,11 @@
     "forgot": "Quên mật khẩu? Hãy nhờ giáo viên đặt lại ở trang quản lý học sinh."
   },
   "roadmap": {
+    "courseProgress": "Tiến độ khoá học: {done}/{total} bài",
+    "reviewTitle": "Ôn tập hôm nay",
+    "reviewDue": "{n} thẻ cần ôn hôm nay",
+    "reviewNone": "Hôm nay không có thẻ nào cần ôn.",
+    "reviewGo": "Ôn ngay",
     "pageTitle": "Lộ trình lớp {name} - Grammar",
     "title": "Lộ trình lớp {name}",
     "intro": "Giáo viên giao từng bài cho lớp khi đến buổi học. Bài làm được lưu tự động; mỗi bài chỉ nộp một lần.",
@@ -904,7 +912,17 @@
     "byGradeHint": "Bấm vào một khối để xem thống kê từng bài, từng lớp và từng học sinh.",
     "active7": "Hoạt động 7 ngày",
     "attempts": "Lượt làm",
-    "completedTitle": "{n} trên {total} lượt làm đã nộp"
+    "completedTitle": "{n} trên {total} lượt làm đã nộp",
+    "chartDaily": "Bài nộp 30 ngày gần đây",
+    "chartDailyHint": "Mỗi cột là một ngày; cao nhất {max} bài/ngày.",
+    "chartTop": "Top 5 lớp tuần này",
+    "chartScores": "Phân bố điểm (30 ngày)",
+    "chartNone": "Chưa có bài nộp.",
+    "band": {
+      "low": "Dưới 50%",
+      "mid": "50–79%",
+      "good": "80–100%"
+    }
   },
   "usersPage": {
     "updateFailed": "Chưa cập nhật được {name}: {msg}",
@@ -1139,7 +1157,80 @@
     "label": "Các phần của bài",
     "progress": "Đã làm {done}/{total} câu"
   },
+  "importer": {
+    "open": "Dán đề từ văn bản",
+    "title": "Dán đề từ văn bản",
+    "mode": "Dạng câu hỏi",
+    "modeMcq": "Trắc nghiệm A B C D",
+    "modeTf": "Đúng / Sai (True / False)",
+    "modeError": "Tìm lỗi sai",
+    "hint": {
+      "mcq": "Mỗi câu bắt đầu bằng số (1. hoặc Câu 1:). Các đáp án A. B. C. D. viết mỗi dòng một đáp án hoặc cùng một dòng. Đáp án đúng ghi \"Đáp án: A\" hoặc \"→ A\"; có thể thêm \"Giải thích: …\".",
+      "tf": "Mỗi câu là một nhận định, kèm đáp án True / False (hoặc Đúng / Sai), ví dụ \"1. Nam likes tea. → True\".",
+      "error": "Đánh dấu các phần của câu bằng (A) (B) (C) (D) và ghi phần sai ở \"Đáp án\", ví dụ \"1. She (A) go (B) to school (C) every day. Đáp án: A\"."
+    },
+    "example": {
+      "mcq": "1. She ___ to school every day.\nA. go\nB. goes\nC. going\nD. gone\nĐáp án: B",
+      "tf": "1. Nam likes tea. → True\n2. The sun is cold. → False",
+      "error": "1. She (A) go (B) to school (C) every day. Đáp án: A"
+    },
+    "paste": "Dán nội dung",
+    "parse": "Xem trước",
+    "none": "Không tìm thấy câu hỏi nào. Kiểm tra lại cách đánh số và dạng câu hỏi đã chọn.",
+    "found": "Tìm thấy {n} câu | Tìm thấy {n} câu",
+    "needFix": "{n} câu cần sửa",
+    "prompt": "Nội dung câu hỏi",
+    "option": "Đáp án",
+    "remove": "Bỏ câu này",
+    "wrongPart": "Phần sai:",
+    "rightOption": "Đáp án đúng:",
+    "add": "Thêm {n} câu vào bài | Thêm {n} câu vào bài",
+    "tfTitle": "Đúng / Sai",
+    "problem": {
+      "noPrompt": "Thiếu nội dung câu hỏi.",
+      "fewOptions": "Cần ít nhất 2 đáp án.",
+      "noMarks": "Cần ít nhất 2 phần đánh dấu (A) (B).",
+      "noKey": "Chưa chọn đáp án đúng."
+    }
+  },
+  "badges": {
+    "title": "Huy hiệu",
+    "earned": "Đạt ngày {date}",
+    "newTitle": "Bạn vừa nhận huy hiệu mới! | Bạn vừa nhận {n} huy hiệu mới!",
+    "on_time_5": {
+      "name": "Đúng hạn",
+      "how": "Nộp đúng hạn 5 bài"
+    },
+    "perfect": {
+      "name": "Điểm tuyệt đối",
+      "how": "Làm đúng 100% một bài"
+    },
+    "streak_7": {
+      "name": "Chuỗi 7 ngày",
+      "how": "Học 7 ngày liên tiếp"
+    },
+    "streak_30": {
+      "name": "Chuỗi 30 ngày",
+      "how": "Học 30 ngày liên tiếp"
+    },
+    "course_done": {
+      "name": "Hoàn thành khoá",
+      "how": "Nộp hết các bài được giao (từ 5 bài)"
+    },
+    "review_50": {
+      "name": "Ôn tập chăm chỉ",
+      "how": "Ôn 50 thẻ flashcard"
+    },
+    "fast_100": {
+      "name": "Tốc độ cao",
+      "how": "Đúng 100% trong chưa đầy 10 phút"
+    }
+  },
   "resultView": {
+    "nextLesson": "Làm bài tiếp theo",
+    "adviceGood": "Rất tốt! Bạn có thể sang bài tiếp theo.",
+    "adviceMid": "Khá ổn. Xem lại các câu sai rồi luyện lại trước khi sang bài mới.",
+    "adviceLow": "Nên ôn lại phần giải thích và luyện lại câu sai trước khi sang bài mới.",
     "title": "Kết quả của bạn",
     "ring": "Điểm {ok}/{total}, {percent}%",
     "perfect": "Tuyệt vời, bạn làm đúng hết!",
@@ -1246,7 +1337,10 @@
     "failed": "Không phân tích được: {msg}",
     "legend": "Xanh: từ 80% đúng, vàng: từ 50%, đỏ: dưới 50%. Chỉ tính bài đã nộp.",
     "sheetTitle": "Phân tích câu hỏi - lớp {name} - {lesson}",
-    "sheetNote": "Ghi chú: cột % là tỉ lệ học sinh trả lời đúng câu đó trên số học sinh đã làm; cột cuối liệt kê các đáp án sai hay gặp, số trong ngoặc là số học sinh chọn."
+    "sheetNote": "Ghi chú: cột % là tỉ lệ học sinh trả lời đúng câu đó trên số học sinh đã làm; cột cuối liệt kê các đáp án sai hay gặp, số trong ngoặc là số học sinh chọn.",
+    "adviceTitle": "Nên giảng lại",
+    "advice": "Câu {qid} chỉ {percent}% đúng — nên giảng lại.",
+    "rightBar": "Đúng"
   },
   "audit": {
     "intro": "Ai đã đổi vai trò, khoá hoặc xoá tài khoản, chuyển lớp, đổi mã lớp hoặc cho cả lớp lên lớp mới.",
@@ -1268,13 +1362,15 @@
       "account_deleted": "Xoá tài khoản",
       "class_code_changed": "Đổi mã lớp",
       "class_deleted": "Xoá lớp",
-      "class_promoted": "Cho cả lớp lên lớp"
+      "class_promoted": "Cho cả lớp lên lớp",
+      "class_graduated": "Cho cả lớp tốt nghiệp"
     },
     "detail": {
       "role": "từ {from} sang {to}",
       "move": "từ {from} sang {to}",
       "promoted": "{n} học sinh chuyển sang {to}",
-      "deleted": "{role} {login}"
+      "deleted": "{role} {login}",
+      "graduated": "{n} học sinh rời lớp"
     }
   },
   "logins": {
@@ -1296,6 +1392,17 @@
       "idle": "Không thao tác 10 phút",
       "locked": "Tài khoản bị khoá",
       "unknown": "Không rõ"
+    },
+    "todayCount": "Lượt đăng nhập hôm nay",
+    "todayAvg": "Thời lượng phiên trung bình hôm nay",
+    "classFilter": "Lọc theo lớp",
+    "allClasses": "Mọi lớp",
+    "rangeFilter": "Lọc theo thời gian",
+    "anyTime": "Mọi lúc",
+    "range": {
+      "today": "Hôm nay",
+      "7": "7 ngày qua",
+      "30": "30 ngày qua"
     }
   },
   "exam": {
@@ -1559,5 +1666,24 @@
     "removed": "Đã bỏ chia sẻ với {name}",
     "addFailed": "Chưa chia sẻ được: {msg}",
     "gone": "Không còn chia sẻ này, hoặc bạn không có quyền đổi."
+  },
+  "errorsPage": {
+    "intro": "Lỗi chạy thật mà trang của người dùng gặp (giữ 1000 lỗi gần nhất). Bấm vào một dòng để xem chi tiết.",
+    "none": "Chưa có lỗi nào được báo.",
+    "noStack": "(không có chi tiết)"
+  },
+  "promotion": {
+    "open": "Lên lớp đầu năm học",
+    "title": "Lên lớp đầu năm học",
+    "hint": "Mỗi lớp chuyển lên lớp cùng đuôi của khối trên (6T1 → 7T1); lớp 9 tốt nghiệp (học sinh rời lớp). Bài làm và nhận xét của học sinh vẫn giữ nguyên. Chạy từ khối cao xuống thấp.",
+    "none": "Không có lớp nào đặt tên theo khối (6…9).",
+    "graduate": "Tốt nghiệp",
+    "summary": "Sẽ chuyển {classes} lớp, {students} học sinh.",
+    "sure": "Tôi hiểu: việc này chuyển cả lớp và không có nút hoàn tác.",
+    "run": "Lên lớp cho {n} lớp",
+    "failed": "Lớp {name}: {msg}. Các lớp trước đó đã chuyển xong.",
+    "problem": {
+      "noTarget": "không có lớp đích cùng đuôi"
+    }
   }
 }

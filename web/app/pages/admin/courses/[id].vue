@@ -219,7 +219,7 @@ const students = useServerList<Views<"student_progress">>(async ([from, to]) => 
 .stats-table a { text-decoration: none; }
 .n { text-align: right; font-variant-numeric: tabular-nums; }
 .error-list { display: flex; flex-direction: column; gap: 10px; }
-.error-row { display: grid; grid-template-columns: 180px 1fr 90px; align-items: center; gap: 12px; }
+.error-row { display: grid; grid-template-columns: 180px 1fr 90px; align-items: center; gap: var(--space-md); }
 .error-label { font-size: .92rem; }
 @media (max-width: 560px) { .error-row { grid-template-columns: 1fr; gap: 2px; } }
 </style>

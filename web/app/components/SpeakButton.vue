@@ -19,6 +19,6 @@ const stop = (e: Event) => e.stopPropagation()
 </template>
 
 <style scoped>
-.speak { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--accent); cursor: pointer; padding: 0; }
+.speak { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; border-radius: var(--radius-full); border: 1px solid var(--line); background: var(--card); color: var(--accent); cursor: pointer; padding: 0; }
 .speak:hover { border-color: var(--accent); }
 </style>

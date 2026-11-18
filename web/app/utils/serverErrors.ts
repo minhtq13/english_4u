@@ -8,6 +8,7 @@ const EN: [RegExp, string][] = [
   [/^Không đổi được người tạo của bộ đề thi/, "The owner of an exam set cannot be changed"],
   [/^Chỉ giáo viên và quản trị viên được xem danh sách giáo viên/, "Only teachers and admins can see the list of teachers"],
   [/^Chỉ admin mới chuyển cả lớp lên lớp mới được/, "Only an admin can move a whole class up to another class"],
+  [/^Chỉ admin mới cho cả lớp tốt nghiệp được/, "Only an admin can graduate a whole class"],
   [/^Lớp đích phải khác lớp nguồn/, "The target class must be different from the source class"],
   [/^Bài chưa được giao cho lớp này/, "This lesson has not been given to this class"],
   [/^Bài cần có tên/, "The lesson needs a title"],

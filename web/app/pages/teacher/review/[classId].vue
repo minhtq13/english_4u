@@ -142,13 +142,13 @@ async function build() {
 </template>
 
 <style scoped>
-.field { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; font-weight: 500; max-width: 320px; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; max-width: 320px; }
 .picks { display: flex; flex-direction: column; gap: 6px; }
-.pick, .q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.pick, .q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); cursor: pointer; }
 .pick.on, .q-row.on { border-color: var(--accent); background: var(--accent-soft); }
-.pick input, .q-row input { margin-top: 4px; }
+.pick input, .q-row input { margin-top: var(--space-xs); }
 .q-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
 .head .btn { padding: 2px 10px; }
 .bad { color: var(--bad); }
 </style>

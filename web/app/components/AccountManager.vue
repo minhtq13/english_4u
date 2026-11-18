@@ -338,13 +338,13 @@ async function moveClass(p: Person, classId: string) {
 </template>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px 20px; flex-wrap: wrap; margin-bottom: var(--space-lg); }
 .head-text { flex: 1 1 320px; }
 .head-text .sub { margin-bottom: 0; }
 .head > .btn { flex-shrink: 0; margin-top: 6px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
 .field select { width: auto; min-width: 180px; }
-.filters { margin-bottom: 12px; }
+.filters { margin-bottom: var(--space-md); }
 .filters input { flex: 1; min-width: 220px; }
 .filters select { width: auto; }
 .accounts th { white-space: nowrap; }
@@ -356,7 +356,7 @@ async function moveClass(p: Person, classId: string) {
 .actions > * + * { margin-left: 8px; }
 .actions .btn { padding: 2px 10px; }
 @media (max-width: 640px) {
-  .actions { white-space: normal; justify-content: flex-start; gap: 8px; }
+  .actions { white-space: normal; justify-content: flex-start; gap: var(--space-sm); }
   .actions > * + * { margin-left: 0; }
   .actions .btn { padding: 6px 12px; }
 }

@@ -12,7 +12,7 @@ defineProps<{ to: string; label: string }>()
 </template>
 
 <style scoped>
-.back-link { display: inline-flex; align-items: center; gap: 4px; margin: 0 0 10px -8px; padding: 4px 12px 4px 6px;
-  border-radius: 999px; color: var(--muted); font-size: .9rem; font-weight: 500; text-decoration: none; }
+.back-link { display: inline-flex; align-items: center; gap: var(--space-xs); margin: 0 0 10px -8px; padding: 4px 12px 4px 6px;
+  border-radius: var(--radius-full); color: var(--muted); font-size: .9rem; font-weight: 500; text-decoration: none; }
 .back-link:hover { background: var(--accent-soft); color: var(--accent); }
 </style>

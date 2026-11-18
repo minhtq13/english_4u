@@ -178,11 +178,14 @@
     "notifications": "Notifications",
     "review": "Review",
     "dueCount": "{n} cards due",
+    "unreadCount": "{n} unread",
     "audit": "Audit log",
     "logins": "Sign-in history",
-    "exams": "Exam sets"
+    "exams": "Exam sets",
+    "errors": "Browser errors"
   },
   "login": {
+    "slogan": "Learn English grammar every day, 30 minutes a lesson.",
     "ended": {
       "replaced": "This account just signed in somewhere else, so the session on this device has ended. An account can be used in one place at a time.",
       "idle": "You were signed out after 10 minutes without activity. Please sign in again.",
@@ -258,6 +261,11 @@
     "forgot": "Forgot your password? Ask your teacher to reset it on the student management page."
   },
   "roadmap": {
+    "courseProgress": "Course progress: {done}/{total} lessons",
+    "reviewTitle": "Review today",
+    "reviewDue": "{n} cards due today",
+    "reviewNone": "No cards to review today.",
+    "reviewGo": "Review now",
     "pageTitle": "Class {name} roadmap - Grammar",
     "title": "Class {name} roadmap",
     "intro": "Your teacher gives the class each lesson when it is time. Work is saved automatically; each lesson is submitted once.",
@@ -904,7 +912,17 @@
     "byGradeHint": "Open a grade for figures per lesson, per class and per student.",
     "active7": "Active (7 days)",
     "attempts": "Attempts",
-    "completedTitle": "{n} of {total} attempts submitted"
+    "completedTitle": "{n} of {total} attempts submitted",
+    "chartDaily": "Hand-ins, last 30 days",
+    "chartDailyHint": "Each bar is one day; the tallest is {max} per day.",
+    "chartTop": "Top 5 classes this week",
+    "chartScores": "Score distribution (30 days)",
+    "chartNone": "No hand-ins yet.",
+    "band": {
+      "low": "Under 50%",
+      "mid": "50–79%",
+      "good": "80–100%"
+    }
   },
   "usersPage": {
     "updateFailed": "Could not update {name}: {msg}",
@@ -1139,7 +1157,80 @@
     "label": "Sections of the lesson",
     "progress": "Answered {done}/{total} questions"
   },
+  "importer": {
+    "open": "Paste questions from text",
+    "title": "Paste questions from text",
+    "mode": "Question type",
+    "modeMcq": "Multiple choice A B C D",
+    "modeTf": "True / False",
+    "modeError": "Find the mistake",
+    "hint": {
+      "mcq": "Start each question with a number (1. or Question 1:). Write the options A. B. C. D. one per line or on one line. Give the key as \"Answer: A\" or \"→ A\"; add \"Explanation: …\" if you like.",
+      "tf": "Each question is a statement with its key True / False, for example \"1. Nam likes tea. → True\".",
+      "error": "Mark the parts of the sentence (A) (B) (C) (D) and give the wrong part as \"Answer\", for example \"1. She (A) go (B) to school (C) every day. Answer: A\"."
+    },
+    "example": {
+      "mcq": "1. She ___ to school every day.\nA. go\nB. goes\nC. going\nD. gone\nAnswer: B",
+      "tf": "1. Nam likes tea. → True\n2. The sun is cold. → False",
+      "error": "1. She (A) go (B) to school (C) every day. Answer: A"
+    },
+    "paste": "Paste the text",
+    "parse": "Preview",
+    "none": "No questions found. Check the numbering and the question type you chose.",
+    "found": "Found {n} question | Found {n} questions",
+    "needFix": "{n} to fix",
+    "prompt": "Question text",
+    "option": "Option",
+    "remove": "Remove this question",
+    "wrongPart": "Wrong part:",
+    "rightOption": "Right option:",
+    "add": "Add {n} question to the lesson | Add {n} questions to the lesson",
+    "tfTitle": "True / False",
+    "problem": {
+      "noPrompt": "The question text is missing.",
+      "fewOptions": "At least 2 options are needed.",
+      "noMarks": "At least 2 marked parts (A) (B) are needed.",
+      "noKey": "No right answer chosen."
+    }
+  },
+  "badges": {
+    "title": "Badges",
+    "earned": "Earned on {date}",
+    "newTitle": "You earned a new badge! | You earned {n} new badges!",
+    "on_time_5": {
+      "name": "On time",
+      "how": "Hand in 5 lessons before the deadline"
+    },
+    "perfect": {
+      "name": "Perfect score",
+      "how": "Get 100% on a lesson"
+    },
+    "streak_7": {
+      "name": "7-day streak",
+      "how": "Study 7 days in a row"
+    },
+    "streak_30": {
+      "name": "30-day streak",
+      "how": "Study 30 days in a row"
+    },
+    "course_done": {
+      "name": "Course complete",
+      "how": "Hand in every lesson given (at least 5)"
+    },
+    "review_50": {
+      "name": "Diligent reviewer",
+      "how": "Review 50 flashcards"
+    },
+    "fast_100": {
+      "name": "Speed run",
+      "how": "100% in under 10 minutes"
+    }
+  },
   "resultView": {
+    "nextLesson": "Next lesson",
+    "adviceGood": "Great work! You can move on to the next lesson.",
+    "adviceMid": "Not bad. Review the wrong answers and practise them before moving on.",
+    "adviceLow": "Read the explanation again and practise the wrong answers before moving on.",
     "title": "Your result",
     "ring": "Score {ok}/{total}, {percent}%",
     "perfect": "Great, everything is correct!",
@@ -1246,7 +1337,10 @@
     "failed": "Could not analyse: {msg}",
     "legend": "Green: 80% right or more, amber: 50%, red: under 50%. Submitted work only.",
     "sheetTitle": "Question analysis - class {name} - {lesson}",
-    "sheetNote": "Note: the % column is the share of students who answered the question correctly out of those who answered it; the last column lists the common wrong answers, the number in brackets is how many students gave it."
+    "sheetNote": "Note: the % column is the share of students who answered the question correctly out of those who answered it; the last column lists the common wrong answers, the number in brackets is how many students gave it.",
+    "adviceTitle": "Worth teaching again",
+    "advice": "Question {qid} is only {percent}% right — teach it again.",
+    "rightBar": "Right"
   },
   "audit": {
     "intro": "Who changed a role, locked or deleted an account, moved a student, changed a class code or promoted a class.",
@@ -1268,13 +1362,15 @@
       "account_deleted": "Account deleted",
       "class_code_changed": "Class code changed",
       "class_deleted": "Class deleted",
-      "class_promoted": "Class promoted"
+      "class_promoted": "Class promoted",
+      "class_graduated": "Class graduated"
     },
     "detail": {
       "role": "from {from} to {to}",
       "move": "from {from} to {to}",
       "promoted": "{n} students moved to {to}",
-      "deleted": "{role} {login}"
+      "deleted": "{role} {login}",
+      "graduated": "{n} students left the class"
     }
   },
   "logins": {
@@ -1296,6 +1392,17 @@
       "idle": "Idle for 10 minutes",
       "locked": "Account locked",
       "unknown": "Unknown"
+    },
+    "todayCount": "Sign-ins today",
+    "todayAvg": "Average session today",
+    "classFilter": "Filter by class",
+    "allClasses": "All classes",
+    "rangeFilter": "Filter by time",
+    "anyTime": "Any time",
+    "range": {
+      "today": "Today",
+      "7": "Last 7 days",
+      "30": "Last 30 days"
     }
   },
   "exam": {
@@ -1559,5 +1666,24 @@
     "removed": "Stopped sharing with {name}",
     "addFailed": "Could not share: {msg}",
     "gone": "This share is gone, or you may not change it."
+  },
+  "errorsPage": {
+    "intro": "Runtime errors people's pages hit (the last 1000 are kept). Click a row for details.",
+    "none": "No errors reported.",
+    "noStack": "(no details)"
+  },
+  "promotion": {
+    "open": "Move up for the new school year",
+    "title": "Move up for the new school year",
+    "hint": "Each class goes to the class with the same ending one grade up (6T1 → 7T1); grade 9 graduates (students leave the class). Students' work and feedback stay. It runs from the highest grade down.",
+    "none": "No class is named by grade (6…9).",
+    "graduate": "Graduates",
+    "summary": "Will move {classes} classes, {students} students.",
+    "sure": "I understand: this moves whole classes and cannot be undone.",
+    "run": "Move up {n} classes",
+    "failed": "Class {name}: {msg}. The classes before it were already moved.",
+    "problem": {
+      "noTarget": "no class with the same ending"
+    }
   }
 }

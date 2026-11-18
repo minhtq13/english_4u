@@ -90,10 +90,10 @@ const dueText = (iso: string) => formatDate(iso)
 </template>
 
 <style scoped>
-.today { margin-bottom: 16px; }
-.group + .group { margin-top: 12px; }
+.today { margin-bottom: var(--space-lg); }
+.group + .group { margin-top: var(--space-md); }
 h3 { font-size: 1rem; margin: 0 0 6px; }
 ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-li { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--line); }
+li { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--line); }
 li:first-child { border-top: 0; }
 </style>

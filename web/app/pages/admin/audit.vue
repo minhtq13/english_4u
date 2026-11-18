@@ -69,7 +69,7 @@ const actionLabel = (a: string) => t(`audit.action.${a}`)
 </template>
 
 <style scoped>
-.filters { align-items: center; gap: 8px; margin: 8px 0 12px; }
+.filters { align-items: center; gap: var(--space-sm); margin: 8px 0 12px; }
 .filters select { width: auto; }
 .scroll { overflow-x: auto; padding: 0; }
 td, th { text-align: left; padding: 8px 10px; }

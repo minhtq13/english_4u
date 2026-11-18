@@ -92,9 +92,9 @@ const scoreOf = (r: (typeof rows.value)[number]) => (r.attempt && r.attempt.stat
 </template>
 
 <style scoped>
-.progress { display: flex; flex-direction: column; gap: 8px; }
+.progress { display: flex; flex-direction: column; gap: var(--space-sm); }
 .chips { gap: 6px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px;
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border: 1px solid var(--line); border-radius: var(--radius-full);
   background: var(--bg); color: var(--text); font: inherit; font-size: .85rem; cursor: pointer; }
 .chip:hover { border-color: var(--accent); }
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }

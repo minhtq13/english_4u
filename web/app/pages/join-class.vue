@@ -48,7 +48,7 @@ async function submit() {
 
 <style scoped>
 .join { max-width: 480px; margin: 40px auto 0; }
-.join h1 { margin-bottom: 8px; }
+.join h1 { margin-bottom: var(--space-sm); }
 .join p { margin: 0 0 14px; }
 .code { text-transform: uppercase; letter-spacing: .2em; font-weight: 600; font-variant-numeric: tabular-nums; }
 </style>

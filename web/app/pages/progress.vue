@@ -77,6 +77,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm); }
 .bars li { display: grid; grid-template-columns: minmax(110px, 1fr) minmax(100px, 2fr); gap: 10px; align-items: center; }
 </style>

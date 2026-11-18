@@ -195,14 +195,14 @@ const statuses = computed(() =>
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--space-md);
   flex-wrap: wrap;
 }
 .lesson-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
   padding: 12px 0;
   border-top: 1px solid var(--line);
 }
@@ -230,12 +230,12 @@ const statuses = computed(() =>
   flex: none;
   flex-wrap: nowrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 .warn {
   margin: 0;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--bad-soft);
   color: var(--bad);
 }

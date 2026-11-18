@@ -94,10 +94,10 @@ const numbers = (s: StudentRow) => ({ done: s.submitted ?? 0, accuracy: percentO
 </template>
 
 <style scoped>
-.section-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
 .section-head h2 { margin: 0; }
 .section-head .btn { padding: 4px 12px; }
-.filters { margin-bottom: 10px; gap: 8px; align-items: center; }
+.filters { margin-bottom: 10px; gap: var(--space-sm); align-items: center; }
 .filters input { flex: 1 1 200px; min-width: 0; }
 .filters select { width: auto; max-width: 100%; }
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }

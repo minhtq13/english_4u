@@ -63,7 +63,7 @@ onMounted(() => {
 
 <style scoped>
 .print-page { max-width: 820px; margin: 0 auto; padding: 16px; }
-.toolbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.toolbar { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; margin-bottom: var(--space-sm); }
 .toolbar :deep(.back-link) { margin: 0; }
 .toolbar .inline { gap: 6px; font-size: .9rem; }
 .one { margin-bottom: 20px; }

@@ -164,7 +164,7 @@ async function remove(s: ShareRow) {
 .body { padding: 14px 16px; overflow-y: auto; }
 .body h3 { margin: 14px 0 6px; font-size: 1rem; }
 .people { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
-.people li { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.people li { display: flex; align-items: center; gap: var(--space-sm); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 6px 10px; }
 .who { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .people select { width: auto; flex: none; padding: 4px 8px; }
 .foot { display: flex; justify-content: flex-end; padding: 12px 16px; border-top: 1px solid var(--line); }

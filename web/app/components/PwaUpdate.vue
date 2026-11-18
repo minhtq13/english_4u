@@ -26,6 +26,6 @@ onBeforeUnmount(() => { window.removeEventListener("online", sync); window.remov
 <style scoped>
 .pwa-bar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 60; display: flex; align-items: center;
   gap: 10px; flex-wrap: wrap; padding: 10px 14px; background: var(--card); border: 1px solid var(--line);
-  border-radius: 12px; box-shadow: 0 6px 24px rgba(0, 0, 0, .18); max-width: 520px; margin: 0 auto; }
+  border-radius: var(--radius-lg); box-shadow: 0 6px 24px rgba(0, 0, 0, .18); max-width: 520px; margin: 0 auto; }
 .pwa-bar .btn { min-height: 44px; }
 </style>

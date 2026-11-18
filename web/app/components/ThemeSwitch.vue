@@ -17,7 +17,7 @@ const OPTIONS: { value: Theme; icon: IconName }[] = [{ value: "light", icon: "su
 </template>
 
 <style scoped>
-.theme { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; flex: none; }
+.theme { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-full); overflow: hidden; flex: none; }
 .theme button { border: 0; background: none; color: var(--muted); padding: 4px 8px; cursor: pointer; display: grid; place-items: center; }
 .theme button:hover:not(.on) { color: var(--text); }
 .theme button.on { background: var(--accent); color: var(--on-accent); }

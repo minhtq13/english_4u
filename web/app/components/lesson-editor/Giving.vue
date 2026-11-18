@@ -53,10 +53,10 @@ const others = (p: ClassPlan) => props.giving.plans.filter(x => x !== p && x.on 
 .giving { display: flex; flex-direction: column; gap: 10px; }
 .giving h2 { margin: 0; }
 .hint { color: var(--muted); font-size: .85rem; margin: 0; }
-.plan { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.plan { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: var(--space-sm); }
 .plan.on { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .plan-head { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
-.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px;
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--line); border-radius: var(--radius-full);
   background: var(--bg); cursor: pointer; font-size: .9rem; font-weight: 500; }
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .chip.fixed { cursor: default; }

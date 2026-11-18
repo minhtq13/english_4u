@@ -16,9 +16,9 @@ withDefaults(defineProps<{ rows?: number; card?: boolean }>(), { rows: 4, card: 
 
 <style scoped>
 .skeleton { display: flex; flex-direction: column; }
-.sk-row { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
+.sk-row { display: flex; flex-direction: column; gap: var(--space-sm); padding: 12px 0; border-top: 1px solid var(--line); }
 .sk-row:first-of-type { border-top: 0; padding-top: 0; }
-.bar { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--line) 25%, var(--bg) 50%, var(--line) 75%);
+.bar { display: block; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--line) 25%, var(--bg) 50%, var(--line) 75%);
   background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite; }
 .title { height: 14px; }
 .line { height: 10px; opacity: .7; }

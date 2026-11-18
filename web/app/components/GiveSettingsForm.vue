@@ -81,17 +81,17 @@ const allPicked = computed(() => props.students.length > 0 && props.form.student
 </template>
 
 <style scoped>
-.give-form { display: flex; flex-direction: column; gap: 12px; }
+.give-form { display: flex; flex-direction: column; gap: var(--space-md); }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field .limit { width: 6rem; flex: 0 0 auto; padding: 4px 8px; }
 .field input[type=datetime-local] { flex: 0 0 auto; width: auto; min-width: 12.5rem; padding: 4px 8px; }
 .field .row { gap: 6px 10px; }
 .field .btn { padding: 2px 10px; }
-.opt { display: inline-flex; align-items: center; gap: 8px; }
+.opt { display: inline-flex; align-items: center; gap: var(--space-sm); }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: .92rem; }
 .hint { color: var(--muted); font-size: .85rem; margin: 0; }
 .picks { gap: 6px; }
-.pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); cursor: pointer; font-size: .88rem; }
+.pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--card); cursor: pointer; font-size: .88rem; }
 .pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
 .link:hover { text-decoration: underline; }

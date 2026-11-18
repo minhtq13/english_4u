@@ -117,14 +117,14 @@ const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sh
 </template>
 
 <style scoped>
-.paper { background: #fff; color: #111; border: 1px solid var(--line); border-radius: 8px; padding: 24px 28px;
+.paper { background: #fff; color: #111; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 24px 28px;
   font: 15px/1.5 "Times New Roman", Times, serif; overflow-wrap: anywhere; }
-.head { display: grid; grid-template-columns: 2fr 3fr; gap: 12px; text-align: center; margin-bottom: 12px; }
+.head { display: grid; grid-template-columns: 2fr 3fr; gap: var(--space-md); text-align: center; margin-bottom: var(--space-md); }
 .head div { display: flex; flex-direction: column; }
 .part h3 { font-size: 1rem; margin: 16px 0 0; color: #111; }
 .part-hint { font-style: italic; margin: 0 0 6px; }
 .paper p { margin: 0 0 4px; }
-.question { margin-top: 8px; }
+.question { margin-top: var(--space-sm); }
 .question :deep(p) { display: inline; }
 .choices { display: flex; flex-wrap: wrap; gap: 2px 28px; padding-left: 18px; }
 .chunk { margin-left: 4px; }
@@ -132,10 +132,10 @@ const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sh
 .why { font-style: italic; color: #333; padding-left: 18px; }
 .passage { border: 1px solid #888; padding: 8px 12px; margin: 6px 0; }
 .passage :deep(p) { margin: 0 0 6px; }
-.match { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 6px; }
+.match { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: 6px; }
 .match :deep(p p) { display: inline; }
 .line { border-bottom: 1px dotted #666; height: 1.6em; margin-left: 18px; }
-.end { text-align: center; font-weight: 700; margin-top: 16px; }
+.end { text-align: center; font-weight: 700; margin-top: var(--space-lg); }
 .student, .sheet { width: 100%; border-collapse: collapse; margin: 8px 0 12px; table-layout: fixed; }
 .student td, .student th, .sheet td, .sheet th { border: 1px solid #111; padding: 4px 8px; color: #111; text-align: left; vertical-align: top; }
 .student th { text-align: center; }
