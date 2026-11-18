@@ -23,6 +23,8 @@ useHead({ title: () => t("roadmap.pageTitle", { name: myClass.value?.name ?? "" 
 type Row = Pick<Tables<"attempts">, "lesson_id" | "answers" | "score" | "status" | "updated_at">
 const attempts = shallowRef<Record<string, Row>>({})
 const openErrors = ref(0)
+const dueCards = ref(0)
+const cardReviews = useCardReviews()
 const loaded = ref(false)
 const error = ref("")
 
@@ -42,10 +44,13 @@ onMounted(async () => {
     mine.value = given.picked
     attempts.value = Object.fromEntries((rows ?? []).map(r => [r.lesson_id, r]))
     openErrors.value = count ?? 0
+    dueCards.value = await cardReviews.dueCount()
   } catch (e) {
     error.value = t("roadmap.loadFailed", { msg: (e as Error).message })
   }
   loaded.value = true
+  // The badge popup shows what the database has just awarded.
+  useBadges().load()
 })
 
 const isOpen = (id: string) => unlocked.value.has(id)
@@ -78,6 +83,8 @@ function badge(id: string) {
 const isFinished = (id: string) => !!attempts.value[id] && attempts.value[id]!.status !== "in_progress"
 const completed = computed(() => openOrder.value.filter(isFinished).length)
 
+const coursePercent = computed(() => percentOf(completed.value, openOrder.value.length) ?? 0)
+
 const accuracy = computed(() => {
   const scores = Object.keys(attempts.value).map(scoreOfRow).filter((s): s is Score => !!s)
   return percentOf(scores.reduce((n, s) => n + s.ok, 0), scores.reduce((n, s) => n + s.done, 0))
@@ -100,8 +107,22 @@ const nextLesson = computed(() => {
   <div>
     <h1>{{ $t("roadmap.title", { name: myClass?.name }) }}</h1>
     <p class="sub">{{ localName(myClass?.courses?.name) }} · {{ $t("roadmap.intro") }}</p>
+    <div class="course-progress" role="group" :aria-label="$t('roadmap.courseProgress', { done: completed, total: openOrder.length })">
+      <template v-if="loaded && openOrder.length">
+        <span class="small"><b>{{ $t("roadmap.courseProgress", { done: completed, total: openOrder.length }) }}</b></span>
+        <StatBar :value="coursePercent" />
+      </template>
+    </div>
     <ClassAnnouncements v-if="myClass" :class-id="myClass.id" />
     <StreakCard />
+    <div class="card review-card">
+      <span class="rv-icon"><Icon name="clock" size="22" /></span>
+      <div class="rv-text">
+        <b>{{ $t("roadmap.reviewTitle") }}</b>
+        <p class="muted small">{{ !loaded ? "…" : dueCards ? $t("roadmap.reviewDue", { n: dueCards }) : $t("roadmap.reviewNone") }}</p>
+      </div>
+      <NuxtLink to="/review" class="btn" :class="{ primary: dueCards > 0 }">{{ $t("roadmap.reviewGo") }}</NuxtLink>
+    </div>
 
     <p v-if="error" class="fb no">{{ error }}</p>
 
@@ -143,6 +164,11 @@ const nextLesson = computed(() => {
 </template>
 
 <style scoped>
+.course-progress { min-height: 46px; display: flex; flex-direction: column; gap: var(--space-xs); margin-bottom: var(--space-lg); }
+.review-card { display: flex; align-items: center; gap: var(--space-md); }
+.rv-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--purple-soft); color: var(--purple); flex: none; }
+.rv-text { flex: 1; min-width: 0; }
+.rv-text p { margin: 0; }
 .stat-link { text-decoration: none; color: var(--text); }
 .stat-link:hover { border-color: var(--accent); }
 .next h2 { margin-bottom: 0; }

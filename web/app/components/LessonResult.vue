@@ -40,13 +40,18 @@ function go(index: number) {
       </li>
     </ul>
 
+    <div v-if="!wrong.length" class="row">
+      <NuxtLink to="/" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
+    </div>
     <template v-if="wrong.length">
       <div class="row">
         <button class="btn small" :aria-expanded="onlyWrong" @click="onlyWrong = !onlyWrong">
           {{ onlyWrong ? $t("resultView.hideWrong") : $t("resultView.showWrong", wrong.length) }}
         </button>
-        <NuxtLink :to="`/practice/${lesson.id}`" class="btn small primary">{{ $t("practice.start") }}</NuxtLink>
+        <NuxtLink :to="`/practice/${lesson.id}`" class="btn small" :class="{ primary: percent < 80 }">{{ $t("practice.start") }}</NuxtLink>
+        <NuxtLink v-if="percent >= 80" to="/" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
       </div>
+      <p class="muted small">{{ percent >= 80 ? $t("resultView.adviceGood") : percent >= 50 ? $t("resultView.adviceMid") : $t("resultView.adviceLow") }}</p>
       <ol v-if="onlyWrong" class="wrong">
         <li v-for="w in wrong" :key="w.qid">
           <span class="muted small">{{ w.sectionTitle }}</span>
@@ -62,8 +67,8 @@ function go(index: number) {
 </template>
 
 <style scoped>
-.result { margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
-.top { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.result { margin-bottom: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+.top { display: flex; gap: var(--space-lg); align-items: center; flex-wrap: wrap; }
 .top h2 { margin: 0; }
 .big { font-size: 1.1rem; font-weight: 600; margin: 2px 0; }
 .ring { width: 110px; height: 110px; flex: none; }
@@ -73,7 +78,7 @@ function go(index: number) {
 .ring.mid .fill { stroke: var(--warn); }
 .ring.low .fill { stroke: var(--bad); }
 .pct { font-size: 22px; font-weight: 700; fill: var(--text); font-variant-numeric: tabular-nums; }
-.parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-sm); }
 .parts li { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(80px, 2fr) auto; gap: 10px; align-items: center; }
 .link { background: none; border: 0; padding: 0; color: var(--accent); text-align: left; font-weight: 600; cursor: pointer; }
 .n { font-variant-numeric: tabular-nums; font-weight: 600; }
@@ -81,5 +86,5 @@ function go(index: number) {
 .q { margin: 2px 0; }
 .good { color: var(--ok); }
 .bad { color: var(--bad); }
-.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.row { display: flex; gap: var(--space-lg); flex-wrap: wrap; }
 </style>

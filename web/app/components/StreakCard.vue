@@ -42,17 +42,17 @@ const { t } = useI18n()
 </template>
 
 <style scoped>
-.streak { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-.top { align-items: center; gap: 12px; }
+.streak { display: flex; flex-direction: column; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.top { align-items: center; gap: var(--space-md); }
 .top p { margin: 0; }
 .n { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
 .flame { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--line); color: var(--muted); }
-.flame.on { background: var(--warn-soft); color: var(--warn); }
-.between { justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.flame.on { background: var(--orange-soft); color: var(--orange); }
+.between { justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-xs); }
 .ok { color: var(--ok); font-weight: 600; }
 select { width: auto; padding: 2px 6px; }
-.heat { display: flex; gap: 4px; overflow-x: auto; }
-.col { display: grid; grid-template-rows: repeat(7, 14px); gap: 4px; }
+.heat { display: flex; gap: var(--space-xs); overflow-x: auto; }
+.col { display: grid; grid-template-rows: repeat(7, 14px); gap: var(--space-xs); }
 .cell { width: 14px; height: 14px; border-radius: 3px; background: var(--line); }
 .cell.on { background: var(--ok); }
 .cell.future { background: transparent; border: 1px dashed var(--line); }

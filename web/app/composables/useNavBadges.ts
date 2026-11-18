@@ -11,6 +11,7 @@ export function useNavBadges(role: Ref<string | null | undefined>) {
   /** Flashcards due today (students). */
   const review = ref(0)
   const cards = useCardReviews()
+  const { unread } = useNotifications()
   let last = 0
 
   async function refresh(force = false) {
@@ -27,6 +28,6 @@ export function useNavBadges(role: Ref<string | null | undefined>) {
   watch(() => [role.value, route.fullPath], () => refresh(route.path.startsWith("/teacher/attempts")), { immediate: true })
 
   /** The count to show beside a link, or 0 for none. */
-  const forLink = (to: string) => (to === "/teacher/grading" ? grading.value : to === "/review" ? review.value : 0)
+  const forLink = (to: string) => (to === "/teacher/grading" ? grading.value : to === "/review" ? review.value : to === "/notifications" ? unread.value : 0)
   return { grading, review, forLink, refresh }
 }

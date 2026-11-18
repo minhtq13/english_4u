@@ -12,14 +12,14 @@ const session = useSessionGuard()
 
 interface NavGroup { title: string; links: { to: string; label: string; icon: IconName }[] }
 const ICONS: Record<string, IconName> = {
-  roadmap: "home", review: "clock", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file", exams: "clipboard",
-  dashboard: "chart", classes: "users", teachers: "users", users: "user", logins: "clock", audit: "clipboard",
+  roadmap: "home", review: "clock", notifications: "bell", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file", exams: "clipboard",
+  dashboard: "chart", classes: "users", teachers: "users", users: "user", logins: "clock", audit: "clipboard", errors: "file",
 }
 
 // Each role only sees the menu for its own work; admins see everything.
 const groups = computed<NavGroup[]>(() => {
   const link = (to: string, key: string) => ({ to, label: t(`nav.${key}`), icon: ICONS[key] ?? "file" })
-  const student = { title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/review", "review"), link("/progress", "progress")] }
+  const student = { title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/review", "review"), link("/notifications", "notifications"), link("/progress", "progress")] }
   const teacher = {
     title: t("nav.groupTeach"),
     links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading"),
@@ -28,7 +28,7 @@ const groups = computed<NavGroup[]>(() => {
   const admin = {
     title: t("nav.groupAdmin"),
     links: [link("/admin", "dashboard"), link("/admin/classes", "classes"), link("/admin/teachers", "teachers"), link("/admin/users", "users"),
-      link("/admin/logins", "logins"), link("/admin/audit", "audit")],
+      link("/admin/logins", "logins"), link("/admin/audit", "audit"), link("/admin/errors", "errors")],
   }
   if (role.value === "admin") return [admin, teacher]
   if (role.value === "teacher") return [teacher]
@@ -77,7 +77,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
         <button ref="menuBtn" class="menu-btn" :aria-expanded="open" aria-controls="sidebar" :aria-label="$t('nav.openMenu')" @click="open = !open">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
         </button>
-        <NuxtLink :to="homeFor(role)" class="brand">Grammar</NuxtLink>
+        <NuxtLink :to="homeFor(role)" class="brand" aria-label="English 4U"><BrandLogo /></NuxtLink>
         <span v-if="badge" class="role">{{ badge }}</span>
         <NotificationBell v-if="role === 'student' && myClass" class="bell-mobile" />
       </header>
@@ -85,7 +85,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
 
       <aside id="sidebar" class="sidebar" :class="{ open }">
         <div class="side-head">
-          <NuxtLink :to="homeFor(role)" class="brand">Grammar</NuxtLink>
+          <NuxtLink :to="homeFor(role)" class="brand" aria-label="English 4U"><BrandLogo /></NuxtLink>
           <span v-if="badge" class="role">{{ badge }}</span>
           <NotificationBell v-if="role === 'student' && myClass" class="bell-side" />
         </div>
@@ -95,7 +95,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
             <NuxtLink v-for="l in g.links" :key="l.to" :to="l.to" class="nav-link" :class="{ active: isActive(l.to) }">
               <Icon :name="l.icon" size="18" />
               <span class="label">{{ l.label }}</span>
-              <span v-if="forLink(l.to)" class="count" :aria-label="$t(l.to === '/review' ? 'nav.dueCount' : 'nav.waitingCount', forLink(l.to))">{{ forLink(l.to) }}</span>
+              <span v-if="forLink(l.to)" class="count" :aria-label="$t(l.to === '/review' ? 'nav.dueCount' : l.to === '/notifications' ? 'nav.unreadCount' : 'nav.waitingCount', forLink(l.to))">{{ forLink(l.to) }}</span>
             </NuxtLink>
           </div>
         </nav>
@@ -120,6 +120,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
     </main>
     <ScrollTop v-if="user" />
     <StudentTabs v-if="user && role === 'student' && myClass" />
+    <BadgePopup v-if="user && role === 'student'" />
     <ToastHost />
     <PwaUpdate />
     <SessionEndedDialog v-if="session.ended.value" :reason="session.ended.value" @close="session.signInAgain" />
@@ -129,28 +130,28 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
 <style scoped>
 #main:focus { outline: none; }
 .brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
-.role { font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.role { font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: var(--radius-full); white-space: nowrap; }
 
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 232px; background: var(--card); border-right: 1px solid var(--line);
   display: flex; flex-direction: column; z-index: 30; }
-.side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 18px 16px 12px; }
+.side-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: 18px 16px 12px; }
 .side-nav { flex: 1; overflow-y: auto; padding: 4px 10px; }
 .group + .group { margin-top: 14px; }
 .group-title { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; }
-.nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); color: var(--text); text-decoration: none; font-weight: 500; }
 .nav-link:hover { background: var(--bg); }
 .nav-link .label { flex: 1; min-width: 0; }
-.nav-link .count { background: var(--warn); color: var(--card); border-radius: 999px; font-size: .72rem; font-weight: 700; padding: 1px 8px; font-variant-numeric: tabular-nums; }
+.nav-link .count { background: var(--warn); color: var(--card); border-radius: var(--radius-full); font-size: .72rem; font-weight: 700; padding: 1px 8px; font-variant-numeric: tabular-nums; }
 .nav-link.active { background: var(--accent-soft); color: var(--accent); }
 
 .me { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 14px; border-top: 1px solid var(--line); }
-.who { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 6px; margin: -6px; border-radius: 8px; text-decoration: none; color: var(--text); }
+.who { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 6px; margin: -6px; border-radius: var(--radius-md); text-decoration: none; color: var(--text); }
 .who:hover, .who.router-link-active { background: var(--accent-soft); }
 .avatar { width: 32px; height: 32px; border-radius: 50%; flex: none; }
 .initial { display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: .9rem; }
 .who-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
 .name { font-size: .9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.me-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.me-actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); flex-wrap: wrap; }
 .prefs { display: flex; align-items: center; gap: 6px; }
 
 .mobilebar { display: none; }
@@ -165,7 +166,7 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
   .bell-side { display: none; }
   .mobilebar { display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 20;
     background: var(--card); border-bottom: 1px solid var(--line); padding: 8px 16px; }
-  .menu-btn { background: none; border: 0; color: var(--text); width: 40px; height: 40px; margin: -4px 0 -4px -10px; border-radius: 8px;
+  .menu-btn { background: none; border: 0; color: var(--text); width: 40px; height: 40px; margin: -4px 0 -4px -10px; border-radius: var(--radius-md);
     cursor: pointer; display: grid; place-items: center; }
   .menu-btn:hover { background: var(--bg); }
   /* Hidden off-screen and out of the Tab order while closed; visibility switches after the slide-out ends. */

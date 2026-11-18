@@ -61,6 +61,7 @@ async function save() {
 <template>
   <div>
     <h1>{{ $t("account.title") }}</h1>
+    <BadgesCard v-if="role === 'student'" />
     <section class="card info">
       <div><span class="muted small">{{ $t("account.name") }}</span><b>{{ profile?.full_name || "-" }}</b></div>
       <div><span class="muted small">{{ $t("account.login") }}</span><b>{{ profile ? loginOf(profile) : "" }}</b></div>
@@ -97,10 +98,10 @@ async function save() {
 </template>
 
 <style scoped>
-.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-.info div { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); }
+.info div { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
 .form { max-width: 360px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
 .field .muted { font-weight: 400; }
 .bad { color: var(--bad); margin: 0; }
 .forgot { margin: 12px 0 0; }
