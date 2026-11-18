@@ -31,3 +31,13 @@ export function analysisRows(rows: readonly AnalysisInput[]): AnalysisRow[] {
     })
     .sort((a, b) => a.percent - b.percent || a.qid[0]!.localeCompare(b.qid[0]!) || numberOf(a.qid) - numberOf(b.qid))
 }
+
+/** Questions a teacher should teach again: under 50 % right among at least `minAnswered` students, hardest first (rows come sorted). */
+export const reteach = (rows: readonly AnalysisRow[], minAnswered = 3): AnalysisRow[] =>
+  rows.filter(r => r.answered >= minAnswered && r.band === "hard")
+
+/** The bars of one question: the right answers, then each wrong answer given, as shares of everyone who answered. */
+export function answerBars(r: AnalysisRow): { label: string | null; n: number; percent: number; right: boolean }[] {
+  const share = (n: number) => percentOf(n, r.answered) ?? 0
+  return [{ label: null, n: r.ok, percent: share(r.ok), right: true }, ...r.wrong.map(w => ({ label: w.given, n: w.n, percent: share(w.n), right: false }))]
+}

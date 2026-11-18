@@ -300,9 +300,6 @@ const parts = computed(() => buildParts(questions.value))
 const base = computed(() => buildVariant(parts.value, "", "base"))
 const codes = computed(() => parseCodes(codesText.value))
 const variants = computed(() => buildVariants(parts.value, codes.value, mode.value))
-const codeCount = ref(4)
-const codeStart = ref(101)
-const fillCodes = () => { codesText.value = codeSeries(codeCount.value, codeStart.value).join(", ") }
 
 const docInfo = computed(() => docInfoOf(info, localName(courses.value.find(c => c.id === info.courseId)?.name), t("examPage.untitled"), partHints))
 const problems = computed(() => [
@@ -310,36 +307,6 @@ const problems = computed(() => [
   ...(!questions.value.length ? [t("examPage.needQuestions")] : []),
   ...(!codes.value.length ? [t("examPage.needCodes")] : []),
 ])
-const ready = computed(() => !problems.value.length)
-
-const activeCode = ref("")
-const shown = computed(() => variants.value.find(v => v.code === activeCode.value) ?? variants.value[0] ?? null)
-const withKey = ref(false)
-
-const busy = ref("")
-async function run(key: string, job: () => Promise<void>) {
-  if (busy.value) return
-  busy.value = key
-  try {
-    await job()
-  } catch (e) {
-    toast.error(t("examPage.exportFailed", { msg: (e as Error).message }))
-  }
-  busy.value = ""
-}
-const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-const saveOne = (key: boolean) => run(key ? "key" : "one", async () => {
-  const v = shown.value
-  if (!v) return
-  saveFile(examFileName(docInfo.value, v.code, key), await examDocx(docInfo.value, v, { withKey: key, answerSheet: sheetAt.value }), DOCX)
-})
-const saveAll = () => run("all", async () => {
-  const key = { name: examKeyFileName(docInfo.value), bytes: await examKeyBytes(docInfo.value, variants.value) }
-  const zip = await examZip(docInfo.value, variants.value, { answerSheet: sheetAt.value }, key)
-  saveFile(`${fileSlug(docInfo.value.title) || "de-thi"}.zip`, zip, "application/zip")
-})
-const pdfLink = (code: string, key: boolean) => ({ path: "/teacher/exams/print", query: { code, ...(key ? { key: "1" } : {}), ...(savedId.value ? { id: savedId.value } : {}) } })
-const saveKey = () => run("xlsx", () => downloadExamKey(docInfo.value, variants.value))
 
 const sourceOf = (q: ExamQuestion) => {
   const row = lessons.value.find(l => l.id === q.lessonId)
@@ -372,34 +339,7 @@ const oneLine = (q: ExamQuestion) =>
     <Skeleton v-else-if="loading" :rows="6" />
     <template v-else>
     <fieldset class="plain" :disabled="readOnly">
-    <section class="card">
-      <h2>1. {{ $t("examPage.infoTitle") }}</h2>
-      <div class="grid">
-        <label class="wide"><span>{{ $t("examPage.title") }}</span>
-          <input v-model="info.title" type="text" :placeholder="$t('examPage.titleHint')">
-        </label>
-        <label><span>{{ $t("examPage.grade") }}</span>
-          <select v-model="info.courseId">
-            <option v-for="c in courses" :key="c.id" :value="c.id">{{ localName(c.name) }}</option>
-          </select>
-        </label>
-        <label><span>{{ $t("examPage.minutes") }}</span>
-          <input v-model.number="info.minutes" type="number" min="1" max="300">
-        </label>
-        <label class="wide"><span>{{ $t("examPage.school") }}</span>
-          <input v-model="info.school" type="text" :placeholder="$t('examPage.schoolHint')">
-        </label>
-        <label><span>{{ $t("examPage.department") }}</span>
-          <input v-model="info.department" type="text" :placeholder="$t('examPage.departmentHint')">
-        </label>
-        <label><span>{{ $t("examPage.schoolYear") }}</span>
-          <input v-model="info.schoolYear" type="text" placeholder="2026 – 2027">
-        </label>
-        <label><span>{{ $t("examPage.term") }}</span>
-          <input v-model="info.term" type="text" :placeholder="$t('examPage.termHint')">
-        </label>
-      </div>
-    </section>
+    <ExamStepInfo :info="info" :courses="courses" />
 
     <section class="card">
       <h2>2. {{ $t("examPage.pickTitle") }}</h2>
@@ -530,59 +470,11 @@ const oneLine = (q: ExamQuestion) =>
       </div>
     </section>
 
-    <section class="card">
-      <h2>4. {{ $t("examPage.codesTitle") }}</h2>
-      <div class="row series">
-        <label><span>{{ $t("examPage.codeCount") }}</span><input v-model.number="codeCount" type="number" min="1" max="24"></label>
-        <label><span>{{ $t("examPage.codeStart") }}</span><input v-model.number="codeStart" type="number" min="0"></label>
-        <button class="btn small" @click="fillCodes">{{ $t("examPage.fillCodes") }}</button>
-      </div>
-      <label class="codes"><span>{{ $t("examPage.codes") }}</span>
-        <input v-model="codesText" type="text" placeholder="101, 102, 103, 104">
-      </label>
-
-      <fieldset class="modes">
-        <legend>{{ $t("examPage.modeTitle") }}</legend>
-        <label v-for="m in SHUFFLE_MODES" :key="m" class="mode" :class="{ on: mode === m }">
-          <input v-model="mode" type="radio" :value="m">
-          <span><b>{{ $t(`exam.mode.${m}.label`) }}</b><small class="muted">{{ $t(`exam.mode.${m}.hint`) }}</small></span>
-        </label>
-      </fieldset>
-      <p class="small muted">{{ $t("examPage.seedNote") }}</p>
-
-      <label class="sheet-at"><span>{{ $t("examPage.sheetAt") }}</span>
-        <select v-model="sheetAt">
-          <option value="top">{{ $t("examPage.sheetTop") }}</option>
-          <option value="bottom">{{ $t("examPage.sheetBottom") }}</option>
-          <option value="none">{{ $t("examPage.sheetNone") }}</option>
-        </select>
-      </label>
-    </section>
+    <ExamStepCodes v-model:codes-text="codesText" v-model:mode="mode" v-model:sheet-at="sheetAt" />
 
     </fieldset>
 
-    <section class="card">
-      <h2>5. {{ $t("examPage.exportTitle") }}</h2>
-      <ul v-if="!ready" class="fb no problems"><li v-for="p in problems" :key="p">{{ p }}</li></ul>
-      <template v-else-if="shown">
-        <div class="row code-tabs">
-          <span class="small muted">{{ $t("examPage.codeLabel") }}</span>
-          <button v-for="v in variants" :key="v.code" class="btn small" :class="{ primary: v.code === shown.code }" @click="activeCode = v.code">{{ v.code }}</button>
-          <label class="row inline small"><input v-model="withKey" type="checkbox"> {{ $t("examPage.showKey") }}</label>
-        </div>
-        <div class="row downloads">
-          <button class="btn primary" :disabled="!!busy" @click="saveOne(false)"><Icon name="file" /> {{ busy === "one" ? $t("examPage.making") : $t("examPage.saveOne", { code: shown.code }) }}</button>
-          <button class="btn" :disabled="!!busy" @click="saveOne(true)"><Icon name="file" /> {{ busy === "key" ? $t("examPage.making") : $t("examPage.saveWithKey") }}</button>
-          <NuxtLink class="btn" :to="pdfLink(shown.code, false)" target="_blank"><Icon name="printer" /> {{ $t("examPage.savePdf", { code: shown.code }) }}</NuxtLink>
-          <NuxtLink class="btn" :to="pdfLink(shown.code, true)" target="_blank"><Icon name="printer" /> {{ $t("examPage.savePdfKey") }}</NuxtLink>
-          <NuxtLink class="btn" :to="pdfLink('all', false)" target="_blank"><Icon name="printer" /> {{ $t("examPage.savePdfAll", { n: variants.length }) }}</NuxtLink>
-          <button class="btn" :disabled="!!busy" @click="saveAll"><Icon name="file" /> {{ busy === "all" ? $t("examPage.making") : $t("examPage.saveAll", { n: variants.length }) }}</button>
-          <button class="btn" :disabled="!!busy" @click="saveKey"><Icon name="clipboard" /> {{ busy === "xlsx" ? $t("examPage.making") : $t("examPage.saveXlsx") }}</button>
-        </div>
-        <p class="small muted">{{ $t("examPage.pdfNote") }}</p>
-        <ExamPreview :info="docInfo" :variant="shown" :with-key="withKey" :sheet="sheetAt" />
-      </template>
-    </section>
+    <ExamStepExport :problems="problems" :variants="variants" :doc-info="docInfo" :sheet-at="sheetAt" :saved-id="savedId" />
 
     <QuestionPreviewDialog
       v-if="previewed" :question="previewed" :in-exam="inExam.has(previewed.id)" :source="sourceOf(previewed)"
@@ -615,22 +507,18 @@ const oneLine = (q: ExamQuestion) =>
 </template>
 
 <style scoped>
-.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.grid label, .codes, .series label, .sheet-at { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
-.grid label > span, .codes > span, .series label > span, .sheet-at > span { color: var(--muted); }
-.grid .wide { grid-column: span 2; }
 .tabs { margin-bottom: 10px; }
 .filters { margin-bottom: 10px; }
 .filters select { width: auto; }
 .filters input { flex: 1 1 180px; min-width: 0; }
 .filters .tag { max-width: 200px; }
-.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px;
+.q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md);
   cursor: pointer; margin-bottom: 6px; }
 .q-row:hover, .q-row.on { border-color: var(--accent); }
 .q-row.on { background: var(--accent-soft); }
 .q-row input { margin-top: 5px; }
 .q-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
-.lessons { margin-bottom: 12px; }
+.lessons { margin-bottom: var(--space-md); }
 .lessons summary { cursor: pointer; color: var(--accent); margin-bottom: 6px; }
 .lesson { flex-wrap: nowrap; padding: 3px 0; font-size: .92rem; }
 .matrix { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
@@ -639,24 +527,24 @@ const oneLine = (q: ExamQuestion) =>
 .passages { flex-wrap: nowrap; gap: 6px; }
 .draw { margin-top: 14px; }
 .between { justify-content: space-between; }
-.base-part { margin-top: 12px; padding: 4px 0; }
-.part-head { display: flex; align-items: center; gap: 8px; }
+.base-part { margin-top: var(--space-md); padding: 4px 0; }
+.part-head { display: flex; align-items: center; gap: var(--space-sm); }
 .part-head h3 { margin: 0; flex: 1; }
 .hint-edit { display: flex; gap: 6px; align-items: center; margin: 6px 0 8px; }
 .hint-input { font-style: italic; }
 .hint-edit .btn { white-space: nowrap; flex: none; }
-.grip { display: inline-flex; align-items: center; flex: none; padding: 4px 2px; border-radius: 6px; color: var(--muted); cursor: grab; touch-action: none; user-select: none; }
+.grip { display: inline-flex; align-items: center; flex: none; padding: 4px 2px; border-radius: var(--radius-sm); color: var(--muted); cursor: grab; touch-action: none; user-select: none; }
 .grip:hover { background: var(--accent-soft); color: var(--accent); }
-.drag-ghost { opacity: .4; outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: 8px; }
+.drag-ghost { opacity: .4; outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: var(--radius-md); }
 .drag-chosen { cursor: grabbing; }
-.block { display: flex; gap: 6px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; }
+.block { display: flex; gap: 6px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 6px 10px; margin-bottom: 6px; }
 .block-body { flex: 1; min-width: 0; }
-.base-q { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; padding: 3px 0; }
+.base-q { display: flex; justify-content: space-between; gap: var(--space-sm); align-items: flex-start; padding: 3px 0; }
 .clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 4px; }
-.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
 .plain { border: 0; padding: 0; margin: 0; min-width: 0; }
 .savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 3; background: var(--card); border: 1px solid var(--line);
-  border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px var(--shadow); margin-top: 12px; }
+  border-radius: var(--radius-lg); padding: 10px 14px; display: flex; align-items: center; gap: var(--space-sm); box-shadow: 0 4px 16px var(--shadow); margin-top: var(--space-md); }
 .spacer { flex: 1; }
 .warn-text { color: var(--warn); font-weight: 600; }
 .acts { display: flex; gap: 2px; flex: none; }
@@ -664,26 +552,8 @@ const oneLine = (q: ExamQuestion) =>
 @media (max-width: 560px) { .preview-btn .label { display: none; } }
 .moves { display: flex; flex-direction: column; gap: 2px; }
 .btn.icon { padding: 2px 6px; line-height: 1; }
-.series { align-items: flex-end; margin-bottom: 10px; }
-.series input { width: 110px; }
-.codes { margin-bottom: 14px; }
-.modes { border: 0; padding: 0; margin: 0 0 8px; display: grid; gap: 6px; }
-.modes legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
-.mode { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
-.mode.on { border-color: var(--accent); background: var(--accent-soft); }
-.mode input { margin-top: 5px; }
-.mode span { display: flex; flex-direction: column; }
-.sheet-at { max-width: 320px; margin-top: 10px; }
-.problems { margin: 0; padding-left: 28px; }
-.code-tabs, .downloads { margin-bottom: 12px; }
-.inline { gap: 6px; margin-left: auto; }
 .reset { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 @media (max-width: 720px) {
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .matrix { grid-template-columns: 1fr; }
-}
-@media (max-width: 460px) {
-  .grid { grid-template-columns: 1fr; }
-  .grid .wide { grid-column: auto; }
 }
 </style>

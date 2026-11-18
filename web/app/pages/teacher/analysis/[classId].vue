@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Database, Tables } from "~/types/database.types"
-import { analysisRows, type AnalysisRow } from "~/utils/questionAnalysis"
+import { analysisRows, answerBars, reteach, type AnalysisRow } from "~/utils/questionAnalysis"
 import { lessonsOfClass } from "~/utils/classLessonStore"
 import { downloadXlsx, fileSlug } from "~/utils/spreadsheet"
 import { errorText } from "~/utils/serverErrors"
@@ -46,6 +46,7 @@ async function run() {
 watch(lessonId, run)
 watch(loaded, (l) => { if (l && lessonId.value) run() })
 
+const advice = computed(() => reteach(rows.value))
 const lessonName = computed(() => lessons.value.find(l => l.id === lessonId.value)?.name ?? "")
 async function exportXlsx() {
   await downloadXlsx(`${fileSlug(t("analysis.fileName"))}-${fileSlug(cls.value?.name ?? "")}-${fileSlug(lessonId.value)}`, {
@@ -82,7 +83,11 @@ async function exportXlsx() {
         <p v-if="error" class="fb no">{{ error }}</p>
         <Skeleton v-else-if="busy" />
         <EmptyState v-else-if="!rows.length" icon="chart" :title="$t('analysis.noneTitle')" :text="$t('analysis.none', { lesson: lessonName })" />
-        <div v-else class="card scroll" tabindex="0" role="region" :aria-label="$t('analysis.title', { name: cls.name })">
+        <div v-else-if="advice.length" class="fb key advice" role="status">
+          <b>{{ $t("analysis.adviceTitle") }}</b>
+          <ul><li v-for="r in advice" :key="r.qid">{{ $t("analysis.advice", { qid: r.qid, percent: r.percent }) }}</li></ul>
+        </div>
+        <div v-if="!error && !busy && rows.length" class="card scroll" tabindex="0" role="region" :aria-label="$t('analysis.title', { name: cls.name })">
           <table class="tbl">
             <thead><tr><th>{{ $t("analysis.question") }}</th><th class="q">{{ $t("analysis.text") }}</th><th>{{ $t("analysis.answered") }}</th><th>{{ $t("analysis.rightShare") }}</th><th>{{ $t("analysis.commonWrong") }}</th></tr></thead>
             <tbody>
@@ -92,8 +97,13 @@ async function exportXlsx() {
                 <td>{{ r.answered }}</td>
                 <td><span class="pill" :class="r.band">{{ r.percent }}%</span> <span class="muted small">{{ r.ok }}/{{ r.answered }}</span></td>
                 <td>
-                  <span v-if="!r.wrong.length" class="muted">–</span>
-                  <span v-for="w in r.wrong" :key="w.given" class="wrong">{{ w.given }} <b>×{{ w.n }}</b></span>
+                  <div class="bars">
+                    <div v-for="(b, i) in answerBars(r)" :key="i" class="bar-row" :class="{ right: b.right }">
+                      <span class="bl">{{ b.right ? $t("analysis.rightBar") : b.label }}</span>
+                      <span class="bt"><span :style="{ width: `${b.percent}%` }" /></span>
+                      <span class="bn">{{ b.n }}</span>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -106,7 +116,7 @@ async function exportXlsx() {
 </template>
 
 <style scoped>
-.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
 .pick { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .pick select { flex: 1; min-width: 200px; }
 .scroll { overflow-x: auto; padding: 0; }
@@ -114,10 +124,19 @@ async function exportXlsx() {
 .tbl th, .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 .tbl thead th { color: var(--muted); font-size: .85rem; }
 .q { min-width: 240px; max-width: 420px; overflow-wrap: anywhere; }
-.pill { display: inline-block; padding: 1px 10px; border-radius: 999px; font-weight: 700; }
+.pill { display: inline-block; padding: 1px 10px; border-radius: var(--radius-full); font-weight: 700; }
 .pill.easy { background: var(--ok-soft); color: var(--ok); }
 .pill.medium { background: var(--warn-soft); color: var(--warn); }
 .pill.hard { background: var(--bad-soft); color: var(--bad); }
-.wrong { display: inline-block; margin: 0 8px 4px 0; padding: 1px 8px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
-.legend { margin-top: 8px; }
+.wrong { display: inline-block; margin: 0 8px 4px 0; padding: 1px 8px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--line); }
+.legend { margin-top: var(--space-sm); }
+.advice { margin-bottom: var(--space-md); }
+.advice ul { margin: 4px 0 0; padding-left: 20px; }
+.bars { display: flex; flex-direction: column; gap: 3px; min-width: 200px; }
+.bar-row { display: grid; grid-template-columns: minmax(60px, 110px) 1fr 24px; gap: var(--space-sm); align-items: center; font-size: .85rem; }
+.bl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt { height: 8px; border-radius: var(--radius-full); background: var(--line); overflow: hidden; }
+.bt span { display: block; height: 100%; background: var(--bad); }
+.bar-row.right .bt span { background: var(--ok); }
+.bn { text-align: right; font-weight: 600; }
 </style>

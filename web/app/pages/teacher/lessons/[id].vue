@@ -4,6 +4,7 @@ import type { DraftSection, LessonDraft } from "~/utils/lessonDraft"
 import type { Lesson } from "~/utils/course"
 
 definePageMeta({ roles: ["teacher"] })
+const importOpen = ref(false)
 
 // /teacher/lessons/new creates a lesson of a grade (?class=<id> preselects that class's grade and assignment);
 // /teacher/lessons/<id> edits one. Lessons start assigned to no class; only assigned classes see them.
@@ -247,43 +248,10 @@ async function removeLesson() {
       </div>
     </div>
     <template v-else>
-      <ol class="steps" :aria-label="$t('editor.steps')">
-        <li :class="{ on: stage === 'setup', done: stage === 'content' }">
-          <button type="button" @click="go('setup')"><span class="dot"><Icon v-if="stage === 'content'" name="check" size="14" /><template v-else>1</template></span>{{ $t("editor.stepGrade") }}</button>
-        </li>
-        <li :class="{ on: stage === 'setup', done: stage === 'content' }">
-          <button type="button" @click="go('setup')"><span class="dot"><Icon v-if="stage === 'content'" name="check" size="14" /><template v-else>2</template></span>{{ $t("editor.stepStructure") }}</button>
-        </li>
-        <li :class="{ on: stage === 'content' }">
-          <button type="button" :disabled="!canContinue" :aria-current="stage === 'content' ? 'step' : undefined" @click="go('content')">
-            <span class="dot">3</span>{{ $t("editor.stepContent") }}
-          </button>
-        </li>
-        <li>
-          <button type="button" :disabled="!canContinue" @click="goGive">
-            <span class="dot">4</span>{{ $t("editor.stepGive") }}
-          </button>
-        </li>
-      </ol>
+      <LessonEditorSteps :stage="stage" :can-continue="canContinue" @go="go" @give="goGive" />
 
       <template v-if="stage === 'setup'">
-        <section class="card stack">
-          <h2>1. {{ $t("editor.step1") }}</h2>
-          <div class="grid3">
-            <label>{{ $t("editor.grade") }}
-              <select v-model="courseId" :disabled="!!editId">
-                <option value="">{{ $t("editor.pickGradeOption") }}</option>
-                <option v-for="k in courseChoices" :key="k.id" :value="k.id">{{ localName(k.name) }}</option>
-              </select>
-            </label>
-            <label>{{ $t("editor.phase") }}
-              <select v-model="phaseId" :disabled="!phases.length">
-                <option v-if="!phases.length" :value="null">{{ courseId ? $t("editor.noPhases") : $t("editor.gradeFirst") }}</option>
-                <option v-for="p in phases" :key="p.id" :value="p.id">{{ localName(p.name) }}</option>
-              </select>
-            </label>
-          </div>
-        </section>
+        <LessonEditorSetupGrade v-model:course-id="courseId" v-model:phase-id="phaseId" :course-choices="courseChoices" :phases="phases" :editing="!!editId" />
 
         <LessonEditorStructure v-model="draft.sections" :lessons="templates" />
 
@@ -302,15 +270,7 @@ async function removeLesson() {
           <button class="btn small" @click="go('setup')">{{ $t("editor.changeSetup") }}</button>
         </div>
 
-        <section class="card stack">
-          <h2>3. {{ $t("editor.step3") }}</h2>
-          <div class="grid3">
-            <label><span class="lab">{{ $t("editor.label") }} <span class="muted">{{ $t("editor.labelEx") }}</span></span><input v-model="draft.label" type="text"></label>
-            <label class="span2"><span class="lab">{{ $t("editor.lessonTitle") }}</span><input v-model="draft.title" type="text" :placeholder="$t('editor.lessonTitleEx')"></label>
-          </div>
-          <label><span class="lab">{{ $t("editor.desc") }} <span class="muted">{{ $t("editor.descHelp") }}</span></span><input v-model="draft.description" type="text"></label>
-          <label><span class="lab">{{ $t("editor.subtitle") }} <span class="muted">{{ $t("sectionEd.optional") }}</span></span><input v-model="draft.subtitle" type="text" :placeholder="$t('editor.subtitleEx')"></label>
-        </section>
+        <LessonEditorInfo :draft="draft" />
 
         <LessonEditorSection
           v-for="(s, i) in draft.sections"
@@ -323,7 +283,9 @@ async function removeLesson() {
 
         <div class="card">
           <LessonEditorAddSection @add="draft.sections.push($event)" />
+          <button class="btn" @click="importOpen = true"><Icon name="clipboard" /> {{ $t("importer.open") }}</button>
         </div>
+        <LessonEditorImportDialog v-if="importOpen" @close="importOpen = false" @add="draft.sections.push($event)" />
 
         <LessonEditorGiving :giving="giving" :editing="!!editId" />
       </template>
@@ -351,27 +313,13 @@ async function removeLesson() {
 </template>
 
 <style scoped>
-.stack label { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; font-weight: 500; }
+.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
 .stack label .muted { font-weight: 400; }
-.stack label.inline { flex-direction: row; align-items: center; gap: 8px; font-weight: 400; }
-.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: end; }
-/* Label and its hint share one line, so neighbouring inputs start at the same height. */
-.stack label .lab { display: block; }
-.span2 { grid-column: span 2; }
-.steps { list-style: none; margin: 0 0 16px; padding: 0; display: flex; gap: 8px; flex-wrap: wrap; }
-.steps li { flex: 1 1 150px; }
-.steps button { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--card); color: var(--muted); font: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; text-align: left; }
-.steps button:disabled { opacity: .55; cursor: default; }
-.steps .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--bg); border: 1px solid var(--line); font-size: .8rem; font-weight: 700; }
-.steps li.on button { border-color: var(--accent); color: var(--text); }
-.steps li.on .dot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.steps li.done .dot { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.stack label.inline { flex-direction: row; align-items: center; gap: var(--space-sm); font-weight: 400; }
 .summary { justify-content: space-between; padding: 10px 14px; }
 .summary .grow { flex: 1; min-width: 0; }
 .fb ul { margin: 6px 0 0; padding-left: 20px; }
 .savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--card); border: 1px solid var(--line);
-  border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px var(--shadow); }
+  border-radius: var(--radius-lg); padding: 10px 14px; display: flex; align-items: center; gap: var(--space-sm); box-shadow: 0 4px 16px var(--shadow); }
 .spacer { flex: 1; }
-@media (max-width: 640px) { .grid3 { grid-template-columns: 1fr; } .span2 { grid-column: auto; } }
 </style>
