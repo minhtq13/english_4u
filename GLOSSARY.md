@@ -24,3 +24,8 @@ Domain terms of english_4u, as the code names them. UI wording is Vietnamese; th
 - **Review** (ôn tập): flashcards due again by Leitner boxes (`card_reviews`).
 - **Person name**: how a learner or teacher is shown in lists and messages: full name, else username, else a real email (`personName()`).
 - **Class workspace**: what a teacher does with the lessons of one class on its page (give, take back, close, settings, deadline, who may work, release) together with the numbers each change moves (`useClassWorkspace()`).
+- **Exam set** (bộ đề thi): a paper exam a teacher builds from bank questions or a matrix (`exam_sets`, questions kept as a snapshot with answers), shuffled into exam codes and exported as Word / PDF / Excel; shared with other teachers read-only or with edit rights (`exam_set_shares`).
+- **SRS** (ôn tập theo hộp): spaced repetition of flashcards by Leitner boxes; a card answered right moves to a later box and comes back later (`card_reviews`, `utils/srs.ts`).
+- **Audit log** (nhật ký thao tác): who promoted a role or moved a class, and when (`audit_log`, written by triggers; admin page `/admin/audit`).
+- **Promote class** (lên lớp): move a whole class to another class in one step with one audit row (`promote_class()`); attempts and feedback stay.
+- **Badge** (huy hiệu): not built yet. When it is, it must be awarded by the database, never by the browser.

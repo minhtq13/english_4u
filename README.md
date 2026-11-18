@@ -1,6 +1,6 @@
 # english_4u
 
-Học ngữ pháp tiếng Anh cho học sinh THCS lớp 6–9 (Tiếng Anh Global Success) và lộ trình B1 → B2, 30 phút mỗi bài. Giáo viên tạo lớp, soạn và giao bài, chấm tự động theo 8 dạng câu hỏi, nhận xét bài viết và theo dõi lỗi lặp lại của từng học sinh; học sinh đăng nhập bằng tên đăng nhập do giáo viên cấp.
+Học ngữ pháp tiếng Anh cho học sinh THCS lớp 6–9 (Tiếng Anh Global Success) và lộ trình B1 → B2, 30 phút mỗi bài. Giáo viên tạo lớp, soạn và giao bài, chấm tự động theo 8 dạng câu hỏi, nhận xét bài viết, theo dõi lỗi lặp lại, xem bảng điểm và phân tích từng câu, soạn bộ đề thi giấy (xuất Word / PDF / Excel); học sinh đăng nhập bằng tên đăng nhập do giáo viên cấp, có chuỗi ngày học, ôn flashcard và thông báo.
 
 | Thư mục | Nội dung |
 |---|---|
