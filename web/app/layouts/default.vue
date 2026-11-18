@@ -10,28 +10,28 @@ watch(() => user.value?.sub, (id) => { if (id) refresh() }, { immediate: true })
 // One session per account, 10 minutes without activity, locked accounts (see useSessionGuard).
 const session = useSessionGuard()
 
-interface NavGroup { title: string; links: { to: string; label: string; icon: IconName }[] }
+interface NavGroup { id: string; title: string; links: { to: string; label: string; icon: IconName }[] }
 const ICONS: Record<string, IconName> = {
   roadmap: "home", review: "clock", notifications: "bell", progress: "chart", myClasses: "home", students: "users", grading: "pencil", lessons: "book", newLesson: "plus", bank: "file", exams: "clipboard",
   dashboard: "chart", classes: "users", teachers: "users", users: "user", logins: "clock", audit: "clipboard", errors: "file",
 }
 
-// Each role only sees the menu for its own work; admins see everything.
+// Each role only sees the menu for its own work; admins see everything. Links of one kind form a group that folds
+// into a submenu; a group of one link is just a link.
 const groups = computed<NavGroup[]>(() => {
   const link = (to: string, key: string) => ({ to, label: t(`nav.${key}`), icon: ICONS[key] ?? "file" })
-  const student = { title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/review", "review"), link("/notifications", "notifications"), link("/progress", "progress")] }
-  const teacher = {
-    title: t("nav.groupTeach"),
-    links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading"),
-      link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson"), link("/teacher/bank", "bank"), link("/teacher/exams", "exams")],
-  }
-  const admin = {
-    title: t("nav.groupAdmin"),
-    links: [link("/admin", "dashboard"), link("/admin/classes", "classes"), link("/admin/teachers", "teachers"), link("/admin/users", "users"),
-      link("/admin/logins", "logins"), link("/admin/audit", "audit"), link("/admin/errors", "errors")],
-  }
-  if (role.value === "admin") return [admin, teacher]
-  if (role.value === "teacher") return [teacher]
+  const student: NavGroup = { id: "study", title: t("nav.groupStudy"), links: [link("/", "roadmap"), link("/review", "review"), link("/notifications", "notifications"), link("/progress", "progress")] }
+  const teaching: NavGroup[] = [
+    { id: "classes", title: t("nav.groupClasses"), links: [link("/teacher", "myClasses"), link("/teacher/students", "students"), link("/teacher/grading", "grading")] },
+    { id: "content", title: t("nav.groupContent"), links: [link("/courses", "lessons"), link("/teacher/lessons/new", "newLesson"), link("/teacher/bank", "bank"), link("/teacher/exams", "exams")] },
+  ]
+  const admin: NavGroup[] = [
+    { id: "overview", title: t("nav.dashboard"), links: [link("/admin", "dashboard")] },
+    { id: "manage", title: t("nav.groupManage"), links: [link("/admin/classes", "classes"), link("/admin/teachers", "teachers"), link("/admin/users", "users")] },
+    { id: "monitor", title: t("nav.groupMonitor"), links: [link("/admin/logins", "logins"), link("/admin/audit", "audit"), link("/admin/errors", "errors")] },
+  ]
+  if (role.value === "admin") return [...admin, ...teaching]
+  if (role.value === "teacher") return teaching
   return profile.value?.class_id ? [student] : []
 })
 const { forLink } = useNavBadges(role)
@@ -47,6 +47,21 @@ const activeLink = computed(() =>
     .filter(to => route.path === to || route.path.startsWith(`${to}/`))
     .sort((a, b) => b.length - a.length)[0])
 const isActive = (to: string) => activeLink.value === to
+
+// Submenus: a group is open or folded as the person left it (kept in this browser); the group of the page they are
+// on opens by itself. Never opened or folded yet: only the group of the current page is open.
+const NAV_KEY = "navOpen"
+const openState = ref<Record<string, boolean>>({})
+onMounted(() => { try { openState.value = JSON.parse(localStorage.getItem(NAV_KEY) ?? "{}") } catch { /* all folded */ } })
+const groupOfActive = computed(() => groups.value.find(g => g.links.some(l => l.to === activeLink.value))?.id)
+watch(groupOfActive, (id) => { if (id && openState.value[id] !== true) setGroup(id, true) }, { immediate: true })
+function setGroup(id: string, on: boolean) {
+  openState.value = { ...openState.value, [id]: on }
+  try { localStorage.setItem(NAV_KEY, JSON.stringify(openState.value)) } catch { /* not kept */ }
+}
+const isGroupOpen = (g: NavGroup) => openState.value[g.id] ?? g.id === groupOfActive.value
+/** The counts of a folded group, added up, so work waiting is never hidden. */
+const groupCount = (g: NavGroup) => g.links.reduce((n, l) => n + (forLink(l.to) || 0), 0)
 
 // On small screens the sidebar is a drawer: Escape closes it and gives focus back to the menu button.
 const open = ref(false)
@@ -90,14 +105,29 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
           <NotificationBell v-if="role === 'student' && myClass" class="bell-side" />
         </div>
         <nav class="side-nav" :aria-label="$t('nav.mainMenu')">
-          <div v-for="g in groups" :key="g.title" class="group">
-            <div class="group-title">{{ g.title }}</div>
-            <NuxtLink v-for="l in g.links" :key="l.to" :to="l.to" class="nav-link" :class="{ active: isActive(l.to) }">
-              <Icon :name="l.icon" size="18" />
-              <span class="label">{{ l.label }}</span>
-              <span v-if="forLink(l.to)" class="count" :aria-label="$t(l.to === '/review' ? 'nav.dueCount' : l.to === '/notifications' ? 'nav.unreadCount' : 'nav.waitingCount', forLink(l.to))">{{ forLink(l.to) }}</span>
+          <template v-for="g in groups" :key="g.id">
+            <NuxtLink v-if="g.links.length === 1" :to="g.links[0]!.to" class="nav-link top" :class="{ active: isActive(g.links[0]!.to) }">
+              <Icon :name="g.links[0]!.icon" size="18" />
+              <span class="label">{{ g.links[0]!.label }}</span>
             </NuxtLink>
-          </div>
+            <div v-else class="group">
+              <button
+                type="button" class="group-title" :aria-expanded="isGroupOpen(g)" :aria-controls="`nav-${g.id}`"
+                @click="setGroup(g.id, !isGroupOpen(g))"
+              >
+                <Icon :name="isGroupOpen(g) ? 'chevronDown' : 'chevronRight'" size="14" />
+                <span class="label">{{ g.title }}</span>
+                <span v-if="!isGroupOpen(g) && groupCount(g)" class="count" :aria-label="$t('nav.waitingCount', groupCount(g))">{{ groupCount(g) }}</span>
+              </button>
+              <div v-show="isGroupOpen(g)" :id="`nav-${g.id}`" class="sub">
+                <NuxtLink v-for="l in g.links" :key="l.to" :to="l.to" class="nav-link" :class="{ active: isActive(l.to) }">
+                  <Icon :name="l.icon" size="18" />
+                  <span class="label">{{ l.label }}</span>
+                  <span v-if="forLink(l.to)" class="count" :aria-label="$t(l.to === '/review' ? 'nav.dueCount' : l.to === '/notifications' ? 'nav.unreadCount' : 'nav.waitingCount', forLink(l.to))">{{ forLink(l.to) }}</span>
+                </NuxtLink>
+              </div>
+            </div>
+          </template>
         </nav>
         <div class="me">
           <NuxtLink to="/account" class="who" :title="$t('nav.accountTitle')">
@@ -136,8 +166,14 @@ const displayName = computed(() => profile.value ? personName(profile.value) : "
   display: flex; flex-direction: column; z-index: 30; }
 .side-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: 18px 16px 12px; }
 .side-nav { flex: 1; overflow-y: auto; padding: 4px 10px; }
-.group + .group { margin-top: 14px; }
-.group-title { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; }
+.group { margin-top: var(--space-xs); }
+.group-title { display: flex; align-items: center; gap: var(--space-sm); width: 100%; border: 0; background: none; cursor: pointer; text-align: left; font: inherit; font-size: .78rem; font-weight: 600;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-radius: var(--radius-md); }
+.group-title:hover { background: var(--bg); color: var(--text); }
+.group-title .label { flex: 1; min-width: 0; }
+.group-title .count { background: var(--warn); color: var(--card); border-radius: var(--radius-full); font-size: .72rem; font-weight: 700; padding: 1px 8px; letter-spacing: 0; }
+.sub { display: flex; flex-direction: column; gap: 2px; margin-left: 12px; padding-left: 6px; border-left: 1px solid var(--line); }
+.nav-link.top { margin-bottom: var(--space-xs); }
 .nav-link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-md); color: var(--text); text-decoration: none; font-weight: 500; }
 .nav-link:hover { background: var(--bg); }
 .nav-link .label { flex: 1; min-width: 0; }

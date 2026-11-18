@@ -153,8 +153,6 @@
   },
   "nav": {
     "groupStudy": "Learning",
-    "groupTeach": "Teaching",
-    "groupAdmin": "Admin",
     "roadmap": "Roadmap",
     "progress": "Progress",
     "myClasses": "My classes",
@@ -182,7 +180,11 @@
     "audit": "Audit log",
     "logins": "Sign-in history",
     "exams": "Exam sets",
-    "errors": "Browser errors"
+    "errors": "Browser errors",
+    "groupClasses": "Classes & grading",
+    "groupContent": "Lessons & exams",
+    "groupManage": "Classes & accounts",
+    "groupMonitor": "Monitoring"
   },
   "login": {
     "slogan": "Learn English grammar every day, 30 minutes a lesson.",
@@ -194,7 +196,7 @@
       "ended": "Your session has ended. Please sign in again."
     },
     "pageTitle": "Sign in - Grammar",
-    "eyebrow": "Grades 6 – 9 · B1 → B2 · 30 minutes a day",
+    "eyebrow": "Grades 6 – 9 · 30 minutes a day",
     "title": "English grammar",
     "intro": "Sign in with the username and password your teacher gave you.",
     "username": "Username",
@@ -1685,5 +1687,22 @@
     "problem": {
       "noTarget": "no class with the same ending"
     }
+  },
+  "accent": {
+    "title": "Primary colour",
+    "hint": "Pick the main colour of the interface (buttons, links, the selected item). It works in light and dark and is remembered in this browser.",
+    "label": "Primary colour",
+    "blue": "Blue",
+    "indigo": "Indigo",
+    "violet": "Violet",
+    "rose": "Rose",
+    "orange": "Orange",
+    "green": "Green",
+    "teal": "Teal",
+    "slate": "Slate",
+    "custom": "Your own colour",
+    "hex": "Colour code",
+    "badHex": "Enter a code like #rrggbb, for example #2071c2.",
+    "customHint": "Click the multicolour circle to open the colour picker, or type a hex code. The colour is adjusted slightly so text stays readable."
   }
 }

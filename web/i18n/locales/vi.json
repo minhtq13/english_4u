@@ -153,8 +153,6 @@
   },
   "nav": {
     "groupStudy": "Học tập",
-    "groupTeach": "Giảng dạy",
-    "groupAdmin": "Quản trị",
     "roadmap": "Lộ trình",
     "progress": "Tiến độ",
     "myClasses": "Lớp của tôi",
@@ -182,7 +180,11 @@
     "audit": "Nhật ký thao tác",
     "logins": "Lịch sử đăng nhập",
     "exams": "Bộ đề thi",
-    "errors": "Lỗi trên trình duyệt"
+    "errors": "Lỗi trên trình duyệt",
+    "groupClasses": "Lớp & chấm bài",
+    "groupContent": "Bài học & đề",
+    "groupManage": "Lớp & tài khoản",
+    "groupMonitor": "Giám sát"
   },
   "login": {
     "slogan": "Học ngữ pháp tiếng Anh mỗi ngày, 30 phút mỗi bài.",
@@ -194,7 +196,7 @@
       "ended": "Phiên đăng nhập đã kết thúc. Hãy đăng nhập lại."
     },
     "pageTitle": "Đăng nhập - Grammar",
-    "eyebrow": "Lớp 6 – 9 · B1 → B2 · 30 phút mỗi ngày",
+    "eyebrow": "Lớp 6 – 9 · 30 phút mỗi ngày",
     "title": "Ngữ pháp tiếng Anh",
     "intro": "Đăng nhập bằng tên đăng nhập và mật khẩu giáo viên đã cấp cho bạn.",
     "username": "Tên đăng nhập",
@@ -1685,5 +1687,22 @@
     "problem": {
       "noTarget": "không có lớp đích cùng đuôi"
     }
+  },
+  "accent": {
+    "title": "Màu chủ đạo",
+    "hint": "Chọn màu chính của giao diện (nút, liên kết, mục đang chọn). Áp dụng cho cả chế độ sáng và tối, và được nhớ trên trình duyệt này.",
+    "label": "Màu chủ đạo",
+    "blue": "Xanh dương",
+    "indigo": "Chàm",
+    "violet": "Tím",
+    "rose": "Hồng đậm",
+    "orange": "Cam",
+    "green": "Xanh lá",
+    "teal": "Xanh ngọc",
+    "slate": "Xám xanh",
+    "custom": "Màu tự chọn",
+    "hex": "Mã màu",
+    "badHex": "Nhập mã dạng #rrggbb, ví dụ #2071c2.",
+    "customHint": "Bấm vòng tròn nhiều màu để mở bảng chọn màu, hoặc gõ mã hex. Màu sẽ tự chỉnh nhẹ để chữ vẫn dễ đọc."
   }
 }
