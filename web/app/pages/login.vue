@@ -123,14 +123,12 @@ async function signInWithGoogle() {
 
 <style scoped>
 .prefs { display: flex; align-items: center; gap: 6px; }
-.login { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch;
-  background: linear-gradient(135deg, var(--bg) 0%, var(--accent-soft) 100%); }
-.hero { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-xl); padding: var(--space-2xl) 48px;
-  background: linear-gradient(160deg, var(--accent-soft), var(--purple-soft)); }
+.login { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: clamp(32px, 6vw, 88px); padding: var(--space-xl) var(--space-lg);
+  background: linear-gradient(135deg, var(--bg) 0%, var(--accent-soft) 55%, var(--purple-soft) 100%); }
+.hero { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xl); width: min(340px, 100%); flex: none; }
 .hero-logo { font-size: 1.3rem; }
-.slogan { margin: 0; font-size: 1.6rem; font-weight: 700; line-height: 1.35; max-width: 20ch; text-wrap: balance; }
-.art { width: min(320px, 100%); height: auto; }
-.login > .panel { align-self: center; justify-self: center; margin: var(--space-xl) var(--space-lg); }
+.slogan { margin: 0; font-size: 1.6rem; font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.art { width: min(300px, 100%); height: auto; }
 .panel { max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 18px; padding: 28px; margin: 0; }
 .panel h1 { margin: 0; }
 .panel p { margin: 0; }
@@ -153,9 +151,9 @@ async function signInWithGoogle() {
 .divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .8rem; }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 @media (max-width: 800px) {
-  .login { grid-template-columns: minmax(0, 1fr); align-content: start; }
-  .hero { flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-md); padding: var(--space-lg); }
-  .slogan { font-size: 1rem; max-width: none; flex-basis: 100%; }
+  .login { flex-direction: column; justify-content: flex-start; gap: var(--space-lg); padding: var(--space-lg) var(--space-md); }
+  .hero { width: 100%; max-width: 420px; flex-direction: row; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); }
+  .slogan { font-size: 1rem; flex-basis: 100%; }
   .art { display: none; }
 }
 @media (max-width: 480px) { .panel { padding: 22px 18px; } }
