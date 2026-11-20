@@ -119,12 +119,22 @@ test("student works a plain and a timed lesson end to end", async ({ browser }) 
     await expect(student.getByRole("dialog")).toHaveCount(0)
     await student.getByRole("button", { name: /^(Nộp bài|Submit)$/ }).click()
     await student.getByRole("button", { name: /Vẫn nộp bài|Submit anyway/ }).click()
+    // a short confetti burst follows a successful submit (it removes itself after about 2.5 s)
+    await expect(student.locator(".confetti i").first()).toBeAttached({ timeout: 10_000 })
+    if (process.env.E2E_SHOT_DIR) {
+      await student.waitForTimeout(900) // let the pieces fall into view
+      await student.screenshot({ path: `${process.env.E2E_SHOT_DIR}/confetti.png` })
+    }
     await expect(student.locator("section.result")).toBeVisible({ timeout: 20_000 })
     await student.getByRole("link", { name: /Luyện lại câu sai|Practise what I got wrong/ }).click()
     await expect(student).toHaveURL(/\/practice\/6\.1/)
     await student.locator(".opts button").first().click()
     await student.getByRole("button", { name: /^(Kiểm tra|Check)$/ }).click()
     await expect(student.locator(".fb").first()).toBeVisible()
+    // the account page lists the seven badges with the student's progress (the database decides)
+    await student.goto("/account")
+    await expect(student.locator(".badge-item")).toHaveCount(7)
+    if (process.env.E2E_SHOT_DIR) await student.screenshot({ path: `${process.env.E2E_SHOT_DIR}/badges.png`, fullPage: true })
     // the streak now counts today
     await student.goto("/")
     await expect(student.locator("section.streak")).toContainText(/1 ngày|1 day/)

@@ -46,7 +46,9 @@ async function run() {
 watch(lessonId, run)
 watch(loaded, (l) => { if (l && lessonId.value) run() })
 
-const advice = computed(() => reteach(rows.value))
+const adviceAll = computed(() => reteach(rows.value))
+/** Five questions are enough to act on; the rest are counted. */
+const advice = computed(() => adviceAll.value.slice(0, 5))
 const lessonName = computed(() => lessons.value.find(l => l.id === lessonId.value)?.name ?? "")
 async function exportXlsx() {
   await downloadXlsx(`${fileSlug(t("analysis.fileName"))}-${fileSlug(cls.value?.name ?? "")}-${fileSlug(lessonId.value)}`, {
@@ -83,9 +85,12 @@ async function exportXlsx() {
         <p v-if="error" class="fb no">{{ error }}</p>
         <Skeleton v-else-if="busy" />
         <EmptyState v-else-if="!rows.length" icon="chart" :title="$t('analysis.noneTitle')" :text="$t('analysis.none', { lesson: lessonName })" />
-        <div v-else-if="advice.length" class="fb key advice" role="status">
+        <div v-else-if="adviceAll.length" class="fb key advice" role="status">
           <b>{{ $t("analysis.adviceTitle") }}</b>
-          <ul><li v-for="r in advice" :key="r.qid">{{ $t("analysis.advice", { qid: r.qid, percent: r.percent }) }}</li></ul>
+          <ul>
+            <li v-for="r in advice" :key="r.qid">{{ $t("analysis.advice", { qid: r.qid, percent: r.percent }) }}</li>
+            <li v-if="adviceAll.length > advice.length" class="muted">{{ $t("analysis.adviceMore", { n: adviceAll.length - advice.length }) }}</li>
+          </ul>
         </div>
         <div v-if="!error && !busy && rows.length" class="card scroll" tabindex="0" role="region" :aria-label="$t('analysis.title', { name: cls.name })">
           <table class="tbl">
@@ -93,7 +98,7 @@ async function exportXlsx() {
             <tbody>
               <tr v-for="r in rows" :key="r.qid">
                 <td data-label="#"><b>{{ r.qid }}</b></td>
-                <td class="q">{{ r.question || "–" }}</td>
+                <td class="q">{{ r.question || "-" }}</td>
                 <td>{{ r.answered }}</td>
                 <td><span class="pill" :class="r.band">{{ r.percent }}%</span> <span class="muted small">{{ r.ok }}/{{ r.answered }}</span></td>
                 <td>
