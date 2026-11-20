@@ -143,7 +143,7 @@
     "previous": "← Trước",
     "next": "Sau →",
     "page": "Trang {page}/{pages}",
-    "range": "{from}–{to} / {total}",
+    "range": "{from}-{to} / {total}",
     "allClasses": "Mọi lớp",
     "class": "Lớp",
     "student": "Học sinh",
@@ -196,7 +196,7 @@
       "ended": "Phiên đăng nhập đã kết thúc. Hãy đăng nhập lại."
     },
     "pageTitle": "Đăng nhập - Grammar",
-    "eyebrow": "Lớp 6 – 9 · 30 phút mỗi ngày",
+    "eyebrow": "Lớp 6 - 9 · 30 phút mỗi ngày",
     "title": "Ngữ pháp tiếng Anh",
     "intro": "Đăng nhập bằng tên đăng nhập và mật khẩu giáo viên đã cấp cho bạn.",
     "username": "Tên đăng nhập",
@@ -863,8 +863,8 @@
     "commented": "Đã nhận xét",
     "tracked": "Lỗi đang theo dõi của học sinh",
     "trackedHint": "Học sinh lặp lại lỗi cũ thì bấm \"+1 lần\"; khi đã sửa được thì đổi trạng thái.",
-    "keys": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · 1–6 chọn nhóm lỗi (khi không gõ chữ).",
-    "keysQueue": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · J / K sang em sau / trước · 1–6 chọn nhóm lỗi (khi không gõ chữ)."
+    "keys": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · 1-6 chọn nhóm lỗi (khi không gõ chữ).",
+    "keysQueue": "Phím tắt: Ctrl/⌘+Enter lưu nhận xét · J / K sang em sau / trước · 1-6 chọn nhóm lỗi (khi không gõ chữ)."
   },
   "studentPage": {
     "notFound": "Không tìm thấy học sinh.",
@@ -922,8 +922,8 @@
     "chartNone": "Chưa có bài nộp.",
     "band": {
       "low": "Dưới 50%",
-      "mid": "50–79%",
-      "good": "80–100%"
+      "mid": "50-79%",
+      "good": "80-100%"
     }
   },
   "usersPage": {
@@ -1065,7 +1065,7 @@
     },
     "cloze": {
       "label": "Điền vào đoạn văn - chọn từ",
-      "hint": "Đọc đoạn văn và chọn từ đúng cho mỗi chỗ trống (1)–(5)."
+      "hint": "Đọc đoạn văn và chọn từ đúng cho mỗi chỗ trống (1)-(5)."
     },
     "clozeTyped": {
       "label": "Điền vào đoạn văn - tự điền",
@@ -1341,8 +1341,9 @@
     "sheetTitle": "Phân tích câu hỏi - lớp {name} - {lesson}",
     "sheetNote": "Ghi chú: cột % là tỉ lệ học sinh trả lời đúng câu đó trên số học sinh đã làm; cột cuối liệt kê các đáp án sai hay gặp, số trong ngoặc là số học sinh chọn.",
     "adviceTitle": "Nên giảng lại",
-    "advice": "Câu {qid} chỉ {percent}% đúng — nên giảng lại.",
-    "rightBar": "Đúng"
+    "advice": "Câu {qid} chỉ {percent}% đúng - nên giảng lại.",
+    "rightBar": "Đúng",
+    "adviceMore": "…và {n} câu khác cũng dưới 50% đúng (xem bảng bên dưới)."
   },
   "audit": {
     "intro": "Ai đã đổi vai trò, khoá hoặc xoá tài khoản, chuyển lớp, đổi mã lớp hoặc cho cả lớp lên lớp mới.",
@@ -1704,5 +1705,94 @@
     "hex": "Mã màu",
     "badHex": "Nhập mã dạng #rrggbb, ví dụ #2071c2.",
     "customHint": "Bấm vòng tròn nhiều màu để mở bảng chọn màu, hoặc gõ mã hex. Màu sẽ tự chỉnh nhẹ để chữ vẫn dễ đọc."
+  },
+  "classScores": {
+    "open": "Điểm trên lớp",
+    "pageTitle": "Điểm trên lớp - Grammar",
+    "title": "Điểm trên lớp {name}",
+    "intro": "Điểm danh, điểm cộng phát biểu, kiểm tra bài cũ và bài tập. Học sinh xem được điểm của chính mình ở trang Tiến độ.",
+    "loadFailed": "Không tải được điểm trên lớp: {msg}",
+    "term": "Học kỳ",
+    "termN": "Học kỳ {n}",
+    "termShort": "HK",
+    "tab": {
+      "attendance": "Điểm danh",
+      "points": "Điểm cộng",
+      "oral": "KT bài cũ",
+      "homework": "Bài tập",
+      "summary": "Tổng hợp"
+    },
+    "kind": {
+      "oral": "Kiểm tra bài cũ",
+      "homework": "Bài tập"
+    },
+    "status": {
+      "present": "Có mặt",
+      "late": "Muộn",
+      "excused": "Vắng có phép",
+      "absent": "Vắng"
+    },
+    "day": "Ngày",
+    "sessionNew": "Buổi mới: mọi học sinh đang là \"Có mặt\", chỉ cần đổi người vắng hoặc muộn rồi lưu.",
+    "sessionSaved": "Buổi này đã điểm danh. Sửa rồi lưu lại nếu cần.",
+    "allPresent": "Tất cả có mặt",
+    "saveAttendance": "Lưu điểm danh",
+    "attendanceSaved": "Đã lưu điểm danh",
+    "pastSessions": "Các buổi đã điểm danh",
+    "noSessions": "Chưa có buổi nào trong học kỳ này.",
+    "sessionCounts": "Vắng {absent} · Muộn {late} · Có phép {excused}",
+    "sessionDeleted": "Đã xoá buổi học",
+    "pointsHint": "Chạm vào tên học sinh để cộng 1 điểm mỗi lần em phát biểu tốt. Ghi chú (nếu có) đi kèm lần cộng tiếp theo.",
+    "note": "Ghi chú",
+    "notePlaceholder": "Ví dụ: trả lời đúng câu hỏi khó",
+    "lastAward": "Đã cộng 1 điểm cho {name}.",
+    "undo": "Hoàn tác",
+    "takeBack": "Bỏ",
+    "awardTo": "Cộng 1 điểm cho {name} (đang có {n})",
+    "recentPoints": "Các lần cộng điểm gần đây",
+    "noPoints": "Chưa cộng điểm lần nào trong học kỳ này.",
+    "addColumn": "Thêm cột điểm",
+    "columnTitle": "Tên cột",
+    "titlePlaceholder": {
+      "oral": "Ví dụ: KT miệng Unit 3",
+      "homework": "Ví dụ: BT tuần 10"
+    },
+    "createColumn": "Tạo cột",
+    "noColumns": "Chưa có cột điểm nào",
+    "openColumn": "Mở để nhập điểm",
+    "average": "Trung bình",
+    "typeMarks": "Nhập điểm: {title}",
+    "marksHint": "Điểm từ 0 đến 10, tối đa 2 chữ số thập phân (8,5 hoặc 8.5). Để trống nếu học sinh chưa có điểm.",
+    "badMarks": "{n} ô chưa đúng (0-10).",
+    "saveMarks": "Lưu điểm",
+    "marksSaved": "Đã lưu điểm",
+    "deleteColumn": "Xoá cột",
+    "columnDeleted": "Đã xoá cột điểm",
+    "needTitle": "Cột điểm cần có tên",
+    "titleTooLong": "Tên cột tối đa 80 ký tự",
+    "needDay": "Chọn ngày cho cột điểm",
+    "saveNothing": "Không lưu được: bạn không có quyền với lớp này",
+    "deleteNothing": "Không xoá được: không tìm thấy hoặc bạn không có quyền",
+    "rule": "Điểm chuyên cần: bắt đầu từ {full}, mỗi buổi vắng không phép trừ {absent}, mỗi buổi muộn trừ {late}, vắng có phép không trừ; thấp nhất là 0. Điểm KT bài cũ và bài tập là trung bình các cột có điểm.",
+    "sessionsCol": "Buổi học",
+    "attendanceMark": "Chuyên cần",
+    "points": "Điểm cộng",
+    "sheetTitle": "Điểm trên lớp {name} - Học kỳ {term}",
+    "fileName": "Diem tren lop",
+    "mine": "Điểm trên lớp",
+    "mineEmpty": "Giáo viên chưa ghi điểm danh hay điểm nào cho bạn trong học kỳ này.",
+    "marksCount": "{n} lần",
+    "notPresent": "Buổi vắng hoặc muộn",
+    "sessionBadge": {
+      "saved": "Đã điểm danh",
+      "new": "Buổi mới"
+    },
+    "viewing": "Đang mở",
+    "openSession": "Mở",
+    "entered": "Đã nhập {n}/{total} học sinh",
+    "classAverage": "Trung bình lớp",
+    "bandLegend": "Xanh: từ 8. Vàng: từ 5. Đỏ: dưới 5. Trung bình chỉ tính các ô đã có điểm.",
+    "pointsTerm": "điểm kỳ này",
+    "noColumnsHint": "Thêm một cột (ví dụ một buổi kiểm tra), rồi nhập điểm cho từng học sinh."
   }
 }

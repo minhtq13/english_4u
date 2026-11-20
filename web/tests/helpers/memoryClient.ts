@@ -5,7 +5,7 @@ type Result = { data: unknown; error: { message: string } | null }
 
 /**
  * An in-memory stand-in for the Supabase client, for the modules that read and write tables. It understands the
- * calls those modules make: from().select / insert / update / delete, chained with eq / in, `.select()` after a
+ * calls those modules make: from().select / insert / upsert (onConflict) / update / delete, chained with eq / in, `.select()` after a
  * delete, `maybeSingle()`, and rpc(). `unique` lists the key columns of a table: inserting the same key twice fails
  * as the database would. `autoId` lists tables whose inserted rows get an `id` when they bring none (a uuid default).
  * Insert and update give the written rows back when `.select()` is chained. `fail` is "table.op" (e.g. "class_lessons.insert") to make that call return an error.
@@ -34,7 +34,7 @@ export function memoryClient(
           if (opts.fail?.includes(`${table}.${op}`)) return resolve({ data: null, error: { message: "boom" } })
           const res = run(rows(table).filter(r => filters.every(f => f(r))))
           if (op === "select" || returning) res.data = single ? ((res.data as Row[])[0] ?? null) : res.data
-          else if (op === "delete" || op === "update" || op === "insert") res.data = null
+          else if (op === "delete" || op === "update" || op === "insert" || op === "upsert") res.data = null
           return resolve(res)
         },
       }
@@ -54,6 +54,16 @@ export function memoryClient(
         const stored = list.map(r => ({ ...(opts.autoId?.includes(table) && r.id === undefined ? { id: crypto.randomUUID() } : {}), ...r }))
         rows(table).push(...stored)
         return { data: stored.map(r => ({ ...r })), error: null }
+      }),
+      upsert: (input: Row | Row[], o: { onConflict?: string } = {}) => query("upsert", () => {
+        const key = (o.onConflict ?? "id").split(",").map(k => k.trim())
+        const list = Array.isArray(input) ? input : [input]
+        for (const r of list) {
+          const old = rows(table).find(x => key.every(k => x[k] === r[k]))
+          if (old) Object.assign(old, r)
+          else rows(table).push({ ...r })
+        }
+        return { data: list.map(r => ({ ...r })), error: null }
       }),
       update: (patch: Row) => query("update", (filtered) => {
         for (const r of filtered) Object.assign(r, Object.fromEntries(Object.entries(patch).filter(([, v]) => v !== undefined)))

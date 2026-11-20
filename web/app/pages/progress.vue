@@ -42,6 +42,8 @@ onMounted(async () => {
 
     <Skeleton v-if="!loaded" />
     <template v-else>
+      <MyClassScores />
+
       <section class="card">
         <h2>{{ $t("progress.errors") }}</h2>
         <ErrorLogList :entries="errors" />

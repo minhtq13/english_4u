@@ -283,6 +283,36 @@ export type Database = {
         Update: { author_id?: string; body?: string; class_id?: string; created_at?: string; id?: string }
         Relationships: []
       }
+      class_sessions: {
+        Row: { class_id: string; created_at: string; created_by: string | null; held_on: string; id: string; note: string | null; term: number }
+        Insert: { class_id: string; created_at?: string; created_by?: string | null; held_on?: string; id?: string; note?: string | null; term: number }
+        Update: { class_id?: string; held_on?: string; note?: string | null; term?: number }
+        Relationships: []
+      }
+      attendance: {
+        Row: { session_id: string; status: "present" | "late" | "excused" | "absent"; student_id: string }
+        Insert: { session_id: string; status: "present" | "late" | "excused" | "absent"; student_id: string }
+        Update: { session_id?: string; status?: "present" | "late" | "excused" | "absent"; student_id?: string }
+        Relationships: []
+      }
+      participation_points: {
+        Row: { class_id: string; created_at: string; created_by: string | null; id: string; note: string | null; points: number; student_id: string; term: number }
+        Insert: { class_id: string; created_at?: string; created_by?: string | null; id?: string; note?: string | null; points?: number; student_id: string; term: number }
+        Update: { note?: string | null; points?: number }
+        Relationships: []
+      }
+      score_columns: {
+        Row: { class_id: string; created_at: string; created_by: string | null; held_on: string; id: string; kind: "oral" | "homework"; term: number; title: string }
+        Insert: { class_id: string; created_at?: string; created_by?: string | null; held_on?: string; id?: string; kind: "oral" | "homework"; term: number; title: string }
+        Update: { held_on?: string; kind?: "oral" | "homework"; term?: number; title?: string }
+        Relationships: []
+      }
+      score_entries: {
+        Row: { column_id: string; score: number; student_id: string }
+        Insert: { column_id: string; score: number; student_id: string }
+        Update: { column_id?: string; score?: number; student_id?: string }
+        Relationships: []
+      }
       card_reviews: {
         Row: { box: number; card: string; due_on: string; updated_at: string; user_id: string }
         Insert: { box?: number; card: string; due_on?: string; updated_at?: string; user_id?: string }

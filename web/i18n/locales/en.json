@@ -143,7 +143,7 @@
     "previous": "← Previous",
     "next": "Next →",
     "page": "Page {page}/{pages}",
-    "range": "{from}–{to} of {total}",
+    "range": "{from}-{to} of {total}",
     "allClasses": "All classes",
     "class": "Class",
     "student": "Student",
@@ -196,7 +196,7 @@
       "ended": "Your session has ended. Please sign in again."
     },
     "pageTitle": "Sign in - Grammar",
-    "eyebrow": "Grades 6 – 9 · 30 minutes a day",
+    "eyebrow": "Grades 6 - 9 · 30 minutes a day",
     "title": "English grammar",
     "intro": "Sign in with the username and password your teacher gave you.",
     "username": "Username",
@@ -863,8 +863,8 @@
     "commented": "Commented",
     "tracked": "Mistakes tracked for this student",
     "trackedHint": "Click \"+1\" when the student repeats an old mistake; change the status once it is fixed.",
-    "keys": "Shortcuts: Ctrl/⌘+Enter saves the feedback · 1–6 tick an error tag (when not typing).",
-    "keysQueue": "Shortcuts: Ctrl/⌘+Enter saves the feedback · J / K next / previous student · 1–6 tick an error tag (when not typing)."
+    "keys": "Shortcuts: Ctrl/⌘+Enter saves the feedback · 1-6 tick an error tag (when not typing).",
+    "keysQueue": "Shortcuts: Ctrl/⌘+Enter saves the feedback · J / K next / previous student · 1-6 tick an error tag (when not typing)."
   },
   "studentPage": {
     "notFound": "Student not found.",
@@ -922,8 +922,8 @@
     "chartNone": "No hand-ins yet.",
     "band": {
       "low": "Under 50%",
-      "mid": "50–79%",
-      "good": "80–100%"
+      "mid": "50-79%",
+      "good": "80-100%"
     }
   },
   "usersPage": {
@@ -1065,7 +1065,7 @@
     },
     "cloze": {
       "label": "Gap-fill passage - choose",
-      "hint": "Read the passage and choose the right word for each gap (1)–(5)."
+      "hint": "Read the passage and choose the right word for each gap (1)-(5)."
     },
     "clozeTyped": {
       "label": "Gap-fill passage - write",
@@ -1341,8 +1341,9 @@
     "sheetTitle": "Question analysis - class {name} - {lesson}",
     "sheetNote": "Note: the % column is the share of students who answered the question correctly out of those who answered it; the last column lists the common wrong answers, the number in brackets is how many students gave it.",
     "adviceTitle": "Worth teaching again",
-    "advice": "Question {qid} is only {percent}% right — teach it again.",
-    "rightBar": "Right"
+    "advice": "Question {qid} is only {percent}% right - teach it again.",
+    "rightBar": "Right",
+    "adviceMore": "…and {n} more questions under 50% right (see the table below)."
   },
   "audit": {
     "intro": "Who changed a role, locked or deleted an account, moved a student, changed a class code or promoted a class.",
@@ -1704,5 +1705,94 @@
     "hex": "Colour code",
     "badHex": "Enter a code like #rrggbb, for example #2071c2.",
     "customHint": "Click the multicolour circle to open the colour picker, or type a hex code. The colour is adjusted slightly so text stays readable."
+  },
+  "classScores": {
+    "open": "Class marks",
+    "pageTitle": "Class marks - Grammar",
+    "title": "Class marks {name}",
+    "intro": "Attendance, bonus points for speaking up, oral checks and homework. Students see their own marks on their Progress page.",
+    "loadFailed": "Could not load the class marks: {msg}",
+    "term": "Term",
+    "termN": "Term {n}",
+    "termShort": "T",
+    "tab": {
+      "attendance": "Attendance",
+      "points": "Bonus points",
+      "oral": "Oral checks",
+      "homework": "Homework",
+      "summary": "Summary"
+    },
+    "kind": {
+      "oral": "Oral checks",
+      "homework": "Homework"
+    },
+    "status": {
+      "present": "Present",
+      "late": "Late",
+      "excused": "Excused",
+      "absent": "Absent"
+    },
+    "day": "Day",
+    "sessionNew": "New session: everyone is \"Present\"; change only those absent or late, then save.",
+    "sessionSaved": "This session has been taken. Change it and save again if needed.",
+    "allPresent": "Everyone present",
+    "saveAttendance": "Save attendance",
+    "attendanceSaved": "Attendance saved",
+    "pastSessions": "Sessions taken",
+    "noSessions": "No session in this term yet.",
+    "sessionCounts": "Absent {absent} · Late {late} · Excused {excused}",
+    "sessionDeleted": "Session deleted",
+    "pointsHint": "Tap a student's name to give 1 point each time they speak up well. The note (if any) goes with the next award.",
+    "note": "Note",
+    "notePlaceholder": "E.g. answered a hard question",
+    "lastAward": "1 point given to {name}.",
+    "undo": "Undo",
+    "takeBack": "Remove",
+    "awardTo": "Give 1 point to {name} (has {n})",
+    "recentPoints": "Recent awards",
+    "noPoints": "No points given in this term yet.",
+    "addColumn": "Add a column",
+    "columnTitle": "Column name",
+    "titlePlaceholder": {
+      "oral": "E.g. Oral check Unit 3",
+      "homework": "E.g. Homework week 10"
+    },
+    "createColumn": "Create column",
+    "noColumns": "No columns yet",
+    "openColumn": "Open to type marks",
+    "average": "Average",
+    "typeMarks": "Marks: {title}",
+    "marksHint": "Marks from 0 to 10, at most 2 decimals (8.5 or 8,5). Leave empty if a student has no mark.",
+    "badMarks": "{n} boxes are not valid (0-10).",
+    "saveMarks": "Save marks",
+    "marksSaved": "Marks saved",
+    "deleteColumn": "Delete column",
+    "columnDeleted": "Column deleted",
+    "needTitle": "The column needs a name",
+    "titleTooLong": "A column name has at most 80 characters",
+    "needDay": "Pick a day for the column",
+    "saveNothing": "Not saved: you do not have access to this class",
+    "deleteNothing": "Not deleted: not found or you do not have access",
+    "rule": "Attendance mark: starts at {full}, each unexcused absence takes off {absent}, each late arrival {late}, excused absences take off nothing; never below 0. Oral check and homework marks are the mean of the columns with a mark.",
+    "sessionsCol": "Sessions",
+    "attendanceMark": "Attendance",
+    "points": "Bonus points",
+    "sheetTitle": "Class marks {name} - Term {term}",
+    "fileName": "Class marks",
+    "mine": "Class marks",
+    "mineEmpty": "Your teachers have not recorded attendance or marks for you in this term yet.",
+    "marksCount": "{n} marks",
+    "notPresent": "Sessions absent or late",
+    "sessionBadge": {
+      "saved": "Taken",
+      "new": "New session"
+    },
+    "viewing": "Open",
+    "openSession": "Open",
+    "entered": "{n} of {total} students entered",
+    "classAverage": "Class average",
+    "bandLegend": "Green: 8 and over. Yellow: 5 and over. Red: below 5. Averages count only boxes that have a mark.",
+    "pointsTerm": "points this term",
+    "noColumnsHint": "Add a column (for example one test), then type each student's mark."
   }
 }

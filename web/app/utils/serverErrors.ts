@@ -41,6 +41,7 @@ const EN: [RegExp, string][] = [
   [/^Flashcard cần prompt/, "A flashcard needs a front and a back"],
   [/^Hãy chọn học kỳ/, "Choose a term / stage for the lesson"],
   [/^Hãy dùng nút Nộp bài/, "Use the Submit button"],
+  [/^Học sinh không thuộc lớp này/, "This student is not in this class"],
   [/^Học sinh không thể tự đổi lớp/, "Students cannot change class themselves. Ask the class's teacher."],
   [/^Học sinh lớp này đã làm bài nên không thu hồi được/, "Students of this class have worked on this lesson, so it cannot be taken back. Use \"Close\" to stop taking work."],
   [/^Mã lớp không đúng/, "Wrong class code. Check it with your teacher."],
@@ -67,8 +68,8 @@ const EN: [RegExp, string][] = [
   [/^Mật khẩu cần ít nhất 6 ký tự/, "The password needs at least 6 characters"],
   [/^Mật khẩu của (\S+) cần ít nhất 6 ký tự/, "The password of $1 needs at least 6 characters"],
   [/^Mỗi lần tạo từ 1 đến 100 tài khoản/, "Create 1 to 100 accounts at a time"],
-  [/^Tên đăng nhập "([^"]*)" không hợp lệ.*/, "Username \"$1\" is invalid: 3–32 characters, lower-case letters without accents, digits, . _ -"],
-  [/^Tên đăng nhập không hợp lệ.*/, "Invalid username: 3–32 characters, lower-case letters without accents, digits, . _ -"],
+  [/^Tên đăng nhập "([^"]*)" không hợp lệ.*/, "Username \"$1\" is invalid: 3-32 characters, lower-case letters without accents, digits, . _ -"],
+  [/^Tên đăng nhập không hợp lệ.*/, "Invalid username: 3-32 characters, lower-case letters without accents, digits, . _ -"],
   [/^Tên đăng nhập (\S+) đã có người dùng/, "Username $1 is already taken"],
   [/^Không tìm thấy lớp$/, "Class not found"],
 ]

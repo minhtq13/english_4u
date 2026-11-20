@@ -160,6 +160,7 @@ async function copyCode() {
           <span class="row">
             <NuxtLink :to="`/teacher/lessons/new?class=${cls.id}`" class="btn primary small">{{ $t("classPage.newLesson") }}</NuxtLink>
             <NuxtLink :to="`/teacher/gradebook/${cls.id}`" class="btn small">{{ $t("gradebook.open") }}</NuxtLink>
+            <NuxtLink :to="`/teacher/scores/${cls.id}`" class="btn small">{{ $t("classScores.open") }}</NuxtLink>
             <NuxtLink :to="`/teacher/analysis/${cls.id}`" class="btn small">{{ $t("analysis.open") }}</NuxtLink>
             <NuxtLink :to="`/teacher/review/${cls.id}`" class="btn small">{{ $t("classPage.review") }}</NuxtLink>
             <NuxtLink :to="`/teacher/grading?class=${cls.id}`" class="btn ghost small">{{ $t("classPage.grade") }} →</NuxtLink>

@@ -1,4 +1,4 @@
-# Grammar B1→B2 — web
+# Grammar B1→B2 - web
 
 Nuxt 4 (SPA) + Supabase (Postgres, Auth tên đăng nhập + mật khẩu, RLS, Edge Function, pg_cron). Cài được như ứng dụng (PWA). Deploy trên Vercel.
 
@@ -6,7 +6,7 @@ Nuxt 4 (SPA) + Supabase (Postgres, Auth tên đăng nhập + mật khẩu, RLS, 
 
 ```bash
 cd web
-nvm use            # Node 24 (xem .nvmrc) — Nuxt 4.6 cần Node ≥ 22.21
+nvm use            # Node 24 (xem .nvmrc) - Nuxt 4.6 cần Node ≥ 22.21
 npm install
 cp .env.example .env
 npm run dev        # http://localhost:3000
@@ -28,7 +28,7 @@ courses                 khoá học: lop-6 … lop-9 (kind = grade) và b1-b2 (k
 
 Học sinh đăng nhập bằng **tên đăng nhập + mật khẩu** do giáo viên/admin cấp ở trang **Học sinh** (`/teacher/students`;
 giáo viên chỉ thấy học sinh các lớp mình dạy). Admin cấp tài khoản giáo viên ở **Giáo viên** (`/admin/teachers`). Ở các trang này:
-tạo nhiều tài khoản một lần (mỗi dòng một họ tên, tên đăng nhập tự sinh dạng `6t1.01`, mật khẩu ngẫu nhiên — copy/in ngay vì
+tạo nhiều tài khoản một lần (mỗi dòng một họ tên, tên đăng nhập tự sinh dạng `6t1.01`, mật khẩu ngẫu nhiên - copy/in ngay vì
 không xem lại được), sửa tên, đặt lại mật khẩu, khoá/mở khoá, chuyển lớp; admin xoá được tài khoản. Các thao tác này chạy qua
 Edge Function `manage-accounts` (mã nguồn ở `supabase/functions/manage-accounts`). Admin và giáo viên vẫn đăng nhập được bằng Google;
 mã lớp vẫn dùng được cho tài khoản chưa có lớp.
@@ -84,7 +84,7 @@ Trang Lộ trình có thẻ chuỗi ngày học (kèm mục tiêu tuần tự ch
 
 ### Giáo viên: việc hôm nay, bảng điểm, phân tích
 
-Trang `/teacher` mở đầu bằng **Việc hôm nay** (bài chờ chấm, bài sắp hết hạn trong 48 giờ, học sinh 7 ngày không làm bài). Trang lớp có **Bảng điểm** (học sinh × bài, xuất CSV), **Phân tích câu hỏi** (câu nào sai nhiều, đáp án sai hay gặp, xuất CSV) và **Thông báo của lớp**. Khi chấm: Ctrl/⌘+Enter lưu nhận xét, J / K sang em sau / trước, 1–6 chọn nhóm lỗi. Admin có **Lịch sử đăng nhập**, **Nhật ký thao tác** và nút **Lên lớp** (chuyển cả lớp sang lớp khác ở đầu năm học) ở trang Lớp học.
+Trang `/teacher` mở đầu bằng **Việc hôm nay** (bài chờ chấm, bài sắp hết hạn trong 48 giờ, học sinh 7 ngày không làm bài). Trang lớp có **Bảng điểm** (học sinh × bài, xuất CSV), **Phân tích câu hỏi** (câu nào sai nhiều, đáp án sai hay gặp, xuất CSV) và **Thông báo của lớp**. Khi chấm: Ctrl/⌘+Enter lưu nhận xét, J / K sang em sau / trước, 1-6 chọn nhóm lỗi. Admin có **Lịch sử đăng nhập**, **Nhật ký thao tác** và nút **Lên lớp** (chuyển cả lớp sang lớp khác ở đầu năm học) ở trang Lớp học.
 
 ### Ngôn ngữ giao diện
 
@@ -131,7 +131,7 @@ Mẫu SQL cho bài theo lớp: `supabase/migrations/20261022000008_seed_grade_un
 
 | type | Cần điền | Ví dụ |
 |---|---|---|
-| `cards` | `prompt` (mặt trước), `back` (mặt sau) | `who` / `người — chủ ngữ hoặc tân ngữ` |
+| `cards` | `prompt` (mặt trước), `back` (mặt sau) | `who` / `người - chủ ngữ hoặc tân ngữ` |
 | `mcq` | `prompt`, `options`, `correct_option` (**đếm từ 1**) | `{who,which,whose}`, `1` |
 | `typed` | `prompt`, `answers` (đáp án chấp nhận; cái đầu là đáp án mẫu) | `{"to buy"}` |
 | `order` | `words` (các cụm **theo đúng thứ tự**, web tự xáo), tuỳ chọn `answers` (cách xếp khác cũng đúng) | `{"The man","sitting","next to me"}` |
@@ -149,7 +149,7 @@ Quy tắc database tự kiểm tra (nhập sai sẽ bị từ chối kèm thông
 - Không xoá được bài đã có người làm; đổi `id` bài thì bài làm tự đổi theo.
 
 Lưu ý: kết quả của học viên lưu theo `score_key` + số thứ tự câu (vd `M3`). Sửa nội dung câu thoải mái,
-nhưng chèn/xoá/đảo câu trong một bài **đã có người làm** sẽ lệch đáp án cũ — khi cần, tạo bài mới.
+nhưng chèn/xoá/đảo câu trong một bài **đã có người làm** sẽ lệch đáp án cũ - khi cần, tạo bài mới.
 
 Thêm bài mới: thêm 1 dòng `lessons`, các dòng `lesson_sections`, rồi `section_items`
 (mẫu SQL: `supabase/migrations/*_seed_lessons_phase_*.sql`).
@@ -164,7 +164,7 @@ Schema nằm trong `supabase/migrations/` (bảng, RLS, hàm, trigger, job `pg_c
 | Bảng | Nội dung |
 |---|---|
 | `courses`, `phases`, `lessons`, `lesson_sections`, `section_items` | Nội dung bài học (xem trên). View `lesson_overview` đếm số câu chấm điểm mỗi bài. |
-| views `course_summary`, `class_overview`, `student_progress`, `class_lesson_stats`, `lesson_stats`, `course_error_stats` | Số liệu đã cộng sẵn trong database cho Dashboard, trang khối, trang lớp — trang web không tải cả bảng `attempts`/`profiles`. Danh sách dài (người dùng, chấm bài, học sinh của khối) tải từng trang. |
+| views `course_summary`, `class_overview`, `student_progress`, `class_lesson_stats`, `lesson_stats`, `course_error_stats` | Số liệu đã cộng sẵn trong database cho Dashboard, trang khối, trang lớp - trang web không tải cả bảng `attempts`/`profiles`. Danh sách dài (người dùng, chấm bài, học sinh của khối) tải từng trang. |
 | `profiles` | Mỗi người đăng nhập; `role` = `student` / `teacher` / `admin`, `class_id` = lớp của học sinh. Email trong `admin_emails` thành admin khi đăng nhập lần đầu. |
 | `attempts` | Một dòng cho mỗi học viên × bài: lựa chọn, bài viết, điểm, trạng thái (`in_progress` → `submitted` → `graded`). |
 | `attempt_results` | Kết quả chấm từng câu của bài đã nộp (ghi bởi `submit_attempt()`). |
@@ -172,6 +172,7 @@ Schema nằm trong `supabase/migrations/` (bảng, RLS, hàm, trigger, job `pg_c
 | `error_log` | Lỗi lặp lại của từng học viên (6 nhóm lỗi, trạng thái `open` / `improving` / `fixed`). |
 | `study_days` | Ngày học sinh tự lưu/nộp bài (giờ Việt Nam), do trigger ghi; dùng cho chuỗi ngày học và mục tiêu tuần. |
 | `notifications`, `class_announcements` | Thông báo trong app (bài mới, sắp hết hạn, có điểm, nhận xét, thông báo lớp) do trigger và job `notify-due-soon` ghi; giáo viên đăng thông báo cho lớp. |
+| `class_sessions`, `attendance`, `participation_points`, `score_columns`, `score_entries` | Điểm trên lớp: điểm danh từng buổi, điểm cộng phát biểu (+1 mỗi lần), cột điểm kiểm tra bài cũ và bài tập (0-10). Giáo viên của lớp ghi ở `/teacher/scores/<lớp>`; học sinh chỉ đọc điểm của mình ở trang Tiến độ. |
 | `card_reviews` | Hộp Leitner và ngày ôn tiếp theo của từng thẻ từ (trang Ôn tập). |
 | `badges`, `user_badges` | Huy hiệu và ai đã đạt huy hiệu nào; chỉ hàm `my_badges()` ghi, tính từ bài làm của chính học sinh. |
 | `client_errors` | Lỗi chạy thật của trình duyệt (vòng đệm 1000 dòng, hàm `log_client_error()` ghi, chỉ admin đọc ở `/admin/errors`). |

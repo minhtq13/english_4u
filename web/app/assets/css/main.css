@@ -156,7 +156,7 @@ button { font: inherit; }
 .btn.icon.loading::before { margin: 0; }
 @keyframes btn-spin { to { transform: rotate(360deg); } }
 
-input[type=text], input[type=search], input[type=password], input[type=number], input[type=datetime-local], textarea, select { font: inherit; width: 100%; padding: 8px 10px; border-radius: var(--radius-md);
+input[type=text], input[type=search], input[type=password], input[type=number], input[type=date], input[type=datetime-local], textarea, select { font: inherit; width: 100%; padding: 8px 10px; border-radius: var(--radius-md);
   border: 1px solid var(--line); background: var(--bg); color: var(--text); }
 input.short { max-width: 260px; }
 textarea { min-height: 160px; resize: vertical; }
