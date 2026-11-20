@@ -1,6 +1,6 @@
 ---
 name: add-lesson
-description: Write or change grammar lesson content (units for lớp 6–9, B1→B2 lessons, extra practice or review lessons). Use when the user asks for new lessons, more units, or edits to existing questions.
+description: Write or change grammar lesson content (units for lớp 6-9, B1→B2 lessons, extra practice or review lessons). Use when the user asks for new lessons, more units, or edits to existing questions.
 ---
 
 # Add or change lesson content

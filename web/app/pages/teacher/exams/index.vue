@@ -154,7 +154,7 @@ const sharing = shallowRef<ListRow | null>(null)
                 <span v-else-if="accessOf(r) === 'view'" class="badge">{{ $t("examList.viewOnly") }}</span>
               </small>
             </td>
-            <td :data-label="$t('examList.colGrade')">{{ (r.course_id && courseName.get(r.course_id)) || "–" }}</td>
+            <td :data-label="$t('examList.colGrade')">{{ (r.course_id && courseName.get(r.course_id)) || "-" }}</td>
             <td :data-label="$t('examList.colQuestions')">{{ r.question_count }}</td>
             <td :data-label="$t('examList.colCodes')">{{ codeCountOf(r.codes) }}</td>
             <td :data-label="$t('examList.colUpdated')">{{ formatDate(r.updated_at) }}</td>

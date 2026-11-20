@@ -59,7 +59,7 @@ const actionLabel = (a: string) => t(`audit.action.${a}`)
             <td :data-label="$t('audit.who')">{{ view(r).actor || $t("audit.system") }}</td>
             <td :data-label="$t('audit.what')"><b>{{ actionLabel(r.action) }}</b></td>
             <td :data-label="$t('audit.target')">{{ view(r).target }}</td>
-            <td :data-label="$t('audit.detailTitle')">{{ view(r).detail ? $t(view(r).detail!.key, view(r).detail!.params) : "–" }}</td>
+            <td :data-label="$t('audit.detailTitle')">{{ view(r).detail ? $t(view(r).detail!.key, view(r).detail!.params) : "-" }}</td>
           </tr>
         </tbody>
       </table>

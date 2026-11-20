@@ -57,7 +57,7 @@ function go(index: number) {
           <span class="muted small">{{ w.sectionTitle }}</span>
           <div class="q" v-html="safeHtml(w.q)" />
           <div class="row small">
-            <span class="bad">{{ $t("resultView.yours") }}: <b>{{ w.given || "–" }}</b></span>
+            <span class="bad">{{ $t("resultView.yours") }}: <b>{{ w.given || "-" }}</b></span>
             <span class="good">{{ $t("resultView.correct") }}: <b>{{ w.correct }}</b></span>
           </div>
         </li>

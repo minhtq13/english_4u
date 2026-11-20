@@ -17,7 +17,7 @@ export default defineNuxtConfig({
       meta: [
         { name: "theme-color", content: "#f5f6f8", media: "(prefers-color-scheme: light)" },
         { name: "theme-color", content: "#14171d", media: "(prefers-color-scheme: dark)" },
-        { name: "description", content: "Ngữ pháp tiếng Anh THCS lớp 6–9 và lộ trình B1 → B2, 30 phút mỗi ngày." },
+        { name: "description", content: "Ngữ pháp tiếng Anh THCS lớp 6-9 và lộ trình B1 → B2, 30 phút mỗi ngày." },
       ],
       link: [
         { rel: "icon", href: "/favicon_io/favicon.ico", sizes: "any" },
@@ -90,7 +90,7 @@ export default defineNuxtConfig({
     manifest: {
       name: "Ngữ pháp tiếng Anh",
       short_name: "English 4U",
-      description: "Ngữ pháp tiếng Anh THCS lớp 6–9 và lộ trình B1 → B2.",
+      description: "Ngữ pháp tiếng Anh THCS lớp 6-9 và lộ trình B1 → B2.",
       lang: "vi",
       start_url: "/",
       scope: "/",

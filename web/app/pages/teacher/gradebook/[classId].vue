@@ -50,7 +50,7 @@ onMounted(async () => {
 })
 
 const stateText = (s: string) => t(`gradebook.state.${s}`)
-const cellText = (c: { state: string; percent: number | null }) => (c.percent !== null ? `${c.percent}%` : c.state === "none" ? "–" : stateText(c.state))
+const cellText = (c: { state: string; percent: number | null }) => (c.percent !== null ? `${c.percent}%` : c.state === "none" ? "-" : stateText(c.state))
 
 async function exportXlsx() {
   if (!book.value || !cls.value) return
@@ -102,13 +102,13 @@ async function exportXlsx() {
                 <NuxtLink v-if="c.attemptId" :to="`/teacher/attempts/${c.attemptId}`" :title="stateText(c.state)">{{ cellText(c) }}</NuxtLink>
                 <span v-else class="muted">{{ cellText(c) }}</span>
               </td>
-              <td class="avg">{{ r.average === null ? "–" : `${r.average}%` }}</td>
+              <td class="avg">{{ r.average === null ? "-" : `${r.average}%` }}</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
               <th class="who" scope="row">{{ $t("gradebook.average") }}</th>
-              <td v-for="(a, i) in book.averages" :key="i" class="avg">{{ a === null ? "–" : `${a}%` }}</td>
+              <td v-for="(a, i) in book.averages" :key="i" class="avg">{{ a === null ? "-" : `${a}%` }}</td>
               <td />
             </tr>
           </tfoot>

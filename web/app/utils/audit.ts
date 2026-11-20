@@ -36,7 +36,7 @@ export interface AuditView { action: string; actor: string; target: string; deta
 /** `people` and `classes` map an id to a display name; an id nobody knows any more shows as "?". */
 export function auditView(r: AuditRow, people: ReadonlyMap<string, string>, classes: ReadonlyMap<string, string>): AuditView {
   const d = obj(r.detail)
-  const cls = (id: string) => (id ? classes.get(id) ?? "?" : "–")
+  const cls = (id: string) => (id ? classes.get(id) ?? "?" : "-")
   const target = targetsClass(r.action)
     ? (r.action === "class_deleted" ? str(d.name) : "") || classes.get(r.target ?? "") || str(d.name) || "?"
     : (r.action === "account_deleted" ? str(d.name) || str(d.username) || str(d.email) : "") || people.get(r.target ?? "") || "?"

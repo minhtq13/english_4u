@@ -93,7 +93,7 @@ describe("grading shortcuts", () => {
     expect(gradingAction(key("j"), true)).toBeNull()
     expect(gradingAction(key("3"), true)).toBeNull()
   })
-  it("J / K walk the queue, 1–6 tick tags, anything else is ignored", () => {
+  it("J / K walk the queue, 1-6 tick tags, anything else is ignored", () => {
     expect(gradingAction(key("j"), false)).toEqual({ type: "next" })
     expect(gradingAction(key("K"), false)).toEqual({ type: "previous" })
     expect(gradingAction(key("1"), false)).toEqual({ type: "tag", index: 0 })

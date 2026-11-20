@@ -27,7 +27,7 @@ defineProps<{ info: DraftInfo; courses: { id: string; name: string }[] }>()
           <input v-model="info.department" type="text" :placeholder="$t('examPage.departmentHint')">
         </label>
         <label><span>{{ $t("examPage.schoolYear") }}</span>
-          <input v-model="info.schoolYear" type="text" placeholder="2026 – 2027">
+          <input v-model="info.schoolYear" type="text" placeholder="2026 - 2027">
         </label>
         <label><span>{{ $t("examPage.term") }}</span>
           <input v-model="info.term" type="text" :placeholder="$t('examPage.termHint')">

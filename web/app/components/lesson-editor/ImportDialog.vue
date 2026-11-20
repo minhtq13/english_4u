@@ -80,7 +80,7 @@ function add() {
                 </div>
                 <label class="small row">{{ mode === "error" ? $t("importer.wrongPart") : $t("importer.rightOption") }}
                   <select :value="q.correct" class="key" @change="setCorrect(q, ($event.target as HTMLSelectElement).value)">
-                    <option :value="0">–</option>
+                    <option :value="0">-</option>
                     <option v-for="(_, k) in q.options" :key="k" :value="k + 1">{{ letter(k) }}</option>
                   </select>
                 </label>

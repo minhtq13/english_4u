@@ -57,7 +57,7 @@ onMounted(async () => {
 
 /** A short readable browser name from the user agent. */
 const browser = (ua: string | null) => {
-  if (!ua) return "–"
+  if (!ua) return "-"
   const os = /Windows/.test(ua) ? "Windows" : /iPhone|iPad/.test(ua) ? "iOS" : /Android/.test(ua) ? "Android" : /Mac OS/.test(ua) ? "macOS" : /Linux/.test(ua) ? "Linux" : ""
   const app = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : ""
   return [app, os].filter(Boolean).join(" · ") || ua.slice(0, 30)
@@ -72,7 +72,7 @@ const reasonLabel = (r: Row) => (r.ended_at ? t(`logins.reason.${r.end_reason ??
     <p class="sub">{{ $t("logins.intro") }}</p>
     <div class="stats">
       <div class="stat"><b>{{ today.n }}</b><span>{{ $t("logins.todayCount") }}</span></div>
-      <div class="stat"><b>{{ today.avg === null ? "–" : $t("logins.minutes", today.avg) }}</b><span>{{ $t("logins.todayAvg") }}</span></div>
+      <div class="stat"><b>{{ today.avg === null ? "-" : $t("logins.minutes", today.avg) }}</b><span>{{ $t("logins.todayAvg") }}</span></div>
     </div>
     <div class="row filters">
       <input v-model="search" type="search" :placeholder="$t('logins.search')" :aria-label="$t('logins.search')">
@@ -103,7 +103,7 @@ const reasonLabel = (r: Row) => (r.ended_at ? t(`logins.reason.${r.end_reason ??
             <td :data-label="$t('logins.duration')">{{ $t("logins.minutes", minutes(r)) }}</td>
             <td :data-label="$t('logins.end')">{{ reasonLabel(r) }}</td>
             <td :data-label="$t('logins.device')" :title="r.user_agent ?? ''">{{ browser(r.user_agent) }}</td>
-            <td data-label="IP">{{ r.ip ?? "–" }}</td>
+            <td data-label="IP">{{ r.ip ?? "-" }}</td>
           </tr>
         </tbody>
       </table>

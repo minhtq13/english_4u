@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
         return json({ ok: true })
       }
 
-      // { user_id, full_name?, username? } — a new username also gives the account a username login.
+      // { user_id, full_name?, username? } - a new username also gives the account a username login.
       case "update": {
         const p = await target(body.user_id)
         const patch: Record<string, unknown> = {}
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
         return json({ ok: true })
       }
 
-      // { user_id, active } — locking bans the auth user so they cannot sign in.
+      // { user_id, active } - locking bans the auth user so they cannot sign in.
       case "set_active": {
         const p = await target(body.user_id)
         const active = !!body.active
@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
         return json({ ok: true })
       }
 
-      // { user_id } — admins only; their attempts and history go with them.
+      // { user_id } - admins only; their attempts and history go with them.
       case "delete": {
         if (!isAdmin) refuse("Chỉ admin xoá được tài khoản. Bạn có thể khoá tài khoản thay vì xoá.")
         const p = await target(body.user_id)

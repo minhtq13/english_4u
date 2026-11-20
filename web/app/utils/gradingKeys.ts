@@ -1,5 +1,5 @@
 // Keyboard shortcuts of the attempt page when a teacher grades: Ctrl/⌘+Enter saves the feedback (works while typing),
-// and outside a text field J / K go to the next / previous attempt in the queue and 1–6 tick the error tags.
+// and outside a text field J / K go to the next / previous attempt in the queue and 1-6 tick the error tags.
 
 export type GradingAction = { type: "save" } | { type: "next" } | { type: "previous" } | { type: "tag"; index: number } | null
 

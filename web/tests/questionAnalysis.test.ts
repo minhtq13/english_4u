@@ -18,7 +18,7 @@ describe("analysisRows", () => {
     expect(out.find(r => r.qid === "G1")?.question).toBe("")
   })
   it("reads the common wrong answers, tolerating junk", () => {
-    expect(out.find(r => r.qid === "M10")?.wrong).toEqual([{ given: "a", n: 2 }, { given: "–", n: 1 }])
+    expect(out.find(r => r.qid === "M10")?.wrong).toEqual([{ given: "a", n: 2 }, { given: "-", n: 1 }])
     expect(out.find(r => r.qid === "M3")?.wrong).toEqual([])
   })
   it("bands", () => {

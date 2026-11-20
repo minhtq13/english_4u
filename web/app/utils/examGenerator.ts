@@ -213,7 +213,7 @@ export function rngOf(seed: string): Rng {
   }
 }
 
-/** A shuffled copy (Fisher–Yates). */
+/** A shuffled copy (Fisher-Yates). */
 export function shuffledBy<T>(list: readonly T[], rng: Rng): T[] {
   const a = list.slice()
   for (let i = a.length - 1; i > 0; i--) {

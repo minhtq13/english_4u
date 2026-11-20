@@ -28,7 +28,7 @@ export function topClasses(rows: readonly SubmittedAttempt[], now = Date.now(), 
   return [...counts].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "vi")).slice(0, limit)
 }
 
-/** How many hand-ins scored under 50 %, 50–79 % and 80 % or more. */
+/** How many hand-ins scored under 50 %, 50-79 % and 80 % or more. */
 export function scoreBands(rows: readonly SubmittedAttempt[]): { low: number; mid: number; good: number } {
   const out = { low: 0, mid: 0, good: 0 }
   for (const r of rows) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // A single-series meter: a thin bar on a track with the value printed beside it in ink.
 const props = defineProps<{
-  /** 0–100, or null when there is no data yet. */
+  /** 0-100, or null when there is no data yet. */
   value: number | null
   /** Text shown beside the bar; defaults to "<value>%". */
   text?: string

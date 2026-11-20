@@ -5,7 +5,7 @@ import { buildParts, buildVariants, type ExamQuestion } from "~/utils/examGenera
 import { examDocx, examFileName, examZip, htmlToParagraphs, markedBits, optionColumns, partHintOf, type ExamInfo } from "~/utils/exportDocx"
 import { detailSheet, examKeyBytes, matrixSheet } from "~/utils/exportExcel"
 
-const info: ExamInfo = { title: "Đề kiểm tra giữa kỳ 1", grade: "Lớp 7", school: "Trường THCS Nguyễn Du", department: "Tổ Ngoại ngữ", schoolYear: "2026 – 2027", term: "", minutes: 45 }
+const info: ExamInfo = { title: "Đề kiểm tra giữa kỳ 1", grade: "Lớp 7", school: "Trường THCS Nguyễn Du", department: "Tổ Ngoại ngữ", schoolYear: "2026 - 2027", term: "", minutes: 45 }
 const q = (id: string, init: Partial<ExamQuestion> = {}): ExamQuestion => ({
   id, type: "mcq", prompt: "<p>She <b>___</b> to school.</p>", options: ["go", "goes", "going", "gone"], correct: 1, answers: [], words: [], back: "",
   explanation: "<p>Chủ ngữ số ít &amp; hiện tại đơn.</p>", tag: "", sectionId: "s", sectionTitle: "Chọn đáp án đúng", passage: "", lessonId: "7.1", ...init,

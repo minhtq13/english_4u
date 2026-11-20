@@ -13,7 +13,7 @@ const question = (id: string): ExamQuestion => ({
 })
 const draft = (over: Partial<ExamDraft> = {}): ExamDraft => ({
   examId: null,
-  info: { ...emptyInfo(), title: "  Đề giữa kỳ 1 ", courseId: "lop-6", school: "THCS Nguyễn Du", schoolYear: "2026 – 2027", minutes: 45 },
+  info: { ...emptyInfo(), title: "  Đề giữa kỳ 1 ", courseId: "lop-6", school: "THCS Nguyễn Du", schoolYear: "2026 - 2027", minutes: 45 },
   questions: [question("q1"), question("q2")],
   codesText: " 101, 102 ",
   mode: "options",

@@ -40,7 +40,7 @@ describe("accounts", () => {
     expect(slug("Lớp 6A - Đông")).toBe("lop6adong")
     expect(USERNAME_RULE.test(`${slug("6T1")}.01`)).toBe(true)
   })
-  it("USERNAME_RULE: 3–32 characters, starting with a letter or digit", () => {
+  it("USERNAME_RULE: 3-32 characters, starting with a letter or digit", () => {
     expect(USERNAME_RULE.test("ab")).toBe(false)
     expect(USERNAME_RULE.test(".abc")).toBe(false)
     expect(USERNAME_RULE.test("Abc")).toBe(false)

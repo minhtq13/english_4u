@@ -69,7 +69,7 @@ export interface LessonSummary {
 
 export interface Phase { id: number; name: string; position: number; lessons: LessonSummary[] }
 
-/** A course row: a school grade (lớp 6–9) or a standalone track. */
+/** A course row: a school grade (lớp 6-9) or a standalone track. */
 export type CourseInfo = Tables<"courses">
 
 /** One course's outline: its phases and lessons, in order. */
@@ -269,7 +269,7 @@ function hash(s: string) {
   for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619)
   return h >>> 0
 }
-/** Fisher–Yates with a seeded generator (mulberry32): the same seed always gives the same order. */
+/** Fisher-Yates with a seeded generator (mulberry32): the same seed always gives the same order. */
 function seededShuffle<T>(items: T[], seed: string): T[] {
   let t = hash(seed)
   const rand = () => {

@@ -41,7 +41,7 @@ async function saveGrade() {
   emit('saved')
 }
 
-// ---- keyboard: Ctrl/⌘+Enter saves, J / K walk the queue, 1–6 tick the error tags ----
+// ---- keyboard: Ctrl/⌘+Enter saves, J / K walk the queue, 1-6 tick the error tags ----
 function onKey(e: KeyboardEvent) {
   if (props.attempt.status === "in_progress") return
   const action = gradingAction(e, isTyping(e.target as HTMLElement | null), Object.keys(ERROR_CATEGORIES).length)

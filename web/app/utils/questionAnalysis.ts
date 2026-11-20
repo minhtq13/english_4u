@@ -16,7 +16,7 @@ const wrongOf = (v: Json): CommonWrong[] =>
   Array.isArray(v)
     ? v.flatMap((w) => {
       const o = w as { given?: unknown; n?: unknown } | null
-      return o && typeof o.n === "number" ? [{ given: typeof o.given === "string" && o.given ? o.given : "–", n: o.n }] : []
+      return o && typeof o.n === "number" ? [{ given: typeof o.given === "string" && o.given ? o.given : "-", n: o.n }] : []
     })
     : []
 

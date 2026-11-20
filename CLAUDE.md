@@ -1,6 +1,6 @@
 # english_4u
 
-English grammar learning site for Vietnamese learners: THCS grades 6–9 (Tiếng Anh Global Success) plus a B1→B2 track. Users, UI text and docs are Vietnamese; code, comments and agent docs are English.
+English grammar learning site for Vietnamese learners: THCS grades 6-9 (Tiếng Anh Global Success) plus a B1→B2 track. Users, UI text and docs are Vietnamese; code, comments and agent docs are English.
 
 - `web/`: the product, a Nuxt 4 + Supabase app deployed on Vercel. Read `web/CLAUDE.md` before working there.
 - `progress.md`: the original learner's B1→B2 journal (topics, recurring errors), kept for the grammar-tutor role.
