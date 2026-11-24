@@ -1,7 +1,7 @@
 import { Workbook } from "exceljs"
 import JSZip from "jszip"
 import { describe, expect, it } from "vitest"
-import { buildParts, buildVariants, type ExamQuestion } from "~/utils/examGenerator"
+import { WORD_BLANK, buildParts, buildVariants, needsAnswerLine, type ExamQuestion } from "~/utils/examGenerator"
 import { examDocx, examFileName, examZip, htmlToParagraphs, markedBits, optionColumns, partHintOf, type ExamInfo } from "~/utils/exportDocx"
 import { detailSheet, examKeyBytes, matrixSheet } from "~/utils/exportExcel"
 
@@ -19,6 +19,7 @@ const questions = [
   q("m2", { type: "match", prompt: "left 2", back: "right 2", options: [], correct: -1 }),
   q("o1", { type: "order", prompt: "", options: [], correct: -1, words: ["I", "like", "green", "tea"] }),
   q("t1", { type: "typed", prompt: "He (go) ___ home.", options: [], correct: -1, answers: ["goes"] }),
+  q("t2", { type: "typed", prompt: "Translate: Tôi thích trà xanh.", options: [], correct: -1, answers: ["I like green tea"] }),
 ]
 const variants = buildVariants(buildParts(questions), ["101", "102"], "all")
 
@@ -92,6 +93,24 @@ describe("Word paper", () => {
     expect(text).toContain("exam.part.grammar.hint")
     expect(partHintOf({ partHints: { error: " Tìm  lỗi " } }, "error")).toBe("Tìm lỗi")
     expect(partHintOf({}, "error")).toBe("exam.part.error.hint")
+  })
+  it("a rewriting question has a line to write on, a fill-in has a long blank of its own", async () => {
+    const xml = await documentXml(await examDocx(info, variants[0]!))
+    // One ruled line each for the sentence to put in order (o1) and for the question that has no blank to write in (t2).
+    expect(xml.match(/w:val="dotted"/g)).toHaveLength(2)
+    const text = textOf(xml)
+    expect(text).toContain(`He (go) ${WORD_BLANK} home.`)
+    expect(text).not.toContain("go) ___ home")
+    expect(WORD_BLANK.length).toBeGreaterThan(10)
+    // The copy with solutions shows the answers instead of lines.
+    expect(await documentXml(await examDocx(info, variants[0]!, { withKey: true }))).not.toContain('w:val="dotted"')
+  })
+  it("which questions get a ruled line", () => {
+    expect(needsAnswerLine({ type: "order", prompt: "" })).toBe(true)
+    expect(needsAnswerLine({ type: "typed", prompt: "Write about your school." })).toBe(true)
+    expect(needsAnswerLine({ type: "typed", prompt: "She ___ (study) Science." })).toBe(false)
+    expect(needsAnswerLine({ type: "typed", prompt: "She <b>__</b> home." })).toBe(false)
+    expect(needsAnswerLine({ type: "mcq", prompt: "No line for a choice question." })).toBe(false)
   })
   it("the answer sheet can be left out", async () => {
     expect(textOf(await documentXml(await examDocx(info, variants[0]!)))).toContain("examDoc.answerSheet")

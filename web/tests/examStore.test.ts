@@ -17,6 +17,8 @@ const draft = (over: Partial<ExamDraft> = {}): ExamDraft => ({
   questions: [question("q1"), question("q2")],
   codesText: " 101, 102 ",
   mode: "options",
+  fixedParts: [],
+  shuffleRounds: {},
   sheetAt: "bottom",
   partHints: {},
   ...over,
@@ -24,6 +26,22 @@ const draft = (over: Partial<ExamDraft> = {}): ExamDraft => ({
 const setup = (seed: Record<string, Record<string, unknown>[]> = {}) => memoryClient(seed, { autoId: ["exam_sets"] })
 
 describe("exam set rows", () => {
+  it("keeps how many times each code was shuffled again, for the codes in use only", () => {
+    const row = rowOf(draft({ codesText: "101, 102", shuffleRounds: { "101": 2, "102": 0, "103": 5, "bad": -1 } }))
+    expect(row.shuffle_rounds).toEqual({ "101": 2 })
+    expect(draftOf({ ...row, id: "e1" } as Parameters<typeof draftOf>[0]).shuffleRounds).toEqual({ "101": 2 })
+    expect(rowOf(draft()).shuffle_rounds).toEqual({})
+    expect(draftOf({ ...rowOf(draft()), id: "e1", shuffle_rounds: undefined } as Parameters<typeof draftOf>[0]).shuffleRounds).toEqual({})
+    expect(snapshotOf(draft({ codesText: "101, 102", shuffleRounds: { "101": 1 } }))).not.toBe(snapshotOf(draft({ codesText: "101, 102" })))
+  })
+  it("keeps the parts that are not shuffled, only known ones, in the order the parts are defined", () => {
+    const row = rowOf(draft({ fixedParts: ["reading", "phonetics", "bogus" as never, "reading"] }))
+    expect(row.fixed_parts).toEqual(["phonetics", "reading"])
+    expect(draftOf({ ...row, id: "e1" } as Parameters<typeof draftOf>[0]).fixedParts).toEqual(["phonetics", "reading"])
+    expect(rowOf(draft()).fixed_parts).toEqual([])
+    expect(draftOf({ ...rowOf(draft()), id: "e1", fixed_parts: undefined } as Parameters<typeof draftOf>[0]).fixedParts).toEqual([])
+    expect(snapshotOf(draft({ fixedParts: ["reading"] }))).not.toBe(snapshotOf(draft()))
+  })
   it("rowOf trims text, keeps the questions as a snapshot and bounds the minutes", () => {
     const row = rowOf(draft({ info: { ...draft().info, minutes: 9999 } }))
     expect(row).toMatchObject({ title: "Đề giữa kỳ 1", course_id: "lop-6", codes: "101, 102", mode: "options", sheet_at: "bottom", minutes: 600 })

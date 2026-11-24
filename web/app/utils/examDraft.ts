@@ -1,6 +1,6 @@
-import type { ExamQuestion, PartHints, ShuffleMode } from "./examGenerator"
+import type { ExamQuestion, PartHints, PartKey, ShuffleMode, ShuffleRounds } from "./examGenerator"
 import type { ExamInfo } from "./exportDocx"
-import { PART_KEYS, SHUFFLE_MODES } from "./examGenerator"
+import { PART_KEYS, SHUFFLE_MODES, cleanFixed, cleanRounds } from "./examGenerator"
 
 // The exam being written on /teacher/exams/<id or new> is also kept in this browser (localStorage) as a working copy: a
 // new exam that is not saved yet is found again after a reload, and the print page (/teacher/exams/print, another tab)
@@ -17,6 +17,10 @@ export interface ExamDraft {
   questions: ExamQuestion[]
   codesText: string
   mode: ShuffleMode
+  /** Parts that print the same on every code (not shuffled); empty = every part is shuffled. */
+  fixedParts: PartKey[]
+  /** How many times each exam code was shuffled again (0 / missing: the first shuffle). */
+  shuffleRounds: ShuffleRounds
   sheetAt: SheetAt
   /** The instruction the author wrote under a part's title; a part without one prints the default. */
   partHints: PartHints
@@ -49,6 +53,8 @@ export function readDraft(): ExamDraft | null {
       questions: Array.isArray(raw.questions) ? raw.questions : [],
       codesText: typeof raw.codesText === "string" ? raw.codesText : "101, 102, 103, 104",
       mode: SHUFFLE_MODES.includes(raw.mode) ? raw.mode : "all",
+      fixedParts: cleanFixed(raw.fixedParts),
+      shuffleRounds: cleanRounds(raw.shuffleRounds),
       sheetAt: ["top", "bottom", "none"].includes(raw.sheetAt) ? raw.sheetAt : "top",
       partHints: cleanHints(raw.partHints),
     }

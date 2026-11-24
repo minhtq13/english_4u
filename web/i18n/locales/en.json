@@ -1432,11 +1432,11 @@
       },
       "order": {
         "title": "Sentence ordering",
-        "hint": "Put the words and phrases in order to make complete sentences."
+        "hint": "Put the words and phrases in order to make complete sentences, and write them on the line below."
       },
       "typed": {
         "title": "Written answers",
-        "hint": "Write your answer on the line under each question."
+        "hint": "Fill in the blank or write your answer on the line."
       }
     },
     "mode": {
@@ -1548,11 +1548,9 @@
     "fillCodes": "Make the series",
     "codes": "Exam codes (comma-separated, edit freely)",
     "modeTitle": "How to shuffle",
-    "seedNote": "Each exam code is its own shuffle seed: the same base exam, code and mode always give exactly the same paper, however many times you download it.",
-    "sheetAt": "Answer sheet",
+    "seedNote": "Each exam code is its own shuffle seed: the same base exam, code and mode always give exactly the same paper, however many times you download it. If you do not like how a code came out, use \"Shuffle again\" in step 5 to get a different paper for that code.",
     "sheetTop": "At the top",
     "sheetBottom": "At the end",
-    "sheetNone": "Do not print",
     "exportTitle": "Preview and download",
     "needTitle": "The exam has no title yet.",
     "needQuestions": "The base exam has no questions yet.",
@@ -1560,17 +1558,10 @@
     "codeLabel": "Exam code:",
     "showKey": "Show answers and explanations",
     "making": "Making the file…",
-    "saveOne": "Download .docx for code {code}",
-    "saveWithKey": "Download paper with solutions",
-    "saveAll": "Download all {n} codes (.zip)",
-    "saveXlsx": "Download Excel answer key (.xlsx)",
     "exportFailed": "The file could not be made: {msg}",
     "reset": "Start a new exam",
     "draftNote": "An unsaved exam is kept in this browser for now. Press “Save exam set” to add it to your exam sets.",
     "preview": "View",
-    "savePdf": "Download PDF for code {code}",
-    "savePdfKey": "Download PDF with solutions",
-    "savePdfAll": "Download PDF of all {n} codes",
     "pdfNote": "The PDF opens in a new tab and uses the browser's print dialog: choose “Save as PDF” to save it.",
     "pageTitleEdit": "Edit exam set",
     "saved": "Changes saved",
@@ -1603,7 +1594,47 @@
     "viewBanner": "{name}'s exam set, shared with you to view. You can open, print and download it; make a copy to change it.",
     "editBanner": "{name}'s exam set, shared with you and you may edit it. Changes you save apply to the owner and everyone else it is shared with.",
     "makeCopy": "Make a copy to edit",
-    "ownerUnknown": "a teacher"
+    "ownerUnknown": "a teacher",
+    "fold": "Fold",
+    "unfold": "Unfold",
+    "foldAll": "Fold all",
+    "unfoldAll": "Unfold all",
+    "sum": {
+      "info": "{title} · {minutes} min",
+      "pick": "{n} questions chosen",
+      "base": "{n} questions · {parts} parts",
+      "part": "{n} questions",
+      "codes": "{codes} · {mode}",
+      "export": "{n} exam codes"
+    },
+    "shuffleParts": "Parts to shuffle",
+    "shuffleAllParts": "Shuffle all",
+    "shuffleNoParts": "Shuffle none",
+    "shufflePartsHint": "Untick a part you want to keep as it is: it prints exactly the same on every code (question order and choice order). The shuffle below applies only to the parts that stay ticked.",
+    "shuffleNoQuestions": "Choose questions in step 2 first, then you can pick the parts to shuffle.",
+    "partShuffled": "shuffled",
+    "partFixed": "kept as is",
+    "noneShuffled": "No part is shuffled, so every code prints the same paper and only the code number differs.",
+    "sheetOn": "Print the multiple-choice answer sheet",
+    "sheetPlace": "Where the answer sheet goes",
+    "sheetTip": "Turn it off when students circle their answers on the paper itself: the preview, the Word file and the print will have no answer sheet. The choice is saved with the exam set.",
+    "dl": {
+      "word": "Word (.docx)",
+      "paper": "Paper, code {code}",
+      "withKey": "Paper with solutions",
+      "pdf": "PDF (printed from the browser)",
+      "pdfAll": "All {n} codes",
+      "whole": "The whole set, {n} codes",
+      "zip": "Word, every code (.zip)",
+      "xlsx": "Answer key (.xlsx)"
+    },
+    "reshuffle": "Shuffle code {code} again",
+    "reshufflePrev": "Back to the last shuffle",
+    "reshuffleAll": "Shuffle all {n} codes again",
+    "reshuffleFirst": "Code {code} is on its first shuffle.",
+    "reshuffleCount": "Code {code}: shuffled again {n} times.",
+    "reshuffleNone": "No part is shuffled, so there is nothing to shuffle again (see step 4).",
+    "reshuffleTip": "Use it when you do not like how a code came out: that code gets a different paper. The paper stays fixed: downloading, printing or reopening the exam set gives exactly the paper you chose, and the answer key matches. \"Back to the last shuffle\" returns to the one before. Parts kept as they are are never shuffled."
   },
   "qPreview": {
     "title": "Question preview",
@@ -1793,6 +1824,7 @@
     "classAverage": "Class average",
     "bandLegend": "Green: 8 and over. Yellow: 5 and over. Red: below 5. Averages count only boxes that have a mark.",
     "pointsTerm": "points this term",
-    "noColumnsHint": "Add a column (for example one test), then type each student's mark."
+    "noColumnsHint": "Add a column (for example one test), then type each student's mark.",
+    "openHint": "Attendance, bonus points, oral checks and homework"
   }
 }

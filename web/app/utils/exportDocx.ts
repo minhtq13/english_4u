@@ -1,6 +1,6 @@
 import type { Paragraph, Table } from "docx"
 import type { ExamVariant, PartHints, PartKey, VariantBlock, VariantPart, VariantQuestion } from "./examGenerator"
-import { LETTERS, plainMarked, roman } from "./examGenerator"
+import { BLANK_RE, LETTERS, WORD_BLANK, needsAnswerLine, plainMarked, roman } from "./examGenerator"
 import { tr } from "./i18n"
 import { fileSlug } from "./spreadsheet"
 
@@ -133,7 +133,6 @@ const PAGE = { width: 11906, height: 16838, left: 1134, right: 851, top: 851, bo
 const CONTENT = PAGE.width - PAGE.left - PAGE.right
 const INDENT = 340
 const KEY_COLOR = "0A5C2B"
-const DOTS = "…".repeat(60)
 
 export const examFileName = (info: ExamInfo, code: string, withKey = false) =>
   `${fileSlug(info.title) || "de-thi"}-${fileSlug(tr("examDoc.fileCode"))}-${fileSlug(code) || "x"}${withKey ? `-${fileSlug(tr("examDoc.fileKey"))}` : ""}.docx`
@@ -258,13 +257,21 @@ export async function examDocx(info: ExamInfo, variant: ExamVariant, opts: DocxO
   const label = (q: VariantQuestion) => text(`${tr("examDoc.questionN", { n: q.n })} `, { bold: true })
   /** The label, then the prompt: its first paragraph on the label's line, the rest under it. */
   function prompted(q: VariantQuestion, tail: Runs = [], keep = true) {
-    const [first = [], ...rest] = htmlToParagraphs(q.q.prompt)
+    // A fill-in question prints a longer blank than the three underscores it is written with.
+    const wide = (bits: TextBit[]) => (q.q.type === "typed" ? bits.map(b => ({ ...b, text: b.text.replace(BLANK_RE, WORD_BLANK) })) : bits)
+    const [first = [], ...rest] = htmlToParagraphs(q.q.prompt).map(wide)
     return [
       para([label(q), ...first.map(b => run(b)), ...tail], { before: 100, keep, justify: true }),
       ...rest.map(p => para(p.map(b => run(b)), { indent: INDENT, keep, justify: true })),
     ]
   }
-  const answerLine = () => para([text(DOTS)], { indent: INDENT })
+  /** One empty ruled line to write on (a paragraph border, so it is one line whatever the font). */
+  const answerLine = () => new d.Paragraph({
+    children: [],
+    indent: { left: INDENT },
+    spacing: { before: 200, after: 120 },
+    border: { bottom: { style: d.BorderStyle.DOTTED, size: 6, space: 1, color: "666666" } },
+  })
   function solution(q: VariantQuestion) {
     if (!withKey) return []
     const shown = q.objective && q.keyText ? `${q.key}. ${q.keyText}` : q.keyText || q.key
@@ -314,7 +321,7 @@ export async function examDocx(info: ExamInfo, variant: ExamVariant, opts: DocxO
         return [...head, ...(withKey ? solution(q) : [answerLine()])]
       }
       default:
-        return [...prompted(q, [], q.part !== "reading"), ...(withKey ? solution(q) : [answerLine()])]
+        return [...prompted(q, [], q.part !== "reading"), ...(withKey ? solution(q) : needsAnswerLine(q.q) ? [answerLine()] : [])]
     }
   }
 

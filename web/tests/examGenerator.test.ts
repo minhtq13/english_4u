@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
-  addQuestion, answerMatrix, buildParts, buildVariant, buildVariants, canonicalOrder, codeSeries, drawExam, emptyMatrix, keepsOrder, moveBlock,
+  addQuestion, answerMatrix, buildParts, buildVariant, buildVariants, canonicalOrder, cleanFixed, cleanRounds, codeSeries, drawExam, emptyMatrix, keepsOrder, moveBlock,
   moveBlockTo, moveItem, movePart, movePartTo, orderedQuestions, parseCodes, partOf, poolCounts, rngOf, roman, shuffledBy, toExamQuestions, type ExamQuestion, type PoolRow,
 } from "~/utils/examGenerator"
 
@@ -321,5 +321,92 @@ describe("answer key mapping", () => {
       variants[i]!.questions.forEach(x => expect(row[x.n - 1]).toBe(x.key))
     })
     expect(answerMatrix([])).toEqual({ codes: [], count: 0, rows: [] })
+  })
+})
+
+describe("parts left as they are", () => {
+  const parts = buildParts(exam())
+  const partOfKey = (v: ReturnType<typeof buildVariant>, key: string) => v.parts.find(p => p.key === key)!.blocks.flatMap(b => b.questions)
+  const layout = (v: ReturnType<typeof buildVariant>, key: string) => partOfKey(v, key).map(x => [x.q.id, x.key, x.options.join("|")])
+
+  it("a fixed part prints as on the base exam on every code and mode", () => {
+    const base = buildVariant(parts, "", "base")
+    for (const code of ["101", "102", "205"]) {
+      for (const mode of ["all", "options", "questions"] as const) {
+        const v = buildVariant(parts, code, mode, ["grammar", "match"])
+        expect(layout(v, "grammar")).toEqual(layout(base, "grammar"))
+        expect(layout(v, "match")).toEqual(layout(base, "match"))
+      }
+    }
+  })
+  it("the other parts are still shuffled", () => {
+    const base = buildVariant(parts, "", "base")
+    const moved = ["101", "102", "103", "104"].some(code => layout(buildVariant(parts, code, "all", ["grammar"]), "error").join() !== layout(base, "error").join())
+    expect(moved).toBe(true)
+    expect(buildVariant(parts, "101", "all", ["grammar"]).parts.map(p => p.key)).toEqual(parts.map(p => p.key))
+  })
+  it("with every part fixed all codes print the same questions, numbers and keys", () => {
+    const keys = parts.map(p => p.key)
+    const [a, b] = buildVariants(parts, ["101", "102"], "all", keys)
+    expect(a!.questions.map(x => [x.q.id, x.n, x.key, x.options.join("|")])).toEqual(b!.questions.map(x => [x.q.id, x.n, x.key, x.options.join("|")]))
+  })
+  it("no fixed part is the same as before", () => {
+    expect(buildVariant(parts, "103", "all", [])).toEqual(buildVariant(parts, "103", "all"))
+  })
+  it("a fixed part does not change how the others are shuffled", () => {
+    const withFixed = buildVariant(parts, "104", "all", ["grammar"])
+    const without = buildVariant(parts, "104", "all")
+    expect(layout(withFixed, "error")).toEqual(layout(without, "error"))
+    expect(layout(withFixed, "typed")).toEqual(layout(without, "typed"))
+  })
+  it("cleanFixed keeps known keys once, in the order of the parts", () => {
+    expect(cleanFixed(["reading", "x", "phonetics", "reading"])).toEqual(["phonetics", "reading"])
+    expect(cleanFixed(null)).toEqual([])
+    expect(cleanFixed("reading")).toEqual([])
+  })
+})
+
+describe("shuffling a code again", () => {
+  const parts = buildParts(exam())
+  const sig = (v: ReturnType<typeof buildVariant>) => v.questions.map(x => `${x.q.id}:${x.key}:${x.options.join("|")}`).join(";")
+
+  it("round 0 is the first shuffle, exactly as before rounds existed", () => {
+    for (const mode of ["all", "options", "questions"] as const) {
+      expect(buildVariant(parts, "101", mode, [], 0)).toEqual(buildVariant(parts, "101", mode))
+    }
+    expect(buildVariants(parts, ["101", "102"], "all", [], {})).toEqual(buildVariants(parts, ["101", "102"], "all"))
+  })
+  it("another round gives another paper for the same code, and the same one every time", () => {
+    const first = buildVariant(parts, "101", "all")
+    const again = buildVariant(parts, "101", "all", [], 1)
+    expect(sig(again)).not.toBe(sig(first))
+    expect(sig(buildVariant(parts, "101", "all", [], 1))).toBe(sig(again))
+    expect(sig(buildVariant(parts, "101", "all", [], 2))).not.toBe(sig(again))
+    expect(again.code).toBe("101") // the paper still says its own code
+  })
+  it("the answer key follows the new paper", () => {
+    const v = buildVariant(parts, "101", "all", [], 3)
+    for (const x of v.questions) {
+      const base = buildVariant(parts, "", "base").questions.find(b => b.q.id === x.q.id)!
+      expect(x.keyText).toBe(base.keyText) // the same right answer, wherever it landed
+    }
+  })
+  it("only the code asked for changes, and parts kept as they are stay as they are", () => {
+    const [a, b] = buildVariants(parts, ["101", "102"], "all", [], { "101": 1 })
+    const [a0, b0] = buildVariants(parts, ["101", "102"], "all")
+    expect(sig(b!)).toBe(sig(b0!))
+    expect(sig(a!)).not.toBe(sig(a0!))
+    const fixed = buildVariant(parts, "101", "all", ["grammar"], 4)
+    const base = buildVariant(parts, "", "base")
+    const gram = (v: ReturnType<typeof buildVariant>) => v.parts.find(p => p.key === "grammar")!.blocks.flatMap(bl => bl.questions).map(x => `${x.q.id}:${x.key}`)
+    expect(gram(fixed)).toEqual(gram(base))
+  })
+  it("cleanRounds keeps whole counters 1..999 of the codes in use, at most 24", () => {
+    expect(cleanRounds({ "101": 2.7, "102": 0, "103": "x", "104": 5000, "": 1 })).toEqual({ "101": 2, "104": 999 })
+    expect(cleanRounds({ "101": 2, "102": 3 }, ["102"])).toEqual({ "102": 3 })
+    expect(cleanRounds(null)).toEqual({})
+    expect(cleanRounds([1, 2])).toEqual({})
+    const many = Object.fromEntries(Array.from({ length: 40 }, (_, i) => [`c${i}`, 1]))
+    expect(Object.keys(cleanRounds(many))).toHaveLength(24)
   })
 })

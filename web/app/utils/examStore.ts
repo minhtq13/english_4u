@@ -1,7 +1,7 @@
 import type { Database, Json, Tables } from "~/types/database.types"
 import type { Client, Failure } from "./classLessonStore"
 import { cleanHints, emptyInfo, type ExamDraft, type SheetAt } from "./examDraft"
-import { SHUFFLE_MODES, parseCodes, type ExamQuestion } from "./examGenerator"
+import { SHUFFLE_MODES, cleanFixed, cleanRounds, parseCodes, type ExamQuestion } from "./examGenerator"
 import { tr } from "./i18n"
 import { errorText } from "./serverErrors"
 
@@ -40,6 +40,8 @@ export function rowOf(d: ExamDraft): ExamInsert {
     minutes: Math.min(600, Math.max(1, Math.floor(Number(d.info.minutes) || 0))),
     codes: d.codesText.trim(),
     mode: d.mode,
+    fixed_parts: cleanFixed(d.fixedParts),
+    shuffle_rounds: cleanRounds(d.shuffleRounds, parseCodes(d.codesText)) as Json,
     sheet_at: d.sheetAt,
     questions: d.questions as unknown as Json,
     part_hints: cleanHints(d.partHints) as Json,
@@ -47,13 +49,15 @@ export function rowOf(d: ExamDraft): ExamInsert {
 }
 
 /** The draft a stored row opens as. */
-export function draftOf(row: Pick<ExamRow, "id" | "title" | "course_id" | "school" | "department" | "school_year" | "term" | "minutes" | "codes" | "mode" | "sheet_at" | "questions"> & { part_hints?: Json }): ExamDraft {
+export function draftOf(row: Pick<ExamRow, "id" | "title" | "course_id" | "school" | "department" | "school_year" | "term" | "minutes" | "codes" | "mode" | "sheet_at" | "questions"> & { part_hints?: Json; fixed_parts?: string[]; shuffle_rounds?: Json }): ExamDraft {
   return {
     examId: row.id,
     info: { ...emptyInfo(), title: row.title, courseId: row.course_id ?? "", school: row.school, department: row.department, schoolYear: row.school_year, term: row.term, minutes: row.minutes },
     questions: Array.isArray(row.questions) ? (row.questions as unknown as ExamQuestion[]) : [],
     codesText: row.codes,
     mode: (SHUFFLE_MODES as readonly string[]).includes(row.mode) ? (row.mode as ExamDraft["mode"]) : "all",
+    fixedParts: cleanFixed(row.fixed_parts),
+    shuffleRounds: cleanRounds(row.shuffle_rounds),
     sheetAt: (["top", "bottom", "none"] as const).includes(row.sheet_at as SheetAt) ? (row.sheet_at as SheetAt) : "top",
     partHints: cleanHints(row.part_hints),
   }

@@ -32,7 +32,7 @@ const info = computed(() => {
 const variants = computed(() => {
   const d = draft.value
   if (!d) return []
-  const all = buildVariants(buildParts(d.questions), parseCodes(d.codesText), d.mode)
+  const all = buildVariants(buildParts(d.questions), parseCodes(d.codesText), d.mode, d.fixedParts, d.shuffleRounds)
   return wanted === "all" ? all : all.filter(v => v.code === wanted)
 })
 

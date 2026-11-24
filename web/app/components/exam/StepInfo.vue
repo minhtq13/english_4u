@@ -6,34 +6,33 @@ defineProps<{ info: DraftInfo; courses: { id: string; name: string }[] }>()
 </script>
 
 <template>
-    <section class="card">
-      <h2>1. {{ $t("examPage.infoTitle") }}</h2>
-      <div class="grid">
-        <label class="wide"><span>{{ $t("examPage.title") }}</span>
-          <input v-model="info.title" type="text" :placeholder="$t('examPage.titleHint')">
-        </label>
-        <label><span>{{ $t("examPage.grade") }}</span>
-          <select v-model="info.courseId">
-            <option v-for="c in courses" :key="c.id" :value="c.id">{{ localName(c.name) }}</option>
-          </select>
-        </label>
-        <label><span>{{ $t("examPage.minutes") }}</span>
-          <input v-model.number="info.minutes" type="number" min="1" max="300">
-        </label>
-        <label class="wide"><span>{{ $t("examPage.school") }}</span>
-          <input v-model="info.school" type="text" :placeholder="$t('examPage.schoolHint')">
-        </label>
-        <label><span>{{ $t("examPage.department") }}</span>
-          <input v-model="info.department" type="text" :placeholder="$t('examPage.departmentHint')">
-        </label>
-        <label><span>{{ $t("examPage.schoolYear") }}</span>
-          <input v-model="info.schoolYear" type="text" placeholder="2026 - 2027">
-        </label>
-        <label><span>{{ $t("examPage.term") }}</span>
-          <input v-model="info.term" type="text" :placeholder="$t('examPage.termHint')">
-        </label>
-      </div>
-    </section>
+  <ExamCollapse id="exam:info" :title="`1. ${$t('examPage.infoTitle')}`" :summary="$t('examPage.sum.info', { title: info.title.trim() || '-', minutes: info.minutes })">
+    <div class="grid">
+      <label class="wide"><span>{{ $t("examPage.title") }}</span>
+        <input v-model="info.title" type="text" :placeholder="$t('examPage.titleHint')">
+      </label>
+      <label><span>{{ $t("examPage.grade") }}</span>
+        <select v-model="info.courseId">
+          <option v-for="c in courses" :key="c.id" :value="c.id">{{ localName(c.name) }}</option>
+        </select>
+      </label>
+      <label><span>{{ $t("examPage.minutes") }}</span>
+        <input v-model.number="info.minutes" type="number" min="1" max="300">
+      </label>
+      <label class="wide"><span>{{ $t("examPage.school") }}</span>
+        <input v-model="info.school" type="text" :placeholder="$t('examPage.schoolHint')">
+      </label>
+      <label><span>{{ $t("examPage.department") }}</span>
+        <input v-model="info.department" type="text" :placeholder="$t('examPage.departmentHint')">
+      </label>
+      <label><span>{{ $t("examPage.schoolYear") }}</span>
+        <input v-model="info.schoolYear" type="text" placeholder="2026 - 2027">
+      </label>
+      <label><span>{{ $t("examPage.term") }}</span>
+        <input v-model="info.term" type="text" :placeholder="$t('examPage.termHint')">
+      </label>
+    </div>
+  </ExamCollapse>
 </template>
 
 <style scoped>

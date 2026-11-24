@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ExamVariant } from "~/utils/examGenerator"
 import { partHintOf, type ExamInfo } from "~/utils/exportDocx"
-import { LETTERS, plainMarked, roman } from "~/utils/examGenerator"
+import { BLANK_RE, LETTERS, needsAnswerLine, plainMarked, roman } from "~/utils/examGenerator"
 
 // One exam code as it will print: the same parts, numbers, choices and key the Word file gets, on a white sheet
 // (paper stays white in dark mode, like the lesson worksheet).
@@ -12,6 +12,8 @@ const sheetRows = computed(() => {
   return Array.from({ length: Math.ceil(objective.length / 10) }, (_, i) =>
     Array.from({ length: 10 }, (_, j) => objective[i * 10 + j] ?? null))
 })
+/** A fill-in question prints its blanks as a ruled gap wide enough to write in, not as three underscores. */
+const promptOf = (q: { type: string; prompt: string }) => safeHtml(q.type === "typed" ? q.prompt.replace(BLANK_RE, "<span class=\"blank\"></span>") : q.prompt)
 const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sheetRows.value.length > 0
 </script>
 
@@ -84,7 +86,7 @@ const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sh
             </span>
           </p>
           <p v-else>
-            <b>{{ $t("examDoc.questionN", { n: q.n }) }}</b> <span v-html="safeHtml(q.q.prompt)" />
+            <b>{{ $t("examDoc.questionN", { n: q.n }) }}</b> <span v-html="promptOf(q.q)" />
             <i v-if="q.q.type === 'order'"> {{ q.options.join(" / ") }}</i>
           </p>
           <div v-if="q.q.type === 'mcq'" class="choices">
@@ -96,7 +98,7 @@ const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sh
             <p class="key">{{ $t("examDoc.answer") }}: {{ q.objective && q.keyText ? `${q.key}. ${q.keyText}` : q.keyText || q.key }}</p>
             <div v-if="q.q.explanation" class="why" v-html="safeHtml(q.q.explanation)" />
           </template>
-          <p v-else-if="q.q.type === 'typed' || q.q.type === 'order'" class="line" />
+          <div v-else-if="needsAnswerLine(q.q)" class="line" />
         </div>
       </template>
     </section>
@@ -134,7 +136,9 @@ const showSheet = (at: "top" | "bottom") => (props.sheet ?? "none") === at && sh
 .passage :deep(p) { margin: 0 0 6px; }
 .match { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: 6px; }
 .match :deep(p p) { display: inline; }
-.line { border-bottom: 1px dotted #666; height: 1.6em; margin-left: 18px; }
+/* The line to write on is a div: `.question :deep(p)` above makes every paragraph in a question inline, which gave an empty <p> no height. */
+.line { border-bottom: 1px dotted #666; height: 2em; margin-left: 18px; }
+.question :deep(.blank) { display: inline-block; min-width: 8.5em; height: 1em; border-bottom: 1px solid #111; vertical-align: -0.15em; }
 .end { text-align: center; font-weight: 700; margin-top: var(--space-lg); }
 .student, .sheet { width: 100%; border-collapse: collapse; margin: 8px 0 12px; table-layout: fixed; }
 .student td, .student th, .sheet td, .sheet th { border: 1px solid #111; padding: 4px 8px; color: #111; text-align: left; vertical-align: top; }

@@ -162,12 +162,48 @@ test("an admin draws an exam from a matrix, picks one by hand and downloads Word
   await expect(page.locator(".base-q")).toHaveCount(drawn + 1)
 
   // the paper of each code
-  await expect(page.locator(".code-tabs .btn")).toHaveCount(4)
+  await expect(page.locator(".codes-opt .btn")).toHaveCount(4)
   await expect(page.locator(".paper")).toContainText(/Mã đề: 101|Exam code: 101/)
   const first = await page.locator(".paper").innerText()
-  await page.locator(".code-tabs .btn", { hasText: "102" }).click()
+  await page.locator(".codes-opt .btn", { hasText: "102" }).click()
   await expect(page.locator(".paper")).toContainText(/Mã đề: 102|Exam code: 102/)
   expect(await page.locator(".paper").innerText()).not.toBe(first)
+
+  // the answer sheet is a switch: off, the preview has none (a class that circles on the paper itself); on, it is back
+  await expect(page.locator(".paper table.sheet")).toBeVisible()
+  await page.getByLabel(/In phiếu trả lời trắc nghiệm|Print the multiple-choice answer sheet/).uncheck()
+  await expect(page.locator(".paper table.sheet")).toHaveCount(0)
+  await page.getByLabel(/In phiếu trả lời trắc nghiệm|Print the multiple-choice answer sheet/).check()
+  await expect(page.locator(".paper table.sheet")).toBeVisible()
+
+  // parts to shuffle: with none ticked every code prints the same paper, only the code differs
+  const sameCode = async (code: string) => {
+    await page.locator(".codes-opt .btn", { hasText: code }).click()
+    await expect(page.locator(".paper")).toContainText(new RegExp(`(Mã đề|Exam code): ${code}`))
+    return (await page.locator(".paper").innerText()).replace(/\b10[12]\b/g, "#")
+  }
+  await page.getByRole("button", { name: /Không trộn phần nào|Shuffle none/ }).click()
+  await expect(page.locator(".picks .pick.on")).toHaveCount(0)
+  expect(await sameCode("101")).toBe(await sameCode("102"))
+  await page.getByRole("button", { name: /^(Trộn tất cả|Shuffle all)$/ }).click()
+  await expect(page.locator(".picks .pick.on")).not.toHaveCount(0)
+  expect(await sameCode("101")).not.toBe(await sameCode("102"))
+
+  // shuffling a code again gives another paper for that code only; "back to the last shuffle" returns the first one
+  await page.locator(".codes-opt .btn", { hasText: "101" }).click()
+  const firstShuffle = await page.locator(".paper").innerText()
+  await expect(page.locator(".reshuffle")).toContainText(/bản trộn đầu tiên|first shuffle/)
+  await page.getByRole("button", { name: /^(Trộn lại mã 101|Shuffle code 101 again)$/ }).click()
+  await expect(page.locator(".reshuffle")).toContainText(/đã trộn lại 1 lần|shuffled again 1 times/)
+  expect(await page.locator(".paper").innerText()).not.toBe(firstShuffle)
+  await page.locator(".codes-opt .btn", { hasText: "102" }).click() // the other code is untouched
+  await expect(page.locator(".reshuffle")).toContainText(/bản trộn đầu tiên|first shuffle/)
+  await page.locator(".codes-opt .btn", { hasText: "101" }).click()
+  await page.getByRole("button", { name: /Quay lại lần trước|Back to the last shuffle/ }).click()
+  await expect(page.locator(".reshuffle")).toContainText(/bản trộn đầu tiên|first shuffle/)
+  expect(await page.locator(".paper").innerText()).toBe(firstShuffle)
+
+  await page.locator(".codes-opt .btn", { hasText: "102" }).click()
   if (OUT) await page.screenshot({ path: join(OUT, "page-light.png"), fullPage: true })
 
   const save = async (name: RegExp, file: RegExp, as: string) => {
@@ -175,14 +211,14 @@ test("an admin draws an exam from a matrix, picks one by hand and downloads Word
     expect(download.suggestedFilename()).toMatch(file)
     await keep(as, download)
   }
-  await save(/Tải file \.docx mã đề 102|Download \.docx for code 102/, /-102\.docx$/, "de-102.docx")
-  await save(/Tải đề kèm lời giải|with solutions/, /-102-.*\.docx$/, "de-102-loi-giai.docx")
+  await save(/^(Đề mã 102|Paper, code 102)$/, /-102\.docx$/, "de-102.docx")
+  await save(/^(Đề kèm lời giải|Paper with solutions)$/, /-102-.*\.docx$/, "de-102-loi-giai.docx")
   await save(/\.zip/, /\.zip$/, "bo-de.zip")
-  await save(/Excel/, /\.xlsx$/, "dap-an.xlsx")
+  await save(/\(\.xlsx\)/, /\.xlsx$/, "dap-an.xlsx")
 
   // the PDF page: opens in a new tab, one paper per code, answers on request
   await page.context().addInitScript(() => { window.print = () => {} }) // the page opens the print dialog by itself
-  const [tab2] = await Promise.all([page.context().waitForEvent("page"), page.getByRole("link", { name: /Tải PDF tất cả|PDF of all/ }).click()])
+  const [tab2] = await Promise.all([page.context().waitForEvent("page"), page.getByRole("link", { name: /^(Tất cả \d+ mã đề|All \d+ codes)$/ }).click()])
   await tab2.waitForLoadState()
   await expect(tab2.locator(".paper")).toHaveCount(4)
   await expect(tab2.locator(".paper").first().locator("table.student")).toBeVisible()
@@ -233,6 +269,15 @@ test("an exam set is saved, listed, edited and deleted", async ({ page }) => {
     for (const i of [0, 1, 2]) await page.locator(".q-row input[type=checkbox]").nth(i).check()
     await expect(page.locator(".base-q")).toHaveCount(3)
     await page.locator(".hint-input").first().fill("Chú thích riêng của e2e")
+    // a part kept as it is and no answer sheet are part of the set: they must come back too
+    const sheetSwitch = page.getByLabel(/In phiếu trả lời trắc nghiệm|Print the multiple-choice answer sheet/)
+    await page.locator(".picks .pick input").first().uncheck()
+    await sheetSwitch.uncheck()
+    // …and so is a second shuffle of a code: the same paper comes back from the database
+    await page.getByRole("button", { name: /^(Trộn lại mã \d+|Shuffle code \d+ again)$/ }).click()
+    await expect(page.locator(".reshuffle")).toContainText(/đã trộn lại 1 lần|shuffled again 1 times/)
+    await expect(page.locator(".paper")).toContainText(/Lớp \d/) // the grade name loads after the page does
+    const reshuffled = await page.locator(".paper").innerText()
     await page.getByRole("button", { name: /Lưu bộ đề|Save exam set/ }).click()
     await expect(page).toHaveURL(/\/teacher\/exams\/[0-9a-f-]{36}$/)
     await expect(page.locator(".savebar")).toContainText(/Đã lưu|Saved/)
@@ -243,6 +288,12 @@ test("an exam set is saved, listed, edited and deleted", async ({ page }) => {
     await expect(page.locator(".base-q")).toHaveCount(3)
     await expect(page.locator(".hint-input").first()).toHaveValue("Chú thích riêng của e2e")
     await expect(page.locator(".paper .part-hint").first()).toHaveText("Chú thích riêng của e2e")
+    await expect(page.locator(".picks .pick input").first()).not.toBeChecked()
+    await expect(page.getByLabel(/In phiếu trả lời trắc nghiệm|Print the multiple-choice answer sheet/)).not.toBeChecked()
+    await expect(page.locator(".paper table.sheet")).toHaveCount(0)
+    await expect(page.locator(".reshuffle")).toContainText(/đã trộn lại 1 lần|shuffled again 1 times/)
+    await expect(page.locator(".paper")).toContainText(/Lớp \d/)
+    expect(await page.locator(".paper").innerText()).toBe(reshuffled)
 
     // an edit marks the set as changed until it is saved
     await page.getByPlaceholder(/Đề kiểm tra giữa kỳ 1|Mid-term test 1/).fill(`${title} (sửa)`)
@@ -251,7 +302,7 @@ test("an exam set is saved, listed, edited and deleted", async ({ page }) => {
     await expect(page.locator(".savebar")).toContainText(/Đã lưu|Saved/)
 
     // the PDF page prints the saved set
-    const [print] = await Promise.all([page.context().waitForEvent("page"), page.getByRole("link", { name: /Tải PDF tất cả|PDF of all/ }).click()])
+    const [print] = await Promise.all([page.context().waitForEvent("page"), page.getByRole("link", { name: /^(Tất cả \d+ mã đề|All \d+ codes)$/ }).click()])
     await print.addInitScript(() => { window.print = () => {} })
     await expect(print.locator(".paper")).toHaveCount(4)
     await print.close()
@@ -349,7 +400,7 @@ test("an exam set is shared with another teacher: view only, then edit, copy and
     await expect(titleBox(teacher)).toBeDisabled()
     await expect(teacher.getByRole("button", { name: /Lưu thay đổi|Save changes/ })).toHaveCount(0)
     await expect(teacher.getByRole("button", { name: /^(\s*Chia sẻ|\s*Share)$/ })).toHaveCount(0)
-    await expect(teacher.getByRole("link", { name: /Tải PDF tất cả|PDF of all/ })).toBeVisible() // can still print and export
+    await expect(teacher.getByRole("link", { name: /^(Tất cả \d+ mã đề|All \d+ codes)$/ })).toBeVisible() // can still print and export
     await expect(teacher.getByRole("button", { name: /Tạo bản sao để sửa|Make a copy to edit/ })).toBeVisible()
 
     // admin lets them edit; the teacher then changes the title and the admin sees it

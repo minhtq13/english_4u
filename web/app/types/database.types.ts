@@ -334,16 +334,16 @@ export type Database = {
       exam_sets: {
         Row: {
           codes: string; course_id: string | null; created_at: string; department: string; id: string; minutes: number; mode: string
-          owner_id: string; part_hints: Json; /** Generated: the number of questions in `questions`. */ question_count: number; questions: Json
-          school: string; school_year: string; sheet_at: string; term: string; title: string; updated_at: string
+          fixed_parts: string[]; owner_id: string; part_hints: Json; /** Generated: the number of questions in `questions`. */ question_count: number; questions: Json
+          school: string; school_year: string; sheet_at: string; shuffle_rounds: Json; term: string; title: string; updated_at: string
         }
         Insert: {
-          codes?: string; course_id?: string | null; created_at?: string; department?: string; id?: string; minutes?: number; mode?: string
-          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; term?: string; title: string; updated_at?: string
+          codes?: string; course_id?: string | null; created_at?: string; department?: string; fixed_parts?: string[]; id?: string; minutes?: number; mode?: string
+          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; shuffle_rounds?: Json; term?: string; title: string; updated_at?: string
         }
         Update: {
-          codes?: string; course_id?: string | null; created_at?: string; department?: string; id?: string; minutes?: number; mode?: string
-          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; term?: string; title?: string; updated_at?: string
+          codes?: string; course_id?: string | null; created_at?: string; department?: string; fixed_parts?: string[]; id?: string; minutes?: number; mode?: string
+          owner_id?: string; part_hints?: Json; questions?: Json; school?: string; school_year?: string; sheet_at?: string; shuffle_rounds?: Json; term?: string; title?: string; updated_at?: string
         }
         Relationships: [
           { foreignKeyName: "exam_sets_owner_id_fkey"; columns: ["owner_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },

@@ -1432,11 +1432,11 @@
       },
       "order": {
         "title": "Sắp xếp câu",
-        "hint": "Sắp xếp các từ, cụm từ thành câu hoàn chỉnh."
+        "hint": "Sắp xếp các từ, cụm từ thành câu hoàn chỉnh và viết vào dòng kẻ bên dưới."
       },
       "typed": {
         "title": "Tự luận",
-        "hint": "Viết câu trả lời vào dòng kẻ dưới mỗi câu."
+        "hint": "Điền vào chỗ trống hoặc viết câu trả lời vào dòng kẻ."
       }
     },
     "mode": {
@@ -1548,11 +1548,9 @@
     "fillCodes": "Tạo dãy mã",
     "codes": "Các mã đề (cách nhau bằng dấu phẩy, sửa tuỳ ý)",
     "modeTitle": "Cách trộn đề",
-    "seedNote": "Mỗi mã đề dùng chính mã đó làm hạt giống trộn: cùng đề gốc, cùng mã và cùng cách trộn luôn cho ra đúng một đề, tải lại bao nhiêu lần cũng vậy.",
-    "sheetAt": "Phiếu trả lời trắc nghiệm",
+    "seedNote": "Mỗi mã đề dùng chính mã đó làm hạt giống trộn: cùng đề gốc, cùng mã và cùng cách trộn luôn cho ra đúng một đề, tải lại bao nhiêu lần cũng vậy. Chưa ưng cách đề được trộn thì bấm \"Trộn lại\" ở bước 5 để có đề khác cho mã đó.",
     "sheetTop": "Ở đầu đề",
     "sheetBottom": "Ở cuối đề",
-    "sheetNone": "Không in",
     "exportTitle": "Xem trước và tải file",
     "needTitle": "Chưa nhập tiêu đề đề thi.",
     "needQuestions": "Đề gốc chưa có câu hỏi nào.",
@@ -1560,17 +1558,10 @@
     "codeLabel": "Mã đề:",
     "showKey": "Hiện đáp án và lời giải",
     "making": "Đang tạo file…",
-    "saveOne": "Tải file .docx mã đề {code}",
-    "saveWithKey": "Tải đề kèm lời giải chi tiết",
-    "saveAll": "Tải tất cả {n} mã đề (.zip)",
-    "saveXlsx": "Tải bảng đáp án Excel (.xlsx)",
     "exportFailed": "Chưa tạo được file: {msg}",
     "reset": "Làm đề mới",
     "draftNote": "Đề chưa lưu được giữ tạm trên trình duyệt này. Bấm “Lưu bộ đề” để đưa vào danh sách bộ đề.",
     "preview": "Xem",
-    "savePdf": "Tải PDF mã đề {code}",
-    "savePdfKey": "Tải PDF kèm lời giải",
-    "savePdfAll": "Tải PDF tất cả {n} mã đề",
     "pdfNote": "File PDF mở trong tab mới và dùng hộp thoại in của trình duyệt: chọn “Lưu dưới dạng PDF” để lưu.",
     "pageTitleEdit": "Sửa bộ đề thi",
     "saved": "Đã lưu thay đổi",
@@ -1603,7 +1594,47 @@
     "viewBanner": "Bộ đề của {name}, chia sẻ cho bạn để xem. Bạn mở, in và tải file được; muốn sửa hãy tạo bản sao.",
     "editBanner": "Bộ đề của {name}, chia sẻ cho bạn và bạn được sửa. Thay đổi bạn lưu sẽ áp dụng cho chủ bộ đề và những người khác.",
     "makeCopy": "Tạo bản sao để sửa",
-    "ownerUnknown": "một giáo viên"
+    "ownerUnknown": "một giáo viên",
+    "fold": "Thu gọn",
+    "unfold": "Mở rộng",
+    "foldAll": "Thu gọn tất cả",
+    "unfoldAll": "Mở rộng tất cả",
+    "sum": {
+      "info": "{title} · {minutes} phút",
+      "pick": "{n} câu đã chọn",
+      "base": "{n} câu · {parts} phần",
+      "part": "{n} câu",
+      "codes": "{codes} · {mode}",
+      "export": "{n} mã đề"
+    },
+    "shuffleParts": "Phần được trộn",
+    "shuffleAllParts": "Trộn tất cả",
+    "shuffleNoParts": "Không trộn phần nào",
+    "shufflePartsHint": "Bỏ chọn phần nào bạn muốn giữ nguyên: phần đó in giống hệt nhau trên mọi mã đề (cả thứ tự câu lẫn thứ tự đáp án). Cách trộn bên dưới chỉ áp dụng cho các phần còn được chọn.",
+    "shuffleNoQuestions": "Chọn câu hỏi ở bước 2 rồi mới chọn được phần cần trộn.",
+    "partShuffled": "trộn",
+    "partFixed": "giữ nguyên",
+    "noneShuffled": "Không có phần nào được trộn nên các mã đề giống hệt nhau, chỉ khác số mã.",
+    "sheetOn": "In phiếu trả lời trắc nghiệm",
+    "sheetPlace": "Vị trí phiếu trả lời",
+    "sheetTip": "Tắt khi học sinh khoanh trực tiếp vào đề: bản xem trước, file Word và bản in sẽ không có phiếu trả lời. Lựa chọn này được lưu cùng bộ đề.",
+    "dl": {
+      "word": "Word (.docx)",
+      "paper": "Đề mã {code}",
+      "withKey": "Đề kèm lời giải",
+      "pdf": "PDF (in từ trình duyệt)",
+      "pdfAll": "Tất cả {n} mã đề",
+      "whole": "Cả bộ {n} mã đề",
+      "zip": "Word của mọi mã (.zip)",
+      "xlsx": "Bảng đáp án (.xlsx)"
+    },
+    "reshuffle": "Trộn lại mã {code}",
+    "reshufflePrev": "Quay lại lần trước",
+    "reshuffleAll": "Trộn lại cả {n} mã",
+    "reshuffleFirst": "Mã {code} đang ở bản trộn đầu tiên.",
+    "reshuffleCount": "Mã {code}: đã trộn lại {n} lần.",
+    "reshuffleNone": "Không có phần nào được trộn nên chưa có gì để trộn lại (xem bước 4).",
+    "reshuffleTip": "Bấm khi bạn chưa ưng cách đề được trộn: mã đó ra một đề khác. Đề vẫn cố định: tải lại, in lại hay mở lại bộ đề đều ra đúng đề đã chọn, và bảng đáp án khớp theo. \"Quay lại lần trước\" trả về bản trộn trước đó. Các phần để nguyên không bị trộn."
   },
   "qPreview": {
     "title": "Xem trước câu hỏi",
@@ -1793,6 +1824,7 @@
     "classAverage": "Trung bình lớp",
     "bandLegend": "Xanh: từ 8. Vàng: từ 5. Đỏ: dưới 5. Trung bình chỉ tính các ô đã có điểm.",
     "pointsTerm": "điểm kỳ này",
-    "noColumnsHint": "Thêm một cột (ví dụ một buổi kiểm tra), rồi nhập điểm cho từng học sinh."
+    "noColumnsHint": "Thêm một cột (ví dụ một buổi kiểm tra), rồi nhập điểm cho từng học sinh.",
+    "openHint": "Điểm danh, điểm cộng phát biểu, kiểm tra bài cũ và bài tập"
   }
 }

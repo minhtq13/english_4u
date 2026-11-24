@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { BankRow, Selection } from "~/composables/useQuestionBank"
 import type { Database } from "~/types/database.types"
-import type { ExamQuestion, MatrixSpec, PartHints, PartKey, ShuffleMode } from "~/utils/examGenerator"
+import type { ExamQuestion, MatrixSpec, PartHints, PartKey, ShuffleMode, ShuffleRounds } from "~/utils/examGenerator"
 import {
   SHUFFLE_MODES, addQuestion, buildParts, buildVariant, buildVariants, codeSeries, drawExam, emptyMatrix, moveBlock, moveBlockTo, movePart, movePartTo,
   parseCodes, poolCounts, rngOf, roman,
@@ -34,6 +34,10 @@ const questions = shallowRef<ExamQuestion[]>([])
 const codesText = ref("101, 102, 103, 104")
 const mode = ref<ShuffleMode>("all")
 const sheetAt = ref<SheetAt>("top")
+/** Parts that print the same on every code (not shuffled). */
+const fixedParts = ref<PartKey[]>([])
+/** How many times each exam code was shuffled again (the teacher was not happy with the first result). */
+const shuffleRounds = ref<ShuffleRounds>({})
 /** What the author wrote under part titles, by part (empty or missing: the default prints). */
 const partHints = reactive<PartHints>({})
 /** The working copy is written only once the form holds what was loaded (or restored), never the empty form before it. */
@@ -61,20 +65,23 @@ const lessons = shallowRef<{ id: string; label: string; title: string }[]>([])
 const lessonName = computed(() => new Map(lessons.value.map(l => [l.id, l.label])))
 
 const current = computed<ExamDraft>(() => ({
-  examId: savedId.value, info: { ...info }, questions: questions.value, codesText: codesText.value, mode: mode.value, sheetAt: sheetAt.value, partHints: cleanHints(partHints),
+  examId: savedId.value, info: { ...info }, questions: questions.value, codesText: codesText.value, mode: mode.value, fixedParts: fixedParts.value, shuffleRounds: shuffleRounds.value, sheetAt: sheetAt.value, partHints: cleanHints(partHints),
 }))
-const dirty = computed(() => snapshotOf(current.value) !== savedSnapshot.value)
+/** Someone who may only view the set can change the printing options for their own downloads, but has nothing to save. */
+const dirty = computed(() => !readOnly.value && snapshotOf(current.value) !== savedSnapshot.value)
 
 function apply(d: ExamDraft) {
   Object.assign(info, d.info)
   questions.value = d.questions
   codesText.value = d.codesText
   mode.value = d.mode
+  fixedParts.value = d.fixedParts
+  shuffleRounds.value = d.shuffleRounds
   sheetAt.value = d.sheetAt
   for (const k of Object.keys(partHints)) delete partHints[k as PartKey]
   Object.assign(partHints, d.partHints)
 }
-const blank = (): ExamDraft => ({ examId: null, info: emptyInfo(), questions: [], codesText: "101, 102, 103, 104", mode: "all", sheetAt: "top", partHints: {} })
+const blank = (): ExamDraft => ({ examId: null, info: emptyInfo(), questions: [], codesText: "101, 102, 103, 104", mode: "all", fixedParts: [], shuffleRounds: {}, sheetAt: "top", partHints: {} })
 
 /** Opens what the address says: a saved set from the database, or a new exam (with the unsaved working copy, if any). */
 async function start(id: string | null) {
@@ -128,7 +135,7 @@ async function start(id: string | null) {
 onMounted(() => start(examId.value))
 watch(examId, id => start(id))
 
-watch([info, questions, codesText, mode, sheetAt, savedId, partHints], () => {
+watch([info, questions, codesText, mode, fixedParts, shuffleRounds, sheetAt, savedId, partHints], () => {
   if (restored.value) saveDraft(current.value)
 }, { deep: true })
 
@@ -177,6 +184,11 @@ function warnUnload(e: BeforeUnloadEvent) {
 }
 onMounted(() => window.addEventListener("beforeunload", warnUnload))
 onBeforeUnmount(() => window.removeEventListener("beforeunload", warnUnload))
+
+const { isFolded, toggle: toggleFold, setAll: setFolds } = useFolds()
+const FOLD_IDS = ["exam:info", "exam:pick", "exam:base", "exam:codes", "exam:export"]
+const partFoldId = (key: PartKey) => `exam:part:${key}`
+const questionCount = (blocks: { questions: unknown[] }[]) => blocks.reduce((n, b) => n + b.questions.length, 0)
 
 const confirm = useTwoClick()
 function reset() {
@@ -299,7 +311,10 @@ function draw() {
 const parts = computed(() => buildParts(questions.value))
 const base = computed(() => buildVariant(parts.value, "", "base"))
 const codes = computed(() => parseCodes(codesText.value))
-const variants = computed(() => buildVariants(parts.value, codes.value, mode.value))
+const variants = computed(() => buildVariants(parts.value, codes.value, mode.value, fixedParts.value, shuffleRounds.value))
+const partKeys = computed(() => base.value.parts.map(p => p.key))
+/** Shuffling again changes something only while a part is shuffled and the mode moves questions or choices. */
+const canReshuffle = computed(() => partKeys.value.some(k => !fixedParts.value.includes(k)))
 
 const docInfo = computed(() => docInfoOf(info, localName(courses.value.find(c => c.id === info.courseId)?.name), t("examPage.untitled"), partHints))
 const problems = computed(() => [
@@ -333,6 +348,11 @@ const oneLine = (q: ExamQuestion) =>
       {{ $t(readOnly ? "examPage.viewBanner" : "examPage.editBanner", { name: ownerName || $t("examPage.ownerUnknown") }) }}
     </p>
 
+    <div v-if="!missing && !loading" class="row fold-all">
+      <button class="btn small ghost" @click="setFolds(FOLD_IDS, true)"><Icon name="chevronUp" /> {{ $t("examPage.foldAll") }}</button>
+      <button class="btn small ghost" @click="setFolds(FOLD_IDS, false)"><Icon name="chevronDown" /> {{ $t("examPage.unfoldAll") }}</button>
+    </div>
+
     <EmptyState v-if="missing" icon="file" :title="$t('examPage.missing')" :text="$t('examPage.missingText')">
       <NuxtLink class="btn primary" to="/teacher/exams">{{ $t("examList.back") }}</NuxtLink>
     </EmptyState>
@@ -341,8 +361,7 @@ const oneLine = (q: ExamQuestion) =>
     <fieldset class="plain" :disabled="readOnly">
     <ExamStepInfo :info="info" :courses="courses" />
 
-    <section class="card">
-      <h2>2. {{ $t("examPage.pickTitle") }}</h2>
+    <ExamCollapse id="exam:pick" :title="`2. ${$t('examPage.pickTitle')}`" :summary="$t('examPage.sum.pick', { n: questions.length })">
       <div class="row tabs" role="tablist">
         <button class="btn small" role="tab" :aria-selected="tab === 'manual'" :class="{ primary: tab === 'manual' }" @click="tab = 'manual'">{{ $t("examPage.manual") }}</button>
         <button class="btn small" role="tab" :aria-selected="tab === 'auto'" :class="{ primary: tab === 'auto' }" @click="tab = 'auto'">{{ $t("examPage.auto") }}</button>
@@ -418,25 +437,27 @@ const oneLine = (q: ExamQuestion) =>
         </div>
         <p v-if="shortText" class="fb no">{{ shortText }}</p>
       </div>
-    </section>
+    </ExamCollapse>
 
-    <section class="card">
-      <div class="row between">
-        <h2>3. {{ $t("examPage.baseTitle", { n: questions.length }) }}</h2>
+    <ExamCollapse id="exam:base" :title="`3. ${$t('examPage.baseTitle', { n: questions.length })}`" :summary="$t('examPage.sum.base', { n: questions.length, parts: base.parts.length })">
+      <template #actions>
         <button v-if="questions.length" class="btn small ghost" @click="questions = []">{{ $t("examPage.clear") }}</button>
-      </div>
+      </template>
       <p v-if="!questions.length" class="muted small">{{ $t("examPage.baseEmpty") }}</p>
       <p v-if="base.parts.length > 1 || base.parts.some(p => p.blocks.length > 1)" class="small muted">{{ $t("examPage.dragHint") }}</p>
       <div v-sortable="{ handle: '.part-handle', item: '.base-part', onMove: dragPart, disabled: readOnly }" class="parts">
         <div v-for="(p, pi) in base.parts" :key="p.key" class="base-part">
           <div class="part-head">
+            <ExamFoldToggle :folded="isFolded(partFoldId(p.key))" :label="$t(isFolded(partFoldId(p.key)) ? 'examPage.unfold' : 'examPage.fold')" @toggle="toggleFold(partFoldId(p.key))" />
             <span v-if="base.parts.length > 1" class="grip part-handle" :title="$t('examPage.dragPart')"><Icon name="grip" /></span>
             <h3>{{ $t("examDoc.part", { n: roman(pi + 1) }) }} {{ $t(`exam.part.${p.key}.title`) }}</h3>
+            <span v-if="isFolded(partFoldId(p.key))" class="small muted">{{ $t("examPage.sum.part", { n: questionCount(p.blocks) }) }}</span>
             <span v-if="base.parts.length > 1" class="acts">
               <button class="btn small ghost icon" :disabled="pi === 0" :title="$t('examPage.partUp')" :aria-label="$t('examPage.partUp')" @click="movePartBy(p.key, -1)"><Icon name="chevronUp" /></button>
               <button class="btn small ghost icon" :disabled="pi === base.parts.length - 1" :title="$t('examPage.partDown')" :aria-label="$t('examPage.partDown')" @click="movePartBy(p.key, 1)"><Icon name="chevronDown" /></button>
             </span>
           </div>
+          <div v-show="!isFolded(partFoldId(p.key))">
           <div class="hint-edit">
             <input
               v-model="partHints[p.key]" type="text" class="hint-input" :maxlength="MAX_HINT_LENGTH" :aria-label="$t('examPage.partHint')"
@@ -466,15 +487,16 @@ const oneLine = (q: ExamQuestion) =>
               </span>
             </div>
           </div>
+          </div>
         </div>
       </div>
-    </section>
+    </ExamCollapse>
 
-    <ExamStepCodes v-model:codes-text="codesText" v-model:mode="mode" v-model:sheet-at="sheetAt" />
+    <ExamStepCodes v-model:codes-text="codesText" v-model:mode="mode" v-model:fixed-parts="fixedParts" :parts="partKeys" />
 
     </fieldset>
 
-    <ExamStepExport :problems="problems" :variants="variants" :doc-info="docInfo" :sheet-at="sheetAt" :saved-id="savedId" />
+    <ExamStepExport v-model:sheet-at="sheetAt" v-model:shuffle-rounds="shuffleRounds" :can-reshuffle="canReshuffle" :problems="problems" :variants="variants" :doc-info="docInfo" :saved-id="savedId" />
 
     <QuestionPreviewDialog
       v-if="previewed" :question="previewed" :in-exam="inExam.has(previewed.id)" :source="sourceOf(previewed)"
@@ -526,7 +548,7 @@ const oneLine = (q: ExamQuestion) =>
 .m-row input { width: 76px; flex: none; }
 .passages { flex-wrap: nowrap; gap: 6px; }
 .draw { margin-top: 14px; }
-.between { justify-content: space-between; }
+.fold-all { justify-content: flex-end; margin-bottom: var(--space-sm); }
 .base-part { margin-top: var(--space-md); padding: 4px 0; }
 .part-head { display: flex; align-items: center; gap: var(--space-sm); }
 .part-head h3 { margin: 0; flex: 1; }

@@ -381,19 +381,25 @@ function layQuestion(q: ExamQuestion, part: PartKey, seed: string, mixOptions: b
   return { part, q, objective: false, options: [], key: q.answers[0] ?? "", keyText: q.answers.join(" / ") }
 }
 
-/** One paper: `mixQuestions` moves blocks inside their part, `mixOptions` moves choices. `seed` is "" for the base exam. */
-function layOut(parts: readonly ExamPart[], seed: string, mixQuestions: boolean, mixOptions: boolean) {
-  // Without choice shuffling every code prints the choices of the base exam, so those draws ignore the code.
-  const optionSeed = mixOptions ? seed : ""
+/**
+ * One paper: `mixQuestions` moves blocks inside their part, `mixOptions` moves choices. `seed` is "" for the base exam.
+ * A part in `fixed` is laid out as on the base exam whatever the code: its questions and choices do not move.
+ */
+function layOut(parts: readonly ExamPart[], seed: string, mixQuestions: boolean, mixOptions: boolean, fixed: readonly PartKey[] = []) {
   return parts.map((p) => {
-    const blocks = mixQuestions ? shuffledBy(p.blocks, rngOf(`${seed}:part:${p.key}`)) : p.blocks
+    const still = fixed.includes(p.key)
+    const mixQ = mixQuestions && !still
+    const mixO = mixOptions && !still
+    // Without choice shuffling every code prints the choices of the base exam, so those draws ignore the code.
+    const optionSeed = mixO ? seed : ""
+    const blocks = mixQ ? shuffledBy(p.blocks, rngOf(`${seed}:part:${p.key}`)) : p.blocks
     return {
       key: p.key,
       blocks: blocks.map((b) => {
         const isMatch = p.key === "match"
         // The pairs of a matching block are its questions; a passage's questions follow the text and stay in order.
-        const qs = isMatch && mixQuestions ? shuffledBy(b.questions, rngOf(`${seed}:match:left`)) : b.questions
-        const laid = qs.map(q => layQuestion(q, p.key, optionSeed, mixOptions))
+        const qs = isMatch && mixQ ? shuffledBy(b.questions, rngOf(`${seed}:match:left`)) : b.questions
+        const laid = qs.map(q => layQuestion(q, p.key, optionSeed, mixO))
         // The right column is always mixed: printed in the order of the left column it would give the key away.
         const choices = isMatch ? shuffledBy([...new Set(b.questions.map(q => q.back))].sort(), rngOf(`${optionSeed}:match:right`)) : []
         for (const l of laid) if (isMatch) l.key = letter(choices.indexOf(l.q.back))
@@ -406,14 +412,17 @@ function layOut(parts: readonly ExamPart[], seed: string, mixQuestions: boolean,
 /**
  * The paper of one exam code. The same base exam, code and mode always give the same paper.
  * Parts keep their order in every mode, and a passage keeps its questions in order under it.
+ * Parts listed in `fixed` are not shuffled at all: they print as on the base exam on every code.
+ * `round` is how many times the teacher shuffled this code again: 0 is the first shuffle (the seed is the code itself),
+ * every higher number is another, equally fixed, paper for the same code.
  */
-export function buildVariant(parts: readonly ExamPart[], code: string, mode: ShuffleMode | "base"): ExamVariant {
+export function buildVariant(parts: readonly ExamPart[], code: string, mode: ShuffleMode | "base", fixed: readonly PartKey[] = [], round = 0): ExamVariant {
   const base = new Map<string, { n: number; key: string }>()
   let n = 0
   for (const p of layOut(parts, "", false, false)) for (const b of p.blocks) for (const l of b.laid) base.set(l.q.id, { n: ++n, key: l.key })
 
-  const seed = mode === "base" ? "" : code
-  const laid = layOut(parts, seed, mode === "all" || mode === "questions", mode === "all" || mode === "options")
+  const seed = mode === "base" ? "" : round > 0 ? `${code}#${Math.floor(round)}` : code
+  const laid = layOut(parts, seed, mode === "all" || mode === "questions", mode === "all" || mode === "options", fixed)
   n = 0
   const out: VariantPart[] = laid.map(p => ({
     key: p.key,
@@ -426,8 +435,34 @@ export function buildVariant(parts: readonly ExamPart[], code: string, mode: Shu
   return { code, mode, parts: out, questions: out.flatMap(p => p.blocks.flatMap(b => b.questions)) }
 }
 
-export const buildVariants = (parts: readonly ExamPart[], codes: readonly string[], mode: ShuffleMode) =>
-  codes.map(code => buildVariant(parts, code, mode))
+/** How many times each code was shuffled again; a code that is not here (or 0) keeps its first shuffle. */
+export type ShuffleRounds = Record<string, number>
+export const MAX_ROUND = 999
+
+export const buildVariants = (parts: readonly ExamPart[], codes: readonly string[], mode: ShuffleMode, fixed: readonly PartKey[] = [], rounds: ShuffleRounds = {}) =>
+  codes.map(code => buildVariant(parts, code, mode, fixed, rounds[code] ?? 0))
+
+/**
+ * The counters worth keeping: whole numbers 1..MAX_ROUND, by code. Given the codes in use, entries of codes that are gone
+ * are dropped (so the stored object stays small); at most 24 codes, like the form allows.
+ */
+export function cleanRounds(raw: unknown, codes?: readonly string[]): ShuffleRounds {
+  const out: ShuffleRounds = {}
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out
+  for (const [code, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (codes && !codes.includes(code)) continue
+    const n = typeof v === "number" ? Math.floor(v) : NaN
+    if (code && code.length <= 40 && n >= 1) out[code] = Math.min(MAX_ROUND, n)
+    if (Object.keys(out).length >= 24) break
+  }
+  return out
+}
+
+/** Only known part keys, once each, in the order the parts are defined (what is stored as exam_sets.fixed_parts). */
+export function cleanFixed(raw: unknown): PartKey[] {
+  const list = Array.isArray(raw) ? raw : []
+  return PART_KEYS.filter(k => list.includes(k))
+}
 
 /** The answer matrix: one row per exam code, one cell per question number. */
 export interface AnswerMatrix { codes: string[]; count: number; rows: string[][] }
@@ -438,6 +473,14 @@ export function answerMatrix(variants: readonly ExamVariant[]): AnswerMatrix {
     rows: variants.map(v => v.questions.map(q => q.key)),
   }
 }
+
+/** A blank the student fills in inside a question ("She ___ (study) Science"). */
+export const BLANK_RE = /_{2,}/g
+export const hasBlank = (html: string) => /_{2,}/.test(html)
+/** How a blank prints in the Word file: about 3.5 cm of line, wide enough to write a verb form in. */
+export const WORD_BLANK = "_".repeat(16)
+/** Does this question print a ruled line under it for the answer? A rewriting task does; a fill-in with its own blank does not. */
+export const needsAnswerLine = (q: { type: string; prompt: string }) => q.type === "order" || (q.type === "typed" && !hasBlank(q.prompt))
 
 /** Roman numeral of a part number (I, II, III…), as printed before a part's title. */
 export function roman(n: number) {

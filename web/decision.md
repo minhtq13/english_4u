@@ -5,7 +5,7 @@
 ## Quy trình
 
 - **Chia commit theo vùng tính năng, không theo từng dòng.** i18n, kiểu dữ liệu và layout dùng chung nên không tách hunk được. Mỗi commit vẫn pass typecheck và test (kiểm tra trong worktree riêng); build chỉ chạy ở đầu cuối.
-- **Không tự commit/push.** `main` tự deploy; chỉ làm khi người dùng bảo. Đã push hai đợt với sự đồng ý của họ (đến `030260f`).
+- **Không tự commit/push.** `main` tự deploy; chỉ làm khi người dùng bảo. Đã push ba đợt với sự đồng ý của họ (đến `53ad99d`).
 - **Migration áp thẳng production nhưng phải thử trước bằng khối `DO` hoàn tác** (theo skill `db-migration`). Mỗi migration có lệnh rollback ở đầu file.
 - **`../progress.md` không bị ghi đè**: là nhật ký học B1→B2 của học viên (CLAUDE.md gốc). File bàn giao nằm ở `web/progress.md`.
 
@@ -17,9 +17,21 @@
 - **Lên lớp chạy từ khối cao xuống thấp**, ghép theo tên (6T1 → 7T1) để lớp vừa được chuyển lên không bị chuyển lần nữa. Lớp không theo quy tắc tên bị bỏ qua thay vì đoán.
 
 - **Điểm trên lớp tách khỏi bài làm trên web** (migration 58): điểm danh theo buổi, điểm cộng là từng lần +1, KT bài cũ và bài tập là cột điểm 0-10 do giáo viên tạo. Người dùng chọn các cách này. Điểm chuyên cần do tôi đặt: 10, trừ 1 mỗi buổi vắng không phép, trừ 0,5 mỗi buổi muộn, vắng có phép không trừ, thấp nhất 0 (hằng số đầu `utils/classScores.ts`). Học kỳ: tháng 8-12 là kỳ 1, tháng 1-7 là kỳ 2, chỉ là mặc định, giáo viên đổi được. Hoàn tác điểm cộng bằng cách xoá dòng (không có cột "đã huỷ"). Học sinh chuyển lớp: dòng cũ vẫn còn nhưng không hiện ở lớp mới, vì buổi học và cột điểm thuộc lớp cũ.
-- **Migration 59 (gộp policy đọc) phải chạy tay**: migration 58 để policy `for all` của giáo viên chồng policy đọc của học sinh (advisor `multiple_permissive_policies`). Sửa cần `DROP POLICY`, MCP từ chối, nên file 59 chờ người dùng chạy trong SQL Editor. Quyền không đổi, chỉ hiệu năng.
+- **Migration 59 (gộp policy đọc) chạy tay, đã áp**: migration 58 để policy `for all` của giáo viên chồng policy đọc của học sinh (advisor `multiple_permissive_policies`). Sửa cần `DROP POLICY`, MCP từ chối, nên người dùng chạy file trong SQL Editor; sau đó đã kiểm tra `pg_policies` và chạy lại phép thử quyền. Quyền không đổi, chỉ hiệu năng. Lần sau nên viết thẳng policy tách đọc/ghi từ migration đầu để khỏi cần bước tay.
+
+- **Phần nào được trộn lưu theo phần KHÔNG trộn** (`exam_sets.fixed_parts`, migration 60, mặc định rỗng): bộ đề đã lưu trước đó vẫn trộn mọi phần như cũ, không cần chuyển dữ liệu. Một phần giữ nguyên in giống hệt đề gốc ở mọi mã (cả thứ tự câu và thứ tự đáp án), bất kể cách trộn; cách trộn chỉ áp dụng cho các phần còn lại. Người dùng chọn cách làm này (chọn phần trước, rồi chọn cách trộn như cũ).
+- **Trộn lại là một bộ đếm theo từng mã, không phải hạt giống ngẫu nhiên** (`exam_sets.shuffle_rounds`, migration 61, `{mã: số lần}`): hạt giống = mã (lần 0, đúng như trước) hoặc `mã#n`. Lý do: đề phải cố định để in lại, tải lại, mở lại bộ đề và bảng đáp án luôn khớp; một số ngẫu nhiên mỗi lần bấm sẽ làm mất bản đã chọn. Có \"Quay lại lần trước\" (lùi một lần, lần trước tái hiện y hệt vì có tính xác định). Chỉ lưu bộ đếm của các mã đang dùng, tối đa 24, tối đa 999 lần. Chỉ có tác dụng với các phần còn đang được trộn.
+- **Dòng kẻ trên bản in theo loại câu**: câu sắp xếp luôn có một dòng kẻ; câu tự luận điền vào chỗ trống (`___`) có ô điền dài hơn và không thêm dòng kẻ (ô điền đã là chỗ viết); câu tự luận không có chỗ trống vẫn có dòng kẻ. Trước đây Word thêm dòng kẻ cho mọi câu tự luận; nay chỉ cho câu không có chỗ trống. Dòng kẻ trong Word là viền dưới của một đoạn trống (đúng một dòng bất kể phông chữ), thay cho 60 dấu \"…\" vốn dài hơn một dòng.
+- **Phiếu trả lời là công tắc bật/tắt, không thêm cột**: tắt = `sheet_at = 'none'`, bật = `top` hoặc `bottom` như trước, nên lưu cùng bộ đề và bản in PDF dùng đúng giá trị đó. Lý do: tuỳ chọn \"Không in\" đã có sẵn nhưng nằm lẫn trong ô chọn ở bước 4 nên người dùng không thấy; công tắc đặt cạnh phần xem trước ở bước 5. Người chỉ được xem bộ đề vẫn đổi được cho bản tải của chính họ (không lưu, không hiện cảnh báo rời trang).
+- **Gấp khối bằng `div role=button`, không dùng `<button>`**: trang tạo đề bọc các khối trong `<fieldset disabled>` cho người chỉ được xem, và nút thật trong đó bị vô hiệu. Trạng thái gấp nhớ trong `localStorage` (tiện nghi cá nhân), dùng chung cho mọi bộ đề.
+- **Lối vào điểm trên lớp đặt ở đầu trang lớp** (nút nổi bật cạnh tên lớp), gỡ khỏi hàng nút nhỏ trong khung Bài học. Sidebar chưa thêm vì điểm thuộc về từng lớp, cần trang chọn lớp.
+- **Test ghi dữ liệu dùng lớp tạm riêng cho từng spec** (`ZZE2E` cho `write-student`, `ZZE2S` cho `class-scores`) và chung hàm dọn `removeTestClass()` trong `e2e/helpers.ts`, vốn chỉ xoá đúng tài khoản và lớp mang tên tạm đó.
 
 ## Giao diện
+
+- **Màn hình mới dùng lại thành phần chung của project, không tự viết style.** Bản đầu của điểm trên lớp tự đặt tên class (`.choices`, `.savebar` riêng, `.tile`) nên mất kiểu `.opts button` có sẵn và lệch khỏi phần còn lại. Bản làm lại dùng `.opts`, `.scorebar savebar`, `.list-row`, `.badge`, `.stats/.stat`, `EmptyState`, `StatBar`, bảng kiểu sổ điểm; mọi ô nhập khai báo `type` thật (style ô nhập chung không phủ input không có `type`) và `input[type=date]` được thêm vào rule chung ở `main.css`. Lý do: người dùng chê bản đầu "xấu, không đồng nhất". Khi làm màn mới, đọc `main.css` và một trang tương tự trước.
+- **Điểm 0-10 hiện bằng viên thuốc có màu** (`ClassScoresMark`, `scoreBand()`: từ 8 xanh, từ 5 vàng, dưới 5 đỏ), như các ô của bảng điểm bài làm; luôn in số nên màu không phải tín hiệu duy nhất.
+- **Dấu gạch dài (— và –) đổi hết sang "-"** theo yêu cầu người dùng, trừ nơi chúng làm việc thật hoặc là lịch sử (xem `progress.md`, mục 3, số 0f). Lưu ý: ở trang phân tích câu hỏi, câu bỏ trống giờ cũng hiện "-", trùng với đáp án "-" do học sinh gõ.
 
 - **Màu và logo tự chọn** khi người dùng không đưa ràng buộc: tím `#6d3fc9` và cam `#b4500a` cho phần thưởng; logo là cuốn sách và chữ "English 4U" (`BrandLogo.vue`).
 - **Page transition bằng CSS** (`#main > *` fade) thay vì transition của `<NuxtPage>`, vì transition đó cần trang chỉ có một phần tử gốc và nhiều trang ở đây có nhiều phần tử.
