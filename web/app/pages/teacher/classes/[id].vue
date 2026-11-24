@@ -145,6 +145,10 @@ async function copyCode() {
         <div>
           <h1>{{ $t("nav.classBadge", { name: cls.name }) }}</h1>
           <p class="sub">{{ localName(cls.courses?.name) }} · {{ $t("common.students", students.length) }} · {{ $t("classPage.given", { n: unlocked.size, total: lessonIds.length }) }}</p>
+          <p class="quick row">
+            <NuxtLink :to="`/teacher/scores/${cls.id}`" class="btn primary small"><Icon name="clipboard" /> {{ $t("classScores.open") }}</NuxtLink>
+            <span class="small muted">{{ $t("classScores.openHint") }}</span>
+          </p>
         </div>
         <div class="code-box">
           <span class="small muted">{{ $t("classPage.code") }}</span>
@@ -160,7 +164,6 @@ async function copyCode() {
           <span class="row">
             <NuxtLink :to="`/teacher/lessons/new?class=${cls.id}`" class="btn primary small">{{ $t("classPage.newLesson") }}</NuxtLink>
             <NuxtLink :to="`/teacher/gradebook/${cls.id}`" class="btn small">{{ $t("gradebook.open") }}</NuxtLink>
-            <NuxtLink :to="`/teacher/scores/${cls.id}`" class="btn small">{{ $t("classScores.open") }}</NuxtLink>
             <NuxtLink :to="`/teacher/analysis/${cls.id}`" class="btn small">{{ $t("analysis.open") }}</NuxtLink>
             <NuxtLink :to="`/teacher/review/${cls.id}`" class="btn small">{{ $t("classPage.review") }}</NuxtLink>
             <NuxtLink :to="`/teacher/grading?class=${cls.id}`" class="btn ghost small">{{ $t("classPage.grade") }} →</NuxtLink>
@@ -255,6 +258,7 @@ async function copyCode() {
 
 <style scoped>
 .head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-lg); flex-wrap: wrap; margin-bottom: var(--space-md); }
+.quick { align-items: center; gap: var(--space-sm); margin: 0; }
 .code-box { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 8px 12px; }
 .code { font-size: 1.3rem; letter-spacing: .15em; font-variant-numeric: tabular-nums; }
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }

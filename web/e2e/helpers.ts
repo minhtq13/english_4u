@@ -42,3 +42,37 @@ export async function signOut(page: Page) {
   await page.getByRole("button", { name: /Đăng xuất|Sign out/ }).click()
   await expect(page.locator("#login-user")).toBeVisible()
 }
+
+/**
+ * Deletes what a write test made on throw-away data: the test accounts of a class first (their work goes with them), then
+ * the class. Only rows that belong to the test are touched: the account list is searched for the class name in lower
+ * case (the generated usernames start with it), every row shown must be a test account of that class, and each delete
+ * button is clicked inside its own row. Anything else on screen stops the clean-up instead of deleting it.
+ */
+export async function removeTestClass(admin: Page, className: string) {
+  const mark = className.toLowerCase()
+  await admin.goto("/teacher/students")
+  await admin.locator("input[type=search]").fill(mark)
+  await admin.waitForTimeout(1500)
+  const rows = admin.locator("table.stack-table.accounts tbody tr")
+  const mine = rows.filter({ hasText: new RegExp(mark, "i") })
+  const total = await rows.count()
+  if (total !== (await mine.count())) throw new Error(`clean-up stopped: ${total} accounts shown but ${await mine.count()} are test accounts`)
+  for (let n = total; n > 0; n--) {
+    const row = mine.first()
+    await expect(row).toContainText(className)
+    await row.getByRole("button", { name: /^(Xoá|Delete)$/ }).click()
+    await row.getByRole("button", { name: /Bấm lần nữa|Click again|Bấm lần nữa: xoá/ }).click()
+    await admin.waitForTimeout(2000)
+  }
+  await admin.goto("/admin/classes")
+  await admin.locator(".class-row").first().waitFor() // the list loads after the page does
+  const named = () => admin.locator(".class-row").filter({ has: admin.locator("a b", { hasText: new RegExp(`^${className}$`) }) })
+  const row = named()
+  if (await row.count()) {
+    await expect(row).toHaveCount(1)
+    await row.getByRole("button", { name: /^(Xoá lớp|Delete class)$/ }).click()
+    await row.getByRole("button", { name: /Bấm lần nữa|Click again/ }).click()
+    await expect(named()).toHaveCount(0)
+  }
+}

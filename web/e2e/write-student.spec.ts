@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test"
-import { signIn } from "./helpers"
+import { removeTestClass, signIn } from "./helpers"
 
 // A whole student journey on throw-away data: an admin makes class ZZE2E and one student, gives two lessons (one timed),
 // the student works, submits, sees the result, practises and is told in real time; then everything is deleted again
@@ -18,37 +18,8 @@ function blockWith(page: Page, text: string, labels: string[]) {
   return page.locator(`xpath=//*[contains(normalize-space(.), '${text}')][${has}][not(.//*[contains(normalize-space(.), '${text}')][${has}])]`).first()
 }
 
-/**
- * Deletes what this test made: the student first (their work goes with them), then the class. Only rows that belong to
- * the test are touched: the account list is searched for "zze2e", every row shown must be a test account of class ZZE2E,
- * and each delete button is clicked inside its own row. Anything else on screen stops the clean-up instead of deleting it.
- */
-async function removeEverything(admin: Page) {
-  await admin.goto("/teacher/students")
-  await admin.locator("input[type=search]").fill("zze2e")
-  await admin.waitForTimeout(1500)
-  const rows = admin.locator("table.stack-table.accounts tbody tr")
-  const mine = rows.filter({ hasText: /zze2e/i })
-  const total = await rows.count()
-  if (total !== (await mine.count())) throw new Error(`clean-up stopped: ${total} accounts shown but ${await mine.count()} are test accounts`)
-  for (let n = total; n > 0; n--) {
-    const row = mine.first()
-    await expect(row).toContainText(CLASS)
-    await row.getByRole("button", { name: /^(Xoá|Delete)$/ }).click()
-    await row.getByRole("button", { name: /Bấm lần nữa|Click again|Bấm lần nữa: xoá/ }).click()
-    await admin.waitForTimeout(2000)
-  }
-  await admin.goto("/admin/classes")
-  await admin.locator(".class-row").first().waitFor() // the list loads after the page does
-  const named = () => admin.locator(".class-row").filter({ has: admin.locator("a b", { hasText: new RegExp(`^${CLASS}$`) }) })
-  const row = named()
-  if (await row.count()) {
-    await expect(row).toHaveCount(1)
-    await row.getByRole("button", { name: /^(Xoá lớp|Delete class)$/ }).click()
-    await row.getByRole("button", { name: /Bấm lần nữa|Click again/ }).click()
-    await expect(named()).toHaveCount(0)
-  }
-}
+/** Deletes what this test made (the class and its student), also when an earlier run left something behind. */
+const removeEverything = (admin: Page) => removeTestClass(admin, CLASS)
 
 test("student works a plain and a timed lesson end to end", async ({ browser }) => {
   test.setTimeout(8 * 60_000)
