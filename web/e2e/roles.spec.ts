@@ -16,7 +16,7 @@ test.describe("student", () => {
     const errors = noPageErrors(page)
     await signIn(page, "STUDENT")
 
-    await page.goto("/")
+    await page.goto("/learn")
     await expect(page.locator("section.streak")).toBeVisible()
     await expect(page.locator("a.bell:visible")).toBeVisible()
 
@@ -41,7 +41,7 @@ test.describe("student", () => {
 
   test("an open lesson shows the section strip and asks before submitting", async ({ page }) => {
     await signIn(page, "STUDENT")
-    await page.goto("/")
+    await page.goto("/learn")
     const open = page.locator("a[href^='/lessons/']")
     const hrefs = await open.evaluateAll(as => as.map(a => a.getAttribute("href") ?? ""))
     test.skip(!hrefs.length, "the student has no lesson to open")

@@ -10,6 +10,8 @@ test("manifest is served and the service worker takes control", async ({ page, r
   expect(res.ok()).toBe(true)
   const manifest = await res.json()
   expect(manifest.display).toBe("standalone")
+  // An installed app opens on the roadmap, not on the public landing page.
+  expect(manifest.start_url).toBe("/learn")
   expect(manifest.icons.length).toBeGreaterThan(0)
   await page.goto("/login")
   const active = await page.evaluate(async () => !!(await navigator.serviceWorker.ready).active)

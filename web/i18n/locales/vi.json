@@ -213,7 +213,8 @@
     "showPassword": "Hiện mật khẩu",
     "hidePassword": "Ẩn mật khẩu",
     "capsLock": "Đang bật Caps Lock",
-    "forgot": "Quên mật khẩu? Hãy nhờ giáo viên đặt lại cho bạn."
+    "forgot": "Quên mật khẩu? Hãy nhờ giáo viên đặt lại cho bạn.",
+    "backHome": "Về trang giới thiệu"
   },
   "join": {
     "pageTitle": "Vào lớp - Grammar",
@@ -1826,5 +1827,192 @@
     "pointsTerm": "điểm kỳ này",
     "noColumnsHint": "Thêm một cột (ví dụ một buổi kiểm tra), rồi nhập điểm cho từng học sinh.",
     "openHint": "Điểm danh, điểm cộng phát biểu, kiểm tra bài cũ và bài tập"
+  },
+  "landing": {
+    "pageTitle": "English 4U - Ngữ pháp tiếng Anh lớp 6-9, 30 phút mỗi ngày",
+    "metaDescription": "Học ngữ pháp tiếng Anh THCS lớp 6-9 theo sách Global Success và lộ trình B1→B2: bài 30 phút, chấm điểm tự động, chuỗi ngày học, huy hiệu. Giáo viên giao bài, theo dõi sổ điểm và tạo đề in nhiều mã.",
+    "nav": {
+      "features": "Tính năng",
+      "teachers": "Cho giáo viên",
+      "curriculum": "Chương trình",
+      "faq": "Hỏi đáp",
+      "signIn": "Đăng nhập",
+      "menu": "Điều hướng trang"
+    },
+    "hero": {
+      "eyebrow": "Theo sách Global Success · Lớp 6-9 và B1→B2",
+      "titleA": "Ngữ pháp tiếng Anh,",
+      "titleB": "30 phút mỗi ngày",
+      "lead": "Bài học ngắn, có giải thích dễ hiểu và bài tập chấm ngay. Học sinh giữ chuỗi ngày học, giáo viên giao bài và theo dõi cả lớp ở một nơi.",
+      "cta": "Đăng nhập để học",
+      "ctaMore": "Xem tính năng",
+      "point1": "Chấm điểm tự động",
+      "point2": "Dùng tốt trên điện thoại",
+      "point3": "Tiếng Việt và English"
+    },
+    "demo": {
+      "label": "Ví dụ một câu hỏi trong bài học",
+      "unit": "Unit 3 · Hiện tại đơn",
+      "question": "She ___ to school by bike every day.",
+      "right": "Chính xác! Chủ ngữ số ít nên động từ thêm -es.",
+      "streak": "7 ngày liên tiếp",
+      "badge": "Điểm tuyệt đối",
+      "progress": "Tiến độ khoá học"
+    },
+    "students": {
+      "eyebrow": "Cho học sinh",
+      "title": "Học đều mỗi ngày, thấy rõ mình tiến bộ",
+      "lead": "Mỗi bài đi từ giải thích đến luyện tập, đúng chủ điểm trên lớp.",
+      "items": {
+        "grading": {
+          "title": "Chấm ngay khi nộp",
+          "text": "Trắc nghiệm, điền từ, sắp xếp câu, nối, tìm lỗi sai: kết quả và lời giải hiện ngay khi giáo viên cho phép."
+        },
+        "streak": {
+          "title": "Chuỗi ngày học",
+          "text": "Mỗi ngày học là một ngọn lửa. Giữ chuỗi càng dài, thói quen càng chắc."
+        },
+        "badges": {
+          "title": "Huy hiệu",
+          "text": "Nộp đúng hạn, điểm tuyệt đối, học 30 ngày liên tiếp… mỗi cột mốc là một huy hiệu."
+        },
+        "review": {
+          "title": "Ôn bằng thẻ ghi nhớ",
+          "text": "Thẻ được nhắc lại đúng lúc sắp quên, để từ và cấu trúc ở lại lâu hơn."
+        },
+        "practice": {
+          "title": "Luyện lại câu sai",
+          "text": "Một bài luyện tập dựng từ chính những câu bạn làm sai, làm bao nhiêu lần cũng được."
+        },
+        "phone": {
+          "title": "Như một ứng dụng",
+          "text": "Cài lên màn hình điện thoại và mở như app, không cần tải từ cửa hàng."
+        }
+      }
+    },
+    "teachers": {
+      "eyebrow": "Cho giáo viên",
+      "title": "Bớt việc giấy tờ, thêm thời gian dạy",
+      "lead": "Từ giao bài đến sổ điểm và đề kiểm tra in, mọi thứ của một lớp nằm ở một nơi.",
+      "items": {
+        "assign": {
+          "title": "Giao bài có hạn nộp",
+          "text": "Giao cho cả lớp hoặc vài học sinh, đặt hạn nộp, giới hạn thời gian, trộn câu hỏi."
+        },
+        "gradebook": {
+          "title": "Sổ điểm và phân tích câu hỏi",
+          "text": "Xem ai chưa nộp, câu nào cả lớp hay sai, xuất Excel chỉ với một nút bấm."
+        },
+        "exams": {
+          "title": "Tạo đề in nhiều mã",
+          "text": "Chọn câu từ ngân hàng hoặc bốc theo ma trận, trộn thành nhiều mã đề, xuất Word và PDF kèm đáp án."
+        },
+        "marks": {
+          "title": "Điểm trên lớp",
+          "text": "Điểm danh, điểm cộng phát biểu, kiểm tra bài cũ và bài tập, tổng hợp theo học kỳ."
+        }
+      }
+    },
+    "curriculum": {
+      "eyebrow": "Chương trình",
+      "title": "Đúng chủ điểm học sinh đang học",
+      "lead": "Bám sát sách Tiếng Anh Global Success từ lớp 6 đến lớp 9, cùng một lộ trình nâng cao cho người đã có nền tảng.",
+      "g6": {
+        "name": "Lớp 6",
+        "topics": "Hiện tại đơn và tiếp diễn, so sánh, quá khứ đơn, tương lai"
+      },
+      "g7": {
+        "name": "Lớp 7",
+        "topics": "Hiện tại đơn, quá khứ đơn, so sánh, tương lai, bị động đơn giản"
+      },
+      "g8": {
+        "name": "Lớp 8",
+        "topics": "V-ing và to V, so sánh trạng từ, câu điều kiện, câu tường thuật"
+      },
+      "g9": {
+        "name": "Lớp 9",
+        "topics": "Phrasal verbs, câu ước, câu bị động, mệnh đề quan hệ, câu tường thuật"
+      },
+      "b1b2": {
+        "name": "B1→B2",
+        "topics": "Lộ trình 3 tháng: mệnh đề quan hệ, modal, câu ước, thể truyền khiến, từ nối"
+      }
+    },
+    "steps": {
+      "eyebrow": "Bắt đầu thế nào",
+      "title": "Ba bước là vào học",
+      "s1": {
+        "title": "Giáo viên tạo tài khoản",
+        "text": "Giáo viên tạo tài khoản cho cả lớp và đưa mỗi em tên đăng nhập, mật khẩu."
+      },
+      "s2": {
+        "title": "Học sinh đăng nhập",
+        "text": "Đăng nhập trên máy tính hoặc điện thoại, bài được giao hiện ngay trên lộ trình."
+      },
+      "s3": {
+        "title": "Học 30 phút mỗi ngày",
+        "text": "Làm bài, xem lời giải, ôn thẻ và giữ chuỗi ngày học."
+      }
+    },
+    "trust": {
+      "title": "Công bằng và an toàn",
+      "one": {
+        "title": "Mỗi tài khoản một thiết bị",
+        "text": "Đăng nhập ở máy khác thì phiên cũ tự kết thúc; 10 phút không thao tác sẽ tự đăng xuất."
+      },
+      "two": {
+        "title": "Đáp án được giữ kín",
+        "text": "Học sinh chỉ thấy đáp án khi giáo viên trả kết quả, bài được chấm trên máy chủ."
+      },
+      "three": {
+        "title": "Hạn chế chép bài",
+        "text": "Trong lúc làm bài, chép và dán bị chặn, tên học sinh hiện mờ trên trang."
+      }
+    },
+    "faq": {
+      "title": "Câu hỏi thường gặp",
+      "q1": "Làm sao để có tài khoản?",
+      "a1": "Tài khoản do giáo viên của bạn tạo. Hãy hỏi giáo viên tên đăng nhập và mật khẩu; trang này không có đăng ký tự do.",
+      "q2": "Có dùng được trên điện thoại không?",
+      "a2": "Có. Trang chạy trên trình duyệt của điện thoại, và bạn có thể thêm vào màn hình chính để mở như một ứng dụng.",
+      "q3": "Quên mật khẩu thì làm thế nào?",
+      "a3": "Hãy nhờ giáo viên đặt lại mật khẩu cho bạn, rồi đăng nhập bằng mật khẩu mới.",
+      "q4": "Giáo viên muốn dùng cho lớp mình thì sao?",
+      "a4": "Quản trị viên của trường tạo tài khoản giáo viên. Sau đó giáo viên tự tạo lớp, tài khoản học sinh và giao bài."
+    },
+    "final": {
+      "title": "Sẵn sàng cho bài học hôm nay?",
+      "text": "Đăng nhập bằng tài khoản giáo viên đã cấp cho bạn.",
+      "cta": "Đăng nhập"
+    },
+    "footer": {
+      "tagline": "Ngữ pháp tiếng Anh THCS lớp 6-9 và lộ trình B1→B2.",
+      "rights": "© {year} English 4U"
+    },
+    "facts": {
+      "a": {
+        "v": "5",
+        "l": "dạng bài: trắc nghiệm, điền từ, sắp xếp, nối, tìm lỗi"
+      },
+      "b": {
+        "v": "6-9",
+        "l": "cả bốn khối lớp, kèm lộ trình B1→B2"
+      },
+      "c": {
+        "v": "30'",
+        "l": "mỗi bài, vừa một buổi học ngắn"
+      },
+      "d": {
+        "v": "2",
+        "l": "ngôn ngữ giao diện: Tiếng Việt và English"
+      }
+    },
+    "marqueeLabel": "Những chủ điểm bạn sẽ gặp",
+    "tryIt": "Thử một câu nhé",
+    "demoHint": "Chọn đáp án đúng",
+    "demoWrong": "Chưa đúng, thử lại nhé!",
+    "demoAgain": "Làm lại",
+    "demoCta": "Muốn làm cả bài? Đăng nhập nhé",
+    "bentoTitle": "Mọi thứ học sinh cần, trong một chỗ"
   }
 }

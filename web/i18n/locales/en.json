@@ -213,7 +213,8 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "capsLock": "Caps Lock is on",
-    "forgot": "Forgot your password? Ask your teacher to reset it."
+    "forgot": "Forgot your password? Ask your teacher to reset it.",
+    "backHome": "Back to the home page"
   },
   "join": {
     "pageTitle": "Join a class - Grammar",
@@ -1826,5 +1827,192 @@
     "pointsTerm": "points this term",
     "noColumnsHint": "Add a column (for example one test), then type each student's mark.",
     "openHint": "Attendance, bonus points, oral checks and homework"
+  },
+  "landing": {
+    "pageTitle": "English 4U - English grammar for grades 6-9, 30 minutes a day",
+    "metaDescription": "English grammar for lower-secondary grades 6-9 (Global Success) and a B1→B2 track: 30-minute lessons, instant grading, study streaks and badges. Teachers give lessons, follow the gradebook and build printed exams.",
+    "nav": {
+      "features": "Features",
+      "teachers": "For teachers",
+      "curriculum": "Curriculum",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "menu": "Page navigation"
+    },
+    "hero": {
+      "eyebrow": "Follows Global Success · Grades 6-9 and B1→B2",
+      "titleA": "English grammar,",
+      "titleB": "30 minutes a day",
+      "lead": "Short lessons with clear explanations and exercises graded on the spot. Students keep a study streak; teachers give lessons and follow the whole class in one place.",
+      "cta": "Sign in to study",
+      "ctaMore": "See the features",
+      "point1": "Graded automatically",
+      "point2": "Works well on phones",
+      "point3": "Vietnamese and English"
+    },
+    "demo": {
+      "label": "An example question from a lesson",
+      "unit": "Unit 3 · Present simple",
+      "question": "She ___ to school by bike every day.",
+      "right": "Correct! A singular subject takes -es.",
+      "streak": "7 days in a row",
+      "badge": "Perfect score",
+      "progress": "Course progress"
+    },
+    "students": {
+      "eyebrow": "For students",
+      "title": "Study a little every day, and see yourself improve",
+      "lead": "Every lesson goes from explanation to practice, on the topics covered in class.",
+      "items": {
+        "grading": {
+          "title": "Graded when you submit",
+          "text": "Multiple choice, typed answers, sentence ordering, matching, finding the error: results and solutions show as soon as your teacher allows."
+        },
+        "streak": {
+          "title": "Study streak",
+          "text": "Every day you study lights a flame. The longer the streak, the stronger the habit."
+        },
+        "badges": {
+          "title": "Badges",
+          "text": "On-time hand-ins, perfect scores, 30 days in a row… every milestone earns a badge."
+        },
+        "review": {
+          "title": "Flashcard review",
+          "text": "Cards come back just before you would forget them, so words and structures stick."
+        },
+        "practice": {
+          "title": "Practise what you got wrong",
+          "text": "A practice lesson built from the very questions you missed, as many times as you like."
+        },
+        "phone": {
+          "title": "Like an app",
+          "text": "Add it to your phone's home screen and open it like an app, no store download needed."
+        }
+      }
+    },
+    "teachers": {
+      "eyebrow": "For teachers",
+      "title": "Less paperwork, more time to teach",
+      "lead": "From giving lessons to the gradebook and printed tests, everything about a class is in one place.",
+      "items": {
+        "assign": {
+          "title": "Lessons with deadlines",
+          "text": "Give a lesson to the whole class or a few students, set a deadline and a time limit, shuffle the questions."
+        },
+        "gradebook": {
+          "title": "Gradebook and question analysis",
+          "text": "See who has not handed in, which questions the class gets wrong, and export to Excel in one click."
+        },
+        "exams": {
+          "title": "Printed exams with several codes",
+          "text": "Pick questions from the bank or draw them by a matrix, shuffle them into exam codes, export Word and PDF with answers."
+        },
+        "marks": {
+          "title": "Class marks",
+          "text": "Attendance, points for speaking up, oral checks and homework, summed up per term."
+        }
+      }
+    },
+    "curriculum": {
+      "eyebrow": "Curriculum",
+      "title": "The topics students are learning right now",
+      "lead": "Follows the Tiếng Anh Global Success books from grade 6 to grade 9, plus an advanced track for learners with a solid base.",
+      "g6": {
+        "name": "Grade 6",
+        "topics": "Present simple and continuous, comparisons, past simple, future"
+      },
+      "g7": {
+        "name": "Grade 7",
+        "topics": "Present simple, past simple, comparisons, future, simple passive"
+      },
+      "g8": {
+        "name": "Grade 8",
+        "topics": "V-ing and to V, comparing adverbs, conditionals, reported speech"
+      },
+      "g9": {
+        "name": "Grade 9",
+        "topics": "Phrasal verbs, wishes, the passive, relative clauses, reported speech"
+      },
+      "b1b2": {
+        "name": "B1→B2",
+        "topics": "A 3-month track: relative clauses, modals, wishes, causatives, linking words"
+      }
+    },
+    "steps": {
+      "eyebrow": "How to start",
+      "title": "Three steps to your first lesson",
+      "s1": {
+        "title": "The teacher makes accounts",
+        "text": "The teacher creates accounts for the class and gives each student a username and password."
+      },
+      "s2": {
+        "title": "Students sign in",
+        "text": "Sign in on a computer or a phone; lessons given to the class show up on the roadmap."
+      },
+      "s3": {
+        "title": "30 minutes a day",
+        "text": "Do the lesson, read the solutions, review cards and keep the streak going."
+      }
+    },
+    "trust": {
+      "title": "Fair and safe",
+      "one": {
+        "title": "One device per account",
+        "text": "Signing in elsewhere ends the old session; 10 minutes without activity signs you out."
+      },
+      "two": {
+        "title": "Answers stay hidden",
+        "text": "Students see the answers only when the teacher releases results; grading happens on the server."
+      },
+      "three": {
+        "title": "Copying is discouraged",
+        "text": "While working on a lesson, copy and paste are blocked and the student's name shows faintly on the page."
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "How do I get an account?",
+      "a1": "Your teacher creates it. Ask your teacher for your username and password; there is no open sign-up here.",
+      "q2": "Does it work on a phone?",
+      "a2": "Yes. It runs in your phone's browser, and you can add it to the home screen to open it like an app.",
+      "q3": "What if I forget my password?",
+      "a3": "Ask your teacher to reset it, then sign in with the new password.",
+      "q4": "I am a teacher and want to use it with my class.",
+      "a4": "Your school's administrator creates teacher accounts. Teachers then make their own classes and student accounts, and give lessons."
+    },
+    "final": {
+      "title": "Ready for today's lesson?",
+      "text": "Sign in with the account your teacher gave you.",
+      "cta": "Sign in"
+    },
+    "footer": {
+      "tagline": "English grammar for grades 6-9 and a B1→B2 track.",
+      "rights": "© {year} English 4U"
+    },
+    "facts": {
+      "a": {
+        "v": "5",
+        "l": "question types: multiple choice, typed, ordering, matching, find the error"
+      },
+      "b": {
+        "v": "6-9",
+        "l": "all four grades, plus a B1→B2 track"
+      },
+      "c": {
+        "v": "30'",
+        "l": "a lesson, one short study session"
+      },
+      "d": {
+        "v": "2",
+        "l": "interface languages: Vietnamese and English"
+      }
+    },
+    "marqueeLabel": "Topics you will meet",
+    "tryIt": "Try one question",
+    "demoHint": "Pick the right answer",
+    "demoWrong": "Not quite, try again!",
+    "demoAgain": "Try again",
+    "demoCta": "Want the whole lesson? Sign in",
+    "bentoTitle": "Everything a student needs, in one place"
   }
 }

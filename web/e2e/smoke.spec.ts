@@ -21,7 +21,7 @@ test("student: roadmap, a lesson opens, sign out", async ({ page }) => {
   // Teacher-only pages bounce a student back.
   await page.goto("/teacher")
   await expect(page).not.toHaveURL(/\/teacher/)
-  await page.goto("/")
+  await page.goto("/learn")
   const lesson = page.locator("a[href^='/lessons/']").first()
   if (await lesson.count()) {
     await lesson.click()

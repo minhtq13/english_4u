@@ -60,7 +60,7 @@ test.describe("student (read-only)", () => {
   test("home shows course progress and the review card; account shows badges when the database has them", async ({ page }) => {
     const errors = noPageErrors(page)
     await signIn(page, "STUDENT")
-    await page.goto("/")
+    await page.goto("/learn")
     await expect(page.locator(".review-card")).toBeVisible()
     await page.goto("/account")
     await expect(main(page).locator("h1")).toBeVisible()
@@ -81,7 +81,7 @@ async function shiftOf(page: Page, path: string) {
 }
 
 test.describe("layout shift stays under 0.1 (skeletons reserve their space)", () => {
-  for (const [role, path] of [["STUDENT", "/"], ["TEACHER", "/teacher"], ["ADMIN", "/admin"]] as const) {
+  for (const [role, path] of [["STUDENT", "/learn"], ["TEACHER", "/teacher"], ["ADMIN", "/admin"]] as const) {
     test(`${role} ${path}`, async ({ page }) => {
       await signIn(page, role)
       expect(await shiftOf(page, path)).toBeLessThan(0.1)

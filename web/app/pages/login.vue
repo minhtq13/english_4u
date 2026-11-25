@@ -75,6 +75,7 @@ async function signInWithGoogle() {
     </aside>
     <div class="card panel">
       <div class="top">
+        <NuxtLink to="/" class="home-link"><Icon name="chevronLeft" size="16" />{{ $t("login.backHome") }}</NuxtLink>
         <span class="prefs"><LangSwitch /><ThemeSwitch /></span>
       </div>
       <div class="intro">
@@ -123,20 +124,23 @@ async function signInWithGoogle() {
 
 <style scoped>
 .prefs { display: flex; align-items: center; gap: 6px; }
+.home-link { display: inline-flex; align-items: center; gap: 2px; margin-left: -6px; padding: 4px 10px 4px 4px; border-radius: var(--radius-full);
+  color: var(--muted); font-size: var(--fs-sm); font-weight: var(--fw-medium); text-decoration: none; }
+.home-link:hover { background: var(--accent-soft); color: var(--accent); }
 .login { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: clamp(32px, 6vw, 88px); padding: var(--space-xl) var(--space-lg);
   background: linear-gradient(135deg, var(--bg) 0%, var(--accent-soft) 55%, var(--purple-soft) 100%); }
 .hero { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xl); width: min(340px, 100%); flex: none; }
 .hero-logo { font-size: 1.3rem; }
-.slogan { margin: 0; font-size: 1.6rem; font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.slogan { margin: 0; font-size: var(--fs-xl); font-weight: var(--fw-heavy); letter-spacing: -.02em; line-height: 1.35; text-wrap: balance; }
 .art { width: min(300px, 100%); height: auto; }
-.panel { max-width: 420px; width: 100%; display: flex; flex-direction: column; gap: 18px; padding: 28px; margin: 0; }
+.panel { max-width: 440px; width: 100%; display: flex; flex-direction: column; gap: 18px; padding: 32px; margin: 0; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); border-color: transparent; }
 .panel h1 { margin: 0; }
 .panel p { margin: 0; }
-.top { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
 .intro { display: flex; flex-direction: column; gap: 6px; }
-.eyebrow { font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.eyebrow { font-size: var(--fs-xs); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
 .stack { gap: var(--space-lg); }
-.field { display: flex; flex-direction: column; gap: 6px; font-size: .88rem; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); font-weight: 500; }
 .field input { min-height: 44px; }
 .field input[aria-invalid="true"] { border-color: var(--bad); }
 .pass { position: relative; display: flex; }
@@ -148,7 +152,7 @@ async function signInWithGoogle() {
 .stack .fb { margin: 0; }
 .wide { text-align: center; padding: 12px 16px; min-height: 44px; }
 .help { text-align: center; }
-.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .8rem; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: var(--fs-xs); }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 @media (max-width: 800px) {
   .login { flex-direction: column; justify-content: flex-start; gap: var(--space-lg); padding: var(--space-lg) var(--space-md); }

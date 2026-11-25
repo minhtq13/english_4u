@@ -13,7 +13,7 @@ async function submit() {
   pending.value = true
   error.value = errorText(await joinClass(code.value))
   pending.value = false
-  if (!error.value) await navigateTo("/")
+  if (!error.value) await navigateTo("/learn")
 }
 </script>
 
@@ -22,7 +22,7 @@ async function submit() {
     <div v-if="profile?.class_id" class="card">
       <h1>{{ $t("join.already", { name: myClass?.name }) }}</h1>
       <p class="muted">{{ $t("join.askToMove") }}</p>
-      <NuxtLink to="/" class="btn primary">{{ $t("join.toRoadmap") }}</NuxtLink>
+      <NuxtLink to="/learn" class="btn primary">{{ $t("join.toRoadmap") }}</NuxtLink>
     </div>
     <form v-else class="card" @submit.prevent="submit">
       <h1>{{ $t("join.title") }}</h1>

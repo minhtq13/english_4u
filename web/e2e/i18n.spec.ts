@@ -10,13 +10,13 @@ const namespaces = Object.keys(messages).filter(k => /^[a-z][A-Za-z]+$/.test(k))
 const rawKey = new RegExp(`(^|[^A-Za-z0-9_.@/-])(${namespaces.join("|")})\\.[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+)*`)
 
 const PAGES: Record<Role, string[]> = {
-  STUDENT: ["/", "/progress", "/review", "/notifications", "/practice/6.1"],
+  STUDENT: ["/learn", "/progress", "/review", "/notifications", "/practice/6.1"],
   TEACHER: ["/teacher", "/courses", "/teacher/grading", "/teacher/bank"],
   ADMIN: ["/admin", "/admin/classes", "/admin/users", "/admin/logins", "/admin/audit"],
 }
 
 async function setLang(page: Page, lang: "vi" | "en") {
-  await page.context().addCookies([{ name: "lang", value: lang, url: "http://localhost:3000" }])
+  await page.context().addCookies([{ name: "lang", value: lang, url: process.env.E2E_BASE_URL ?? "http://localhost:3000" }])
 }
 
 for (const role of ["STUDENT", "TEACHER", "ADMIN"] as const) {

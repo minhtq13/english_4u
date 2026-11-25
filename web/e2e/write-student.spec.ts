@@ -107,11 +107,11 @@ test("student works a plain and a timed lesson end to end", async ({ browser }) 
     await expect(student.locator(".badge-item")).toHaveCount(7)
     if (process.env.E2E_SHOT_DIR) await student.screenshot({ path: `${process.env.E2E_SHOT_DIR}/badges.png`, fullPage: true })
     // the streak now counts today
-    await student.goto("/")
+    await student.goto("/learn")
     await expect(student.locator("section.streak")).toContainText(/1 ngày|1 day/)
 
     // timed lesson: the clock starts at the first answer, runs out after a minute, the server submits the work
-    await student.goto("/")
+    await student.goto("/learn")
     await student.locator("a[href^='/lessons/']", { hasText: TIMED }).first().click()
     await expect(student.locator("[role=timer]")).toContainText(/1 phút|1-minute/)
     await student.locator(".opts button, textarea").first().click()

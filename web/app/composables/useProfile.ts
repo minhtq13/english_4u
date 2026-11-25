@@ -3,7 +3,7 @@ import type { Database, Enums, Tables } from "~/types/database.types"
 export type Role = Enums<"app_role">
 
 /** Where each role lands after signing in. */
-export const homeFor = (role: Role | undefined) => (role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/")
+export const homeFor = (role: Role | undefined) => (role === "admin" ? "/admin" : role === "teacher" ? "/teacher" : "/learn")
 
 export const ROLE_LABEL: Record<Role, string> = labels("role", ["student", "teacher", "admin"])
 

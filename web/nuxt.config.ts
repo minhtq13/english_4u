@@ -1,8 +1,14 @@
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-01",
   devtools: { enabled: true },
-  // Everything sits behind a login, so the app renders in the browser only.
-  ssr: false,
+  // Everything behind the login renders in the browser only (`/**` ssr: false). The one exception is the public landing
+  // page `/`: it is rendered to static HTML at build time, so search engines and link previews (Facebook, Zalo) see its
+  // text and Open Graph tags. Server rendering is on globally only so that this one route can use it.
+  ssr: true,
+  routeRules: {
+    "/**": { ssr: false },
+    "/": { ssr: true, prerender: true },
+  },
   // A plain splash drawn by the HTML shell while the JavaScript loads, so the first paint does not wait for it.
   spaLoadingTemplate: true,
   modules: ["@nuxtjs/supabase", "@nuxtjs/i18n", "@vite-pwa/nuxt"],
@@ -15,8 +21,8 @@ export default defineNuxtConfig({
       script: [{ innerHTML: "try{var t=document.cookie.match(/(?:^|; )theme=(light|dark)/);if(t)document.documentElement.dataset.theme=t[1];var a=document.cookie.match(/(?:^|; )accent=([a-z]+)/);if(a&&a[1]!=='blue'){var d=document.documentElement;d.dataset.accent=a[1];if(a[1]==='custom'){var v=document.cookie.match(/(?:^|; )accentVars=([0-9a-f.]+)/);if(v){var q=v[1].split('.'),n=['c-accent','c-soft','c-on','cd-accent','cd-soft','cd-on'];for(var i=0;i<6;i++)d.style.setProperty('--'+n[i],'#'+q[i])}}}}catch(e){}" }],
       title: "Ngữ pháp tiếng Anh",
       meta: [
-        { name: "theme-color", content: "#f5f6f8", media: "(prefers-color-scheme: light)" },
-        { name: "theme-color", content: "#14171d", media: "(prefers-color-scheme: dark)" },
+        { name: "theme-color", content: "#f4f6fb", media: "(prefers-color-scheme: light)" },
+        { name: "theme-color", content: "#11151c", media: "(prefers-color-scheme: dark)" },
         { name: "description", content: "Ngữ pháp tiếng Anh THCS lớp 6-9 và lộ trình B1 → B2, 30 phút mỗi ngày." },
       ],
       link: [
@@ -30,7 +36,7 @@ export default defineNuxtConfig({
         // (text shows in the fallback font meanwhile, display=swap).
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Baloo+2:wght@600;700;800&display=swap",
           media: "print",
           onload: "this.media='all'",
         },
@@ -41,7 +47,14 @@ export default defineNuxtConfig({
   // Feature flag: the "sign in with Google" button on the login page. Off for now; turn it on with
   // NUXT_PUBLIC_ENABLE_GOOGLE_LOGIN=true (or here). It only shows or hides the button: the Google provider itself is
   // switched in Supabase (Authentication → Providers), and `signInWithGoogle` stays in the page.
-  runtimeConfig: { public: { enableGoogleLogin: false } },
+  // siteUrl: the public address, for the landing page's canonical link and Open Graph image (link previews need an
+  // absolute URL). NUXT_PUBLIC_SITE_URL wins; on Vercel the production domain is known at build time.
+  runtimeConfig: {
+    public: {
+      enableGoogleLogin: false,
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : ""),
+    },
+  },
 
   // Vietnamese by default, English on request. The choice lives in the "lang" cookie (app/plugins/lang.client.ts);
   // URLs stay the same in both languages. Messages: i18n/locales/*.json.
@@ -92,11 +105,12 @@ export default defineNuxtConfig({
       short_name: "English 4U",
       description: "Ngữ pháp tiếng Anh THCS lớp 6-9 và lộ trình B1 → B2.",
       lang: "vi",
-      start_url: "/",
+      // An installed app opens on the learner's roadmap, not on the landing page (staff are sent on to their own home).
+      start_url: "/learn",
       scope: "/",
       display: "standalone",
-      theme_color: "#f5f6f8",
-      background_color: "#f5f6f8",
+      theme_color: "#f4f6fb",
+      background_color: "#f4f6fb",
       icons: [
         { src: "/favicon_io/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
         { src: "/favicon_io/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
@@ -104,7 +118,7 @@ export default defineNuxtConfig({
     },
     workbox: {
       globPatterns: ["**/*.{js,css,png,ico,svg,woff2}"],
-      globIgnores: ["**/favicon_io/android-chrome-512x512.png", "**/lazy-*.js"],
+      globIgnores: ["**/favicon_io/android-chrome-512x512.png", "**/lazy-*.js", "**/og.png"],
       // The SPA shell is served by Nitro, not a static file, so there is no HTML to fall back to: page loads always use the network.
       navigateFallback: null,
       cleanupOutdatedCaches: true,
@@ -118,6 +132,8 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: "/login",
       callback: "/confirm",
+      // The landing page is public.
+      exclude: ["/"],
       saveRedirectToCookie: true,
     },
   },
