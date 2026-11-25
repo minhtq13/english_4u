@@ -11,6 +11,26 @@ Một thay đổi xong khi: `npm run typecheck`, `npm test`, `npm run build` đ�
 
 Trạng thái: điểm trên lớp, việc làm lại giao diện của nó và đổi dấu gạch đã commit và push (HEAD `53ad99d` trên `main`: `c8a052b`, `3c6795a`, `53ad99d`). **Công việc sau đó chưa commit**: lối vào điểm trên lớp ở đầu trang lớp, năm cải tiến của trình tạo bộ đề thi (gấp từng khối, gọn lại khu tải xuống, công tắc phiếu trả lời, chọn phần nào được trộn, trộn lại từng mã đề), migrations 60 và 61, spec E2E `class-scores.spec.ts`, và chỉnh `exams.spec.ts` (xem mục 2 và mục 3). Không còn việc nào cần người dùng quyết định.
 
+**Phiên 25/11/2026: nâng cấp giao diện và landing page (chưa commit).**
+- Design system mới: token, nút, thẻ, ô nhập, popup dùng chung, icon cho menu.
+- Sidebar và thanh tab học sinh làm lại.
+- Landing `/` được prerender, có ảnh OG `public/og.png`.
+- Lộ trình học sinh dời sang `/learn`.
+- Trang đăng nhập có link về landing.
+- Spec mới `e2e/landing.spec.ts`; các spec cũ đổi `/` thành `/learn`.
+
+Kiểm tra đã chạy:
+- typecheck, 344 unit test, build (prerender 1 route).
+- Playwright toàn bộ trên bản build ở cổng 3100: 27 pass, 10 bỏ qua (test ghi dữ liệu và PWA).
+- `pwa.spec.ts` với `E2E_PWA=1`: 2 pass.
+- Chụp ảnh landing (sáng, tối, English, điện thoại), `/learn`, `/progress`, `/review`, `/teacher`, trình tạo đề, `/admin`, hai popup (desktop và điện thoại); thử bàn phím trên landing.
+
+Chưa làm hoặc chưa thử:
+- Chưa chạy lại các spec ghi dữ liệu (`E2E_WRITE=1`).
+- Chưa thử prerender trên Vercel thật.
+- Chưa đặt `NUXT_PUBLIC_SITE_URL`; nếu không có `VERCEL_PROJECT_PRODUCTION_URL` thì `og:image` là đường dẫn tương đối và nhiều mạng xã hội không đọc được.
+- Phần chào ở đầu `/learn` (trong kế hoạch) chưa làm, vì `StreakCard` đã nằm ngay đầu trang.
+
 ## 2. Đã xong (file chính và kiểm tra đã thật sự chạy)
 
 Kiểm tra chạy ở đầu cuối trên trạng thái hiện tại của cây làm việc: typecheck 0 lỗi, `npm test` 341 test pass, `npm run build` pass. `npx playwright test` trên bản build ở cổng 3100: **22 pass, 10 bỏ qua** (các test ghi dữ liệu, chạy khi có `E2E_WRITE=1`). Đã chạy riêng với `E2E_WRITE=1` và đều pass: `class-scores.spec.ts` (nhiều lần), `exams.spec.ts` (3 test, gồm lưu và chia sẻ bộ đề), `write-student.spec.ts` (sau khi tách phần dọn dẹp ra `removeTestClass()` ở `e2e/helpers.ts`). Chưa chạy với `E2E_WRITE=1`: `write.spec.ts` và test dọn "leftovers" của `write-student.spec.ts`. Lần chạy đầu của `class-scores.spec.ts` ngay sau khi build có một lần lỗi ở bước đổi tên cột (request chậm, không lặp lại trong 4 lần chạy sau); bước đó đã được nới thời gian chờ 20 giây.

@@ -22,5 +22,5 @@ const width = computed(() => `${Math.max(0, Math.min(100, props.value ?? 0))}%`)
 .meter { display: inline-flex; align-items: center; gap: var(--space-sm); width: 100%; min-width: 96px; }
 .track { flex: 1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
 .fill { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
-.num { flex: none; min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; font-size: .9rem; color: var(--text); }
+.num { flex: none; min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; font-size: var(--fs-sm); color: var(--text); }
 </style>

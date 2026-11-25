@@ -75,7 +75,7 @@ async function exportXlsx() {
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-sm); }
 .section-head h2 { margin: 0; }
 .section-head .btn { padding: 4px 12px; }
-.hint { font-size: .85rem; margin-bottom: var(--space-sm); }
+.hint { font-size: var(--fs-sm); margin-bottom: var(--space-sm); }
 .stats-table th { white-space: nowrap; }
 .stats-table td:has(.meter) { min-width: 140px; }
 .n { text-align: right; font-variant-numeric: tabular-nums; }

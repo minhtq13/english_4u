@@ -159,6 +159,6 @@ async function allowRedo() {
 <style scoped>
 .actions { margin-bottom: var(--space-lg); }
 .queue-bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; margin-bottom: var(--space-md);
-  padding: 10px 14px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+  padding: 10px 14px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent); }
 .queue-bar .btn { padding: 2px 10px; }
 </style>

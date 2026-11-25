@@ -201,7 +201,7 @@ async function removeFeedback(id: string) {
 .templates { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .tpl { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--bg); max-width: 100%; }
 .tpl:hover { border-color: var(--accent); }
-.tpl-text { border: 0; background: none; color: var(--text); font: inherit; font-size: .85rem; padding: 3px 4px 3px 12px; cursor: pointer;
+.tpl-text { border: 0; background: none; color: var(--text); font: inherit; font-size: var(--fs-sm); padding: 3px 4px 3px 12px; cursor: pointer;
   max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tpl-x { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0 10px 0 4px; }
 .fb-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }

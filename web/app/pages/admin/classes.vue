@@ -196,9 +196,9 @@ function remove(c: ClassRow) {
 .name { flex-direction: column; align-items: flex-start; gap: 0; }
 .name a { text-decoration: none; font-size: 1.1rem; }
 .code b { letter-spacing: .12em; font-variant-numeric: tabular-nums; }
-.btn.small { padding: 3px 10px; font-size: .85rem; }
+.btn.small { padding: 3px 10px; font-size: var(--fs-sm); }
 .teachers select, .cell select { width: auto; max-width: 240px; }
-.chip-tag { display: inline-flex; align-items: center; gap: var(--space-xs); background: var(--accent-soft); border-radius: var(--radius-full); padding: 2px 4px 2px 10px; font-size: .88rem; }
+.chip-tag { display: inline-flex; align-items: center; gap: var(--space-xs); background: var(--accent-soft); border-radius: var(--radius-full); padding: 2px 4px 2px 10px; font-size: var(--fs-sm); }
 .chip-tag .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0 4px; }
 .chip-tag .x:hover { color: var(--bad); }
 @media (max-width: 760px) { .class-row { grid-template-columns: 1fr; } }

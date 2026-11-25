@@ -14,7 +14,7 @@ const titleId = useId()
 
 <template>
   <div class="overlay" @click.self="!submitting && emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+    <div ref="dialog" class="dialog narrow" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar"><b :id="titleId">{{ $t("submitDialog.title") }}</b></header>
       <div class="body">
         <p v-if="left" class="fb wait"><Icon name="clock" /> {{ $t("submitDialog.blanks", left) }}</p>
@@ -40,12 +40,9 @@ const titleId = useId()
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .5); display: flex; justify-content: center; align-items: center; padding: 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 480px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); max-height: 100%; overflow: auto; }
-.bar { padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.dialog { width: min(480px, 100%); }
+.body { display: flex; flex-direction: column; gap: 10px; }
 .body p { margin: 0; }
-.fb { padding: 8px 10px; border-radius: var(--radius-md); }
 .fb.wait { background: var(--warn-soft); color: var(--warn); }
 .fb.ok { background: var(--ok-soft); color: var(--ok); }
 .sections { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
@@ -55,6 +52,5 @@ const titleId = useId()
 .count { font-variant-numeric: tabular-nums; font-weight: 600; }
 .sections li.done { color: var(--ok); }
 .sections li.partial, .sections li.empty { color: var(--warn); }
-.actions { display: flex; gap: var(--space-sm); justify-content: flex-end; flex-wrap: wrap; padding: 12px 16px; border-top: 1px solid var(--line); }
 .actions .btn { min-height: 44px; }
 </style>

@@ -41,8 +41,8 @@ function add() {
 </script>
 
 <template>
-  <div class="overlay" @click.self="emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+  <div class="overlay scroll" @click.self="emit('close')">
+    <div ref="dialog" class="dialog wide" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <b :id="titleId">{{ $t("importer.title") }}</b>
         <button class="btn small" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
@@ -98,11 +98,7 @@ function add() {
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
-  align-items: flex-start; padding: 32px 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 720px; background: var(--card); border-radius: 14px; box-shadow: var(--shadow-lg); }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); padding: 10px 16px; border-bottom: 1px solid var(--line); }
-.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: var(--space-md); }
+.body { display: flex; flex-direction: column; gap: var(--space-md); }
 .body p, .body label { margin: 0; }
 label { display: flex; flex-direction: column; gap: var(--space-xs); }
 label.row { flex-direction: row; align-items: center; }
@@ -115,5 +111,4 @@ textarea { min-height: 0; }
 .ltr { width: 20px; text-align: center; color: var(--muted); }
 .key { width: auto; }
 .bad { color: var(--bad); }
-@media (max-width: 560px) { .overlay { padding: 0; } .dialog { border-radius: 0; min-height: 100%; } }
 </style>

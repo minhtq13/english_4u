@@ -103,7 +103,7 @@ async function build() {
 .filters input { flex: 1 1 200px; min-width: 0; }
 .filters .tag { max-width: 220px; }
 .picked-bar { position: sticky; top: 8px; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm);
-  flex-wrap: wrap; margin-bottom: var(--space-md); padding: 8px 14px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+  flex-wrap: wrap; margin-bottom: var(--space-md); padding: 8px 14px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent); }
 .picked-bar .btn { padding: 4px 12px; }
 .q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md);
   cursor: pointer; margin-bottom: 6px; }
@@ -111,5 +111,5 @@ async function build() {
 .q-row.on { border-color: var(--accent); background: var(--accent-soft); }
 .q-row input { margin-top: var(--space-xs); }
 .q-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.q-text .badge { font-size: .72rem; margin-right: 4px; }
+.q-text .badge { font-size: var(--fs-xs); margin-right: 4px; }
 </style>

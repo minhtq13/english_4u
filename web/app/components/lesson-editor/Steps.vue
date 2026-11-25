@@ -28,10 +28,10 @@ const emit = defineEmits<{ go: [stage: "setup" | "content"]; give: [] }>()
 <style scoped>
 .steps { list-style: none; margin: 0 0 16px; padding: 0; display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 .steps li { flex: 1 1 150px; }
-.steps button { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--card); color: var(--muted); font: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; text-align: left; }
+.steps button { width: 100%; display: flex; align-items: center; gap: var(--space-sm); padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--radius-md);
+  background: var(--card); color: var(--muted); font: inherit; font-size: var(--fs-sm); font-weight: 500; cursor: pointer; text-align: left; }
 .steps button:disabled { opacity: .55; cursor: default; }
-.steps .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--bg); border: 1px solid var(--line); font-size: .8rem; font-weight: 700; }
+.steps .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--bg); border: 1px solid var(--line); font-size: var(--fs-xs); font-weight: 700; }
 .steps li.on button { border-color: var(--accent); color: var(--text); }
 .steps li.on .dot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .steps li.done .dot { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }

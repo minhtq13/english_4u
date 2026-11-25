@@ -157,7 +157,7 @@ async function saveDue(lessonId: string, clear = false) {
 .who-panel { display: flex; flex-direction: column; gap: var(--space-sm); background: var(--bg); border-radius: var(--radius-md); padding: 10px 12px; }
 .picks { gap: 6px; }
 .pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-full);
-  background: var(--card); cursor: pointer; font-size: .88rem; }
+  background: var(--card); cursor: pointer; font-size: var(--fs-sm); }
 .pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 @media (max-width: 640px) { .lesson-stats { grid-template-columns: 1fr 1fr; } .stat-cell.waiting { grid-column: span 2; } }
 </style>

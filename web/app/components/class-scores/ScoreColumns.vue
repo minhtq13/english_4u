@@ -213,18 +213,18 @@ const shortDay = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field.grow { flex: 1 1 220px; min-width: 0; }
 .field input[type=date] { flex: 0 0 auto; width: auto; min-width: 11rem; }
-.hint { margin: var(--space-sm) 0 var(--space-md); font-size: .85rem; }
+.hint { margin: var(--space-sm) 0 var(--space-md); font-size: var(--fs-sm); }
 .scroll { overflow-x: auto; }
 .grid { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .grid th, .grid td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; vertical-align: middle; }
-.grid thead th { background: var(--card); font-size: .85rem; color: var(--muted); }
+.grid thead th { background: var(--card); font-size: var(--fs-sm); color: var(--muted); }
 .grid tbody th.who { color: var(--text); }
 .who { position: sticky; left: 0; background: var(--card); text-align: left !important; z-index: 1; min-width: 150px; }
 .col { display: inline-grid; gap: 1px; justify-items: center; padding: 4px 10px; background: none; color: var(--text); border: 1px solid transparent;
   border-radius: var(--radius-md); cursor: pointer; font-weight: 600; transition: border-color var(--transition-fast), background-color var(--transition-fast); }
 .col:hover { border-color: var(--accent); }
 .col.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-.col .d { font-size: .78rem; font-weight: 400; color: var(--muted); }
+.col .d { font-size: var(--fs-xs); font-weight: 400; color: var(--muted); }
 .col .icon { opacity: .6; }
 .avg { font-weight: 700; }
 .grid tfoot th, .grid tfoot td { border-bottom: 0; border-top: 2px solid var(--line); color: var(--muted); }

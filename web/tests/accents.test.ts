@@ -25,6 +25,14 @@ describe("accents", () => {
     expect(isAccent("pink")).toBe(false)
     expect(DEFAULT_ACCENT).toBe("blue")
   })
+  it("blue (the default tokens): readable in light and dark, and the swatch is the light accent", () => {
+    for (const t of [tokens(":root"), tokens(':root[data-theme="dark"]')]) {
+      expect(contrast(t.on, t.accent)).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(t.accent, t.soft)).toBeGreaterThanOrEqual(4.5)
+    }
+    expect(tokens(':root:not([data-theme="light"])')).toEqual(tokens(':root[data-theme="dark"]'))
+    expect(ACCENTS.find(a => a.key === DEFAULT_ACCENT)!.swatch).toBe(tokens(":root").accent)
+  })
   for (const { key } of ACCENTS.filter(a => a.key !== DEFAULT_ACCENT)) {
     it(`${key}: a light and a dark set, readable (button text and accent text on its soft background)`, () => {
       for (const t of [tokens(`:root[data-accent="${key}"]`), tokens(`:root[data-accent="${key}"][data-theme="dark"]`)]) {

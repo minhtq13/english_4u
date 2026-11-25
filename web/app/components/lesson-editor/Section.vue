@@ -165,7 +165,7 @@ const moveItem = (i: number, delta: number) => {
 .type { font-weight: 700; }
 .tools { gap: var(--space-xs); }
 .tools .btn { padding: 2px 10px; }
-label, .field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+label, .field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 label .muted, .field .muted { font-weight: 400; }
 .field :deep(.rich), .field :deep(.preview) { font-size: 1rem; }
 label.inline { flex-direction: row; align-items: center; gap: var(--space-sm); font-weight: 400; }
@@ -175,7 +175,7 @@ label.inline { flex-direction: row; align-items: center; gap: var(--space-sm); f
 .option { flex-wrap: nowrap; }
 .option input[type=text] { flex: 1; min-width: 0; }
 .passage-field { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 8px 10px; }
-.passage-field summary { cursor: pointer; font-size: .88rem; font-weight: 500; }
+.passage-field summary { cursor: pointer; font-size: var(--fs-sm); font-weight: 500; }
 .passage-field[open] summary { margin-bottom: var(--space-sm); }
 .chunks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .chunks .small { width: 100%; }

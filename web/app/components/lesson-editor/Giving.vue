@@ -52,12 +52,12 @@ const others = (p: ClassPlan) => props.giving.plans.filter(x => x !== p && x.on 
 <style scoped>
 .giving { display: flex; flex-direction: column; gap: 10px; }
 .giving h2 { margin: 0; }
-.hint { color: var(--muted); font-size: .85rem; margin: 0; }
-.plan { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; display: flex; flex-direction: column; gap: var(--space-sm); }
+.hint { color: var(--muted); font-size: var(--fs-sm); margin: 0; }
+.plan { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 8px 12px; display: flex; flex-direction: column; gap: var(--space-sm); }
 .plan.on { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
 .plan-head { display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; }
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--line); border-radius: var(--radius-full);
-  background: var(--bg); cursor: pointer; font-size: .9rem; font-weight: 500; }
+  background: var(--bg); cursor: pointer; font-size: var(--fs-sm); font-weight: 500; }
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .chip.fixed { cursor: default; }
 .summary { flex: 1 1 200px; min-width: 0; }

@@ -124,7 +124,7 @@ async function exportXlsx() {
 .scroll { overflow-x: auto; padding: 0; }
 .grid { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .grid th, .grid td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: center; white-space: nowrap; }
-.grid thead th { background: var(--card); font-size: .85rem; color: var(--muted); }
+.grid thead th { background: var(--card); font-size: var(--fs-sm); color: var(--muted); }
 .who { position: sticky; left: 0; background: var(--card); text-align: left !important; z-index: 1; min-width: 150px; }
 .cell a { display: block; text-decoration: none; font-weight: 600; color: inherit; }
 .cell.good { background: var(--ok-soft); color: var(--ok); }

@@ -42,8 +42,8 @@ async function run() {
 </script>
 
 <template>
-  <div class="overlay" @click.self="!running && emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+  <div class="overlay scroll" @click.self="!running && emit('close')">
+    <div ref="dialog" class="dialog wide" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <b :id="titleId">{{ $t("promotion.title") }}</b>
         <button class="btn small" :disabled="running" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
@@ -76,15 +76,12 @@ async function run() {
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center; align-items: flex-start; padding: 32px 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 600px; background: var(--card); border-radius: 14px; box-shadow: var(--shadow-lg); }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); padding: 10px 16px; border-bottom: 1px solid var(--line); }
-.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: var(--space-md); }
+.dialog { width: min(600px, 100%); }
+.body { display: flex; flex-direction: column; gap: var(--space-md); }
 .body p { margin: 0; }
 .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-xs); }
 .steps li { border: 1px solid var(--line); border-radius: var(--radius-md); }
 .steps label { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); cursor: pointer; flex-wrap: wrap; }
 .steps li.off { opacity: .6; }
 .bad { color: var(--bad); }
-@media (max-width: 560px) { .overlay { padding: 0; } .dialog { border-radius: 0; min-height: 100%; } }
 </style>

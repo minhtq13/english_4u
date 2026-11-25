@@ -48,10 +48,10 @@ async function answer(remembered: boolean) {
     <p class="sub">{{ $t("review.intro") }}</p>
     <Skeleton v-if="!loaded" />
     <EmptyState v-else-if="!deck.length" icon="check" :title="$t('review.noneTitle')" :text="$t('review.none')">
-      <NuxtLink to="/" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
+      <NuxtLink to="/learn" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
     </EmptyState>
     <EmptyState v-else-if="finished" icon="check" :title="$t('review.doneTitle')" :text="$t('review.done', { n: saved })">
-      <NuxtLink to="/" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
+      <NuxtLink to="/learn" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
     </EmptyState>
     <section v-else-if="current" class="card study">
       <p class="muted small">{{ $t("review.position", { n: index + 1, total: deck.length }) }} · {{ current.lesson }}</p>
@@ -73,7 +73,7 @@ async function answer(remembered: boolean) {
 
 <style scoped>
 .study { display: flex; flex-direction: column; gap: var(--space-md); align-items: stretch; }
-.face { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 180px; padding: 20px; border-radius: 14px; background: var(--accent-soft); text-align: center; }
+.face { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 180px; padding: 20px; border-radius: var(--radius-lg); background: var(--accent-soft); text-align: center; }
 .face.back { background: var(--bg); border: 1px solid var(--line); }
 .word { font-size: 1.5rem; font-weight: 700; }
 .face.back .word { font-weight: 500; font-size: 1.2rem; }

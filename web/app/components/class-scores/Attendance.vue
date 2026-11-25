@@ -122,7 +122,7 @@ const pastSessions = computed(() =>
 .section-head .btn { padding: 4px 12px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--space-md); }
 .field input[type=date] { flex: 0 0 auto; width: auto; min-width: 11rem; }
-.field .hint { margin: 0; font-size: .85rem; }
+.field .hint { margin: 0; font-size: var(--fs-sm); }
 .rows { list-style: none; margin: 0; padding: 0; }
 .rows li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); flex-wrap: wrap; padding: 10px 0; border-top: 1px solid var(--line); }
 .name { flex: 1 1 180px; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
@@ -144,10 +144,10 @@ const pastSessions = computed(() =>
 @media (max-width: 640px) {
   .rows li { display: block; }
   .opts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 6px; }
-  .opts button { min-height: 44px; padding: 6px 4px; text-align: center; font-size: .82rem; line-height: 1.2; }
+  .opts button { min-height: 44px; padding: 6px 4px; text-align: center; font-size: var(--fs-xs); line-height: 1.2; }
   /* One slim row on a phone: the counts (plain text) on the left, the save button on the right. */
   .scorebar { flex-wrap: nowrap; }
   .counts { flex: 1; min-width: 0; gap: 2px 8px; }
-  .counts .badge { border: 0; padding: 0; font-size: .78rem; }
+  .counts .badge { border: 0; padding: 0; font-size: var(--fs-xs); }
 }
 </style>

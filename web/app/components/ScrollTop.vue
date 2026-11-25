@@ -49,7 +49,7 @@ function toTop() {
 <style scoped>
 .scroll-top { position: fixed; right: 16px; z-index: 20; width: 44px; height: 44px; padding: 0; display: grid; place-items: center;
   border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--accent); cursor: pointer;
-  box-shadow: 0 4px 16px var(--shadow); transition: opacity .2s, transform .2s, bottom .2s; }
+  box-shadow: var(--shadow-md); transition: opacity .2s, transform .2s, bottom .2s; }
 .scroll-top:hover { background: var(--accent-soft); border-color: var(--accent); }
 .scroll-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .scroll-top-enter-from, .scroll-top-leave-to { opacity: 0; transform: translateY(8px); }

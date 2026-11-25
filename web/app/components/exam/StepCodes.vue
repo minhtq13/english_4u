@@ -64,7 +64,7 @@ const setAll = (on: boolean) => { fixedParts.value = on ? [] : [...props.parts] 
 </template>
 
 <style scoped>
-.series label, .codes { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .9rem; }
+.series label, .codes { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); }
 .series label > span, .codes > span { color: var(--muted); }
 .series { align-items: flex-end; margin-bottom: 10px; }
 .series input { width: 110px; }

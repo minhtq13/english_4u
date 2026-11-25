@@ -10,7 +10,7 @@ const titleId = useId()
 
 <template>
   <div v-if="open" class="overlay" @click.self="close">
-    <div ref="dialog" class="dialog card" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+    <div ref="dialog" class="dialog narrow padded" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <ConfettiBurst />
       <h2 :id="titleId">{{ $t("badges.newTitle", fresh.length) }}</h2>
       <div v-for="k in fresh" :key="k" class="one">
@@ -24,8 +24,7 @@ const titleId = useId()
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 55; background: rgba(0, 0, 0, .45); display: grid; place-items: center; padding: var(--space-lg); }
-.dialog { max-width: 360px; width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-md); margin: 0; }
+.dialog { width: min(360px, 100%); text-align: center; align-items: center; gap: var(--space-md); }
 .one { display: flex; flex-direction: column; align-items: center; gap: var(--space-xs); }
 .ico { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--purple-soft); color: var(--purple); }
 h2 { margin: 0; }

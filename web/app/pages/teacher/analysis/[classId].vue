@@ -127,7 +127,7 @@ async function exportXlsx() {
 .scroll { overflow-x: auto; padding: 0; }
 .tbl { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .tbl th, .tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-.tbl thead th { color: var(--muted); font-size: .85rem; }
+.tbl thead th { color: var(--muted); font-size: var(--fs-sm); }
 .q { min-width: 240px; max-width: 420px; overflow-wrap: anywhere; }
 .pill { display: inline-block; padding: 1px 10px; border-radius: var(--radius-full); font-weight: 700; }
 .pill.easy { background: var(--ok-soft); color: var(--ok); }
@@ -138,7 +138,7 @@ async function exportXlsx() {
 .advice { margin-bottom: var(--space-md); }
 .advice ul { margin: 4px 0 0; padding-left: 20px; }
 .bars { display: flex; flex-direction: column; gap: 3px; min-width: 200px; }
-.bar-row { display: grid; grid-template-columns: minmax(60px, 110px) 1fr 24px; gap: var(--space-sm); align-items: center; font-size: .85rem; }
+.bar-row { display: grid; grid-template-columns: minmax(60px, 110px) 1fr 24px; gap: var(--space-sm); align-items: center; font-size: var(--fs-sm); }
 .bl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt { height: 8px; border-radius: var(--radius-full); background: var(--line); overflow: hidden; }
 .bt span { display: block; height: 100%; background: var(--bad); }

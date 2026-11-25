@@ -17,8 +17,8 @@ const titleId = useId()
 </script>
 
 <template>
-  <div class="overlay" @click.self="emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+  <div class="overlay scroll" @click.self="emit('close')">
+    <div ref="dialog" class="dialog wide" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <span class="heading">
           <b :id="titleId">{{ $t("classPage.lessonProgress.title") }}</b>
@@ -41,17 +41,12 @@ const titleId = useId()
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
-  align-items: flex-start; padding: 48px 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 760px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); padding: 10px 16px; border-bottom: 1px solid var(--line); }
 .bar .btn { padding: 4px 12px; }
 .heading { display: flex; flex-direction: column; min-width: 0; }
-.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.body { display: flex; flex-direction: column; gap: 10px; }
 .body p { margin: 0; }
 .classes { gap: 6px; }
-.chip { padding: 3px 12px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--bg); color: var(--text); font: inherit; font-size: .88rem; cursor: pointer; }
+.chip { padding: 3px 12px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--bg); color: var(--text); font: inherit; font-size: var(--fs-sm); cursor: pointer; }
 .chip:hover { border-color: var(--accent); }
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-@media (max-width: 560px) { .overlay { padding: 0; } .dialog { border-radius: 0; min-height: 100%; } }
 </style>

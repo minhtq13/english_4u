@@ -25,8 +25,8 @@ function reset() {
 </script>
 
 <template>
-  <div class="overlay" @click.self="emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-label="title">
+  <div class="overlay scroll" @click.self="emit('close')">
+    <div ref="dialog" class="dialog xwide" role="dialog" tabindex="-1" aria-modal="true" :aria-label="title">
       <header class="bar">
         <b>{{ title }}</b>
         <span class="row tools">
@@ -57,15 +57,12 @@ function reset() {
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
-  align-items: flex-start; padding: 24px 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 820px; background: var(--bg); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
-.bar { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm);
-  flex-wrap: wrap; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; }
+/* The lesson shows on the page background, as a student sees it. */
+.dialog { background: var(--bg); }
+.bar { position: sticky; top: 0; z-index: 1; background: var(--card); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
 .tools { gap: 6px; }
 .tools .btn { padding: 4px 12px; }
 .inline { gap: 6px; }
-.body { padding: 16px 20px 24px; }
 .note { margin: 0 0 12px; }
-@media (max-width: 560px) { .overlay { padding: 0; } .dialog { border-radius: 0; min-height: 100%; } }
+@media (max-width: 560px) { .bar { border-radius: 0; } }
 </style>

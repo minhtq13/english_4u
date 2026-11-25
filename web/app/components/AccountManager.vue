@@ -342,7 +342,7 @@ async function moveClass(p: Person, classId: string) {
 .head-text { flex: 1 1 320px; }
 .head-text .sub { margin-bottom: 0; }
 .head > .btn { flex-shrink: 0; margin-top: 6px; }
-.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 .field select { width: auto; min-width: 180px; }
 .filters { margin-bottom: var(--space-md); }
 .filters input { flex: 1; min-width: 220px; }
@@ -362,6 +362,6 @@ async function moveClass(p: Person, classId: string) {
 }
 .inactive td { opacity: .6; }
 input.bad { border-color: var(--bad); }
-.bad-text { color: var(--bad); font-size: .88rem; }
+.bad-text { color: var(--bad); font-size: var(--fs-sm); }
 code { font-size: .95rem; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
 </style>

@@ -3,7 +3,7 @@
 // `[data-accent="<key>"]` (tests/accents.test.ts checks each has its rules and enough contrast).
 
 export const ACCENTS = [
-  { key: "blue", swatch: "#2b5fd0" },
+  { key: "blue", swatch: "#1f5ee6" },
   { key: "indigo", swatch: "#4f46e5" },
   { key: "violet", swatch: "#7c3aed" },
   { key: "rose", swatch: "#be185d" },

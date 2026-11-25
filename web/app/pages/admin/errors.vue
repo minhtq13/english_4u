@@ -46,5 +46,5 @@ const open = ref<number | null>(null)
 .head { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; background: none; border: 0; padding: var(--space-md) var(--space-lg); cursor: pointer; color: var(--text); }
 .head:hover { background: var(--bg); }
 .msg { overflow-wrap: anywhere; }
-.stack-trace { margin: 0; padding: var(--space-md) var(--space-lg); background: var(--bg); font-size: .8rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.stack-trace { margin: 0; padding: var(--space-md) var(--space-lg); background: var(--bg); font-size: var(--fs-xs); white-space: pre-wrap; overflow-wrap: anywhere; }
 </style>

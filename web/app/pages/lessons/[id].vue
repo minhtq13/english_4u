@@ -167,7 +167,7 @@ const next = nextId ? course.byId[nextId] : null
 
 <template>
   <div>
-    <BackLink :to="isStudent ? '/' : `/courses/${lesson.courseId}`" :label="isStudent ? $t('nav.roadmap') : $t('lessonPage.lessonList')" />
+    <BackLink :to="isStudent ? '/learn' : `/courses/${lesson.courseId}`" :label="isStudent ? $t('nav.roadmap') : $t('lessonPage.lessonList')" />
     <h1>{{ lesson.heading }}</h1>
     <p class="sub">{{ lesson.sub }}</p>
 
@@ -203,7 +203,7 @@ const next = nextId ? course.byId[nextId] : null
       <p class="muted">
         {{ $t(`lessonPage.unavailable.${access}.text`) }}
       </p>
-      <NuxtLink to="/" class="btn">{{ $t("join.toRoadmap") }}</NuxtLink>
+      <NuxtLink to="/learn" class="btn">{{ $t("join.toRoadmap") }}</NuxtLink>
     </div>
     <template v-else>
 

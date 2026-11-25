@@ -37,8 +37,8 @@ function add() {
 </script>
 
 <template>
-  <div class="overlay" @click.self="emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-label="$t('bank.title')">
+  <div class="overlay scroll" @click.self="emit('close')">
+    <div ref="dialog" class="dialog wide" role="dialog" tabindex="-1" aria-modal="true" :aria-label="$t('bank.title')">
       <header class="bar">
         <b>{{ $t("bank.title") }} · {{ SECTION_TYPES[type].label }}</b>
         <span class="row">
@@ -75,13 +75,9 @@ function add() {
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .45); display: flex; justify-content: center;
-  align-items: flex-start; padding: 24px 16px; overflow-y: auto; }
-.dialog { width: 100%; max-width: 760px; background: var(--card); border-radius: 14px; box-shadow: 0 12px 40px rgba(0, 0, 0, .3); }
-.bar { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; gap: var(--space-sm); flex-wrap: wrap;
-  padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; }
+.bar { position: sticky; top: 0; z-index: 1; background: var(--card); border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
 .bar .btn { padding: 4px 12px; }
-.body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: var(--space-sm); }
+.body { display: flex; flex-direction: column; gap: var(--space-sm); }
 .filters select { width: auto; }
 .filters input { flex: 1; min-width: 160px; }
 .filters .tag { max-width: 220px; }

@@ -46,7 +46,7 @@ const sections = computed(() =>
 
 <style scoped>
 .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: var(--space-sm); }
-.tile { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px;
+.tile { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-md);
   background: var(--bg); color: var(--text); text-decoration: none; }
 .tile:hover { border-color: var(--accent); }
 .tile-title { font-weight: 600; font-size: .92rem; }

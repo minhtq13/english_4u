@@ -18,7 +18,7 @@ defineProps<{ draft: LessonDraft }>()
 </template>
 
 <style scoped>
-.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 .stack label .muted { font-weight: 400; }
 .stack label .lab { display: block; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: end; }

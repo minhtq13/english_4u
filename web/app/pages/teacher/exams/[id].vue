@@ -510,7 +510,7 @@ const oneLine = (q: ExamQuestion) =>
       <span class="small muted">{{ $t("examPage.draftNote") }}</span>
     </p>
 
-    <div class="savebar">
+    <div class="scorebar savebar">
       <template v-if="readOnly">
         <span class="small muted" role="status">{{ $t("examList.viewOnly") }}</span>
         <span class="spacer" />
@@ -565,8 +565,7 @@ const oneLine = (q: ExamQuestion) =>
 .clip { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin: 2px 0 4px; }
 .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap; }
 .plain { border: 0; padding: 0; margin: 0; min-width: 0; }
-.savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 3; background: var(--card); border: 1px solid var(--line);
-  border-radius: var(--radius-lg); padding: 10px 14px; display: flex; align-items: center; gap: var(--space-sm); box-shadow: 0 4px 16px var(--shadow); margin-top: var(--space-md); }
+.savebar { justify-content: flex-start; margin-top: var(--space-md); }
 .spacer { flex: 1; }
 .warn-text { color: var(--warn); font-weight: 600; }
 .acts { display: flex; gap: 2px; flex: none; }

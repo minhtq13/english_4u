@@ -65,7 +65,7 @@ onMounted(async () => {
 .class-card:hover { border-color: var(--accent); }
 .top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-sm); }
 .name { font-size: 1.4rem; }
-.code { font-size: .9rem; color: var(--muted); }
+.code { font-size: var(--fs-sm); color: var(--muted); }
 .code b { color: var(--text); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .nums { display: flex; gap: var(--space-md); flex-wrap: wrap; color: var(--muted); }
 .nums b { color: var(--text); font-variant-numeric: tabular-nums; }

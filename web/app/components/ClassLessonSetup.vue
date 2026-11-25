@@ -102,16 +102,16 @@ function give() {
 </template>
 
 <style scoped>
-.setup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md); background: var(--bg); border-radius: 10px; padding: 12px; }
-.block { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: var(--space-sm); min-width: 0; }
+.setup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-md); background: var(--bg); border-radius: var(--radius-md); padding: 12px; }
+.block { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md); padding: var(--space-md) var(--space-lg); display: flex; flex-direction: column; gap: var(--space-sm); min-width: 0; }
 .block h4 { margin: 0; font-size: .95rem; }
 .block p { margin: 0; }
 .desc { font-size: .93rem; }
 .sections { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-xs); }
-.sections li { display: flex; align-items: baseline; gap: var(--space-sm); flex-wrap: wrap; font-size: .9rem; }
+.sections li { display: flex; align-items: baseline; gap: var(--space-sm); flex-wrap: wrap; font-size: var(--fs-sm); }
 .sections .title { font-weight: 500; }
 .given-to { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.chip-class { border: 1px solid var(--line); border-radius: var(--radius-full); padding: 1px 10px; font-size: .85rem; background: var(--bg); }
+.chip-class { border: 1px solid var(--line); border-radius: var(--radius-full); padding: 1px 10px; font-size: var(--fs-sm); background: var(--bg); }
 .chip-class.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .links { gap: 6px; }
 .links .btn { padding: 3px 10px; }

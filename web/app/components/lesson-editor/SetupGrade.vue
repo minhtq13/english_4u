@@ -26,7 +26,7 @@ const phaseId = defineModel<number | null>("phaseId", { required: true })
 </template>
 
 <style scoped>
-.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: end; }
 @media (max-width: 640px) { .grid3 { grid-template-columns: 1fr; } }
 </style>

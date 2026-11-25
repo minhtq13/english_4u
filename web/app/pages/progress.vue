@@ -69,7 +69,7 @@ onMounted(async () => {
         <AttemptHistory :rows="attempts" viewer="student" :shows-at-once="showsAtOnce" :link="r => `/lessons/${r.lesson_id}`">
           <template #empty>
             <EmptyState icon="clipboard" :title="$t('progress.none')" :text="$t('progress.noneHint')">
-              <NuxtLink to="/" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
+              <NuxtLink to="/learn" class="btn small primary">{{ $t("progress.seeRoadmap") }}</NuxtLink>
             </EmptyState>
           </template>
         </AttemptHistory>

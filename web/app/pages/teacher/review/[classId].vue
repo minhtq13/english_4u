@@ -142,7 +142,7 @@ async function build() {
 </template>
 
 <style scoped>
-.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; max-width: 320px; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; max-width: 320px; }
 .picks { display: flex; flex-direction: column; gap: 6px; }
 .pick, .q-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius-md); cursor: pointer; }
 .pick.on, .q-row.on { border-color: var(--accent); background: var(--accent-soft); }

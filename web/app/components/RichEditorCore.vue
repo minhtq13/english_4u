@@ -93,7 +93,7 @@ const groups = computed(() => (props.inline ? [textButtons] : [textButtons, bloc
   background: var(--bg); border-radius: 8px 8px 0 0; position: sticky; top: 0; z-index: 1; }
 .inline .toolbar { padding: 4px; }
 .tb { border: 1px solid transparent; background: none; color: var(--text); border-radius: var(--radius-sm); padding: 2px 8px;
-  font-size: .82rem; cursor: pointer; line-height: 1.6; }
+  font-size: var(--fs-xs); cursor: pointer; line-height: 1.6; }
 .tb:hover { border-color: var(--line); background: var(--card); }
 .tb.on { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
 .tb.bold { font-weight: 700; }

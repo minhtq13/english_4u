@@ -37,7 +37,7 @@ defineProps<{ info: DraftInfo; courses: { id: string; name: string }[] }>()
 
 <style scoped>
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-md); }
-.grid label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .9rem; }
+.grid label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); }
 .grid label > span { color: var(--muted); }
 .grid .wide { grid-column: span 2; }
 @media (max-width: 720px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

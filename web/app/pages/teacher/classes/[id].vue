@@ -265,12 +265,12 @@ async function copyCode() {
 .section-head h2 { margin: 0; }
 .section-head .btn { padding: 4px 12px; }
 
-.help { margin: 0 0 12px; font-size: .9rem; color: var(--muted); }
+.help { margin: 0 0 12px; font-size: var(--fs-sm); color: var(--muted); }
 .help summary { cursor: pointer; color: var(--accent); font-weight: 500; width: fit-content; }
 .help ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: var(--space-xs); }
 
-.phase { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
-.lesson { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+.phase { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 16px 0 6px; }
+.lesson { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
 .lesson.given { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
 .lesson-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
 .lesson-name { display: flex; align-items: baseline; gap: var(--space-sm); flex-wrap: wrap; min-width: 0; }
@@ -283,7 +283,7 @@ async function copyCode() {
 .chev:hover { border-color: var(--accent); color: var(--accent); }
 .folded { margin: -4px 0 0 34px; }
 .expand-all { margin: 0 0 8px; text-align: right; }
-.own { font-size: .72rem; }
+.own { font-size: var(--fs-xs); }
 .late { color: var(--bad); }
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
 .link:hover { text-decoration: underline; }

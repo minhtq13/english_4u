@@ -89,9 +89,9 @@ const allPicked = computed(() => props.students.length > 0 && props.form.student
 .field .btn { padding: 2px 10px; }
 .opt { display: inline-flex; align-items: center; gap: var(--space-sm); }
 .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: .92rem; }
-.hint { color: var(--muted); font-size: .85rem; margin: 0; }
+.hint { color: var(--muted); font-size: var(--fs-sm); margin: 0; }
 .picks { gap: 6px; }
-.pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--card); cursor: pointer; font-size: .88rem; }
+.pick { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: var(--radius-full); background: var(--card); cursor: pointer; font-size: var(--fs-sm); }
 .pick.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .link { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }
 .link:hover { text-decoration: underline; }

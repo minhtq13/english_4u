@@ -41,7 +41,7 @@ function go(index: number) {
     </ul>
 
     <div v-if="!wrong.length" class="row">
-      <NuxtLink to="/" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
+      <NuxtLink to="/learn" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
     </div>
     <template v-if="wrong.length">
       <div class="row">
@@ -49,7 +49,7 @@ function go(index: number) {
           {{ onlyWrong ? $t("resultView.hideWrong") : $t("resultView.showWrong", wrong.length) }}
         </button>
         <NuxtLink :to="`/practice/${lesson.id}`" class="btn small" :class="{ primary: percent < 80 }">{{ $t("practice.start") }}</NuxtLink>
-        <NuxtLink v-if="percent >= 80" to="/" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
+        <NuxtLink v-if="percent >= 80" to="/learn" class="btn small primary">{{ $t("resultView.nextLesson") }}</NuxtLink>
       </div>
       <p class="muted small">{{ percent >= 80 ? $t("resultView.adviceGood") : percent >= 50 ? $t("resultView.adviceMid") : $t("resultView.adviceLow") }}</p>
       <ol v-if="onlyWrong" class="wrong">

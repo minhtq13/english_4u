@@ -16,7 +16,7 @@ const sentence = computed(() => q.value.words.join(" "))
 
 <template>
   <div class="overlay" @click.self="emit('close')">
-    <div ref="dialog" class="dialog" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
+    <div ref="dialog" class="dialog wide" role="dialog" tabindex="-1" aria-modal="true" :aria-labelledby="titleId">
       <header class="bar">
         <b :id="titleId">{{ $t("qPreview.title") }} <span class="badge">{{ SECTION_TYPES[q.type].label }}</span></b>
         <button class="btn small" @click="emit('close')">{{ $t("common.close") }} <Icon name="x" /></button>
@@ -77,13 +77,10 @@ const sentence = computed(() => q.value.words.join(" "))
 </template>
 
 <style scoped>
-.overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 22, .55); }
-.dialog { display: flex; flex-direction: column; width: min(640px, 100%); max-height: calc(100dvh - 32px); background: var(--card);
-  color: var(--text); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px var(--shadow); }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.body { padding: 14px 16px; overflow-y: auto; overflow-wrap: anywhere; }
+.dialog { width: min(640px, 100%); overflow: hidden; }
+.body { overflow-y: auto; overflow-wrap: anywhere; }
 .meta { margin: 0 0 10px; }
-.passage { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: var(--space-md); background: var(--bg); max-height: 40dvh; overflow-y: auto; }
+.passage { border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: var(--space-md); background: var(--bg); max-height: 40dvh; overflow-y: auto; }
 .passage :deep(p) { margin: 0 0 6px; }
 .prompt { font-size: 1.05rem; margin-bottom: var(--space-sm); }
 .prompt :deep(p) { margin: 0 0 6px; }
@@ -95,5 +92,4 @@ const sentence = computed(() => q.value.words.join(" "))
 .key { margin-top: var(--space-xs); }
 .why { margin-top: 10px; font-size: .95rem; }
 .why :deep(p) { margin: 4px 0 0; }
-.foot { display: flex; justify-content: flex-end; gap: var(--space-sm); padding: 12px 16px; border-top: 1px solid var(--line); }
 </style>

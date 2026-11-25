@@ -30,7 +30,7 @@ const spoken = computed(() => {
 
 <style scoped>
 .timer { position: sticky; top: var(--sticky-top, 0px); z-index: 16; display: flex; align-items: center; gap: var(--space-sm); padding: 8px 12px; margin: 0 0 12px;
-  border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+  border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--card); }
 .digits { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
 .timer.urgent { border-color: var(--bad); color: var(--bad); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

@@ -255,7 +255,7 @@ async function removeLesson() {
 
         <LessonEditorStructure v-model="draft.sections" :lessons="templates" />
 
-        <div class="savebar">
+        <div class="scorebar savebar">
           <span v-if="!canContinue" class="small muted">{{ $t("editor.nextNeed") }}</span>
           <span class="spacer" />
           <button class="btn primary" :disabled="!canContinue" @click="go('content')">{{ $t("editor.next") }}</button>
@@ -297,7 +297,7 @@ async function removeLesson() {
       </div>
       <p v-if="message" class="fb no">{{ message }}</p>
 
-      <div class="savebar">
+      <div class="scorebar savebar">
         <button v-if="editId" class="btn" :class="deleteArmed ? 'danger' : 'ghost'" @click="removeLesson">
           {{ deleteArmed ? $t("editor.deleteConfirm") : $t("editor.delete") }}
         </button>
@@ -313,13 +313,12 @@ async function removeLesson() {
 </template>
 
 <style scoped>
-.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+.stack label { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 .stack label .muted { font-weight: 400; }
 .stack label.inline { flex-direction: row; align-items: center; gap: var(--space-sm); font-weight: 400; }
 .summary { justify-content: space-between; padding: 10px 14px; }
 .summary .grow { flex: 1; min-width: 0; }
 .fb ul { margin: 6px 0 0; padding-left: 20px; }
-.savebar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--card); border: 1px solid var(--line);
-  border-radius: var(--radius-lg); padding: 10px 14px; display: flex; align-items: center; gap: var(--space-sm); box-shadow: 0 4px 16px var(--shadow); }
+.savebar { justify-content: flex-start; }
 .spacer { flex: 1; }
 </style>

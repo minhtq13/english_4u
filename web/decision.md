@@ -39,6 +39,22 @@
 - **Màu chủ đạo lưu bằng cookie** (cùng cách với `theme`), áp dụng bằng script nội tuyến trước khi app chạy để không nháy màu. Màu tự chọn được **tự chỉnh cho đủ tương phản 4.5** thay vì nhận nguyên: nút và chữ màu chính phải đọc được ở cả sáng và tối, nên màu rất sáng/tối bị làm đậm/sáng nhẹ. Xanh lá có sẵn bị đậm lên (`#166534`) vì bản đầu chỉ đạt 4.36.
 - **Giữ chỗ cho khối hiện muộn** (biểu đồ, thẻ ôn tập) thay vì chỉ dùng skeleton, vì đo CLS cho thấy các khối thêm vào sau khi tải gây dịch chuyển (0.14 → 0.013 ở `/admin`).
 
+- **Nâng cấp design system (11/2026), phong cách "tươi, thân thiện"** cho học sinh THCS, theo lựa chọn của người dùng (nâng design system chứ không vẽ lại từng màn):
+  - Bo góc lớn hơn: 8/12/16/24.
+  - Thẻ có bóng mềm, nút cao khoảng 40px, nút chính có viền dưới đậm.
+  - Tiêu đề đậm 700-800 (thêm weight 800 của Be Vietnam Pro).
+  - Màu nhấn mặc định đổi từ `#2b5fd0` sang `#1f5ee6` (tương phản 5.5 với chữ trắng, 4.87 trên nền soft; có test).
+  - Thêm token cỡ chữ, z-index, focus ring. Bo góc, bóng và cỡ chữ viết cứng được thay bằng token.
+  - 11 popup dùng chung `.overlay` + `.dialog`. Trước đó mỗi cái có màu nền mờ, bo góc và z-index riêng.
+  - Các z-index trong trang (thanh mục lục bài học 15, đồng hồ 16, ScrollTop 20, watermark 40, ghi chú chặn 45) giữ số cũ, vì đổi thứ tự lớp ở đó dễ gây lỗi chồng lớp; chỉ sidebar, drawer, thanh mobile, thanh tab, popup, toast và tooltip dùng token.
+- **Landing page công khai ở `/`, lộ trình học sinh dời sang `/learn`.**
+  - Người dùng muốn landing kèm nút Đăng nhập, không có đăng ký (tài khoản do giáo viên tạo), và có SEO.
+  - Chỉ trang này được prerender thành HTML lúc build (`routeRules`: `/**` ssr false, `/` ssr + prerender). Như vậy Google và ảnh xem trước Facebook/Zalo đọc được nội dung, còn app vẫn là SPA như cũ.
+  - HTML prerender là tiếng Việt. Với cookie English, trang render lại sau khi mount.
+  - Người đã đăng nhập mở `/` thì được chuyển về trang của mình; có thể thấy landing loé lên một chút. App cài trên điện thoại mở thẳng `/learn` (`start_url`).
+  - Nội dung chỉ nói điều app thật sự làm: không có số liệu hay lời chứng thực bịa.
+  - Domain cho canonical/OG lấy từ `NUXT_PUBLIC_SITE_URL` hoặc biến Vercel `VERCEL_PROJECT_PRODUCTION_URL`; không viết cứng vì repo không ghi domain production.
+
 ## Hiệu năng
 
 - **Đo Lighthouse với nén bật.** Máy chủ Nitro cục bộ không nén nên chỉ cho 68 điểm; Vercel nén nên bật `compressPublicAssets` tạm để đo (93 điểm) rồi hoàn lại cấu hình, không để lại trong repo.

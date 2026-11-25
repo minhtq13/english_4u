@@ -107,7 +107,7 @@ async function save() {
 .info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md); }
 .info div { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-xs); }
 .form { max-width: 360px; }
-.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: .88rem; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: var(--space-xs); font-size: var(--fs-sm); font-weight: 500; }
 .field .muted { font-weight: 400; }
 .bad { color: var(--bad); margin: 0; }
 .forgot { margin: 12px 0 0; }
